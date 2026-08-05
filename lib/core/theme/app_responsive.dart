@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class AppScreen {
-  AppScreen._();
+class AppResponsive {
+  AppResponsive._();
 
   static late MediaQueryData _mediaQueryData;
   static late double screenWidth;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
-import 'package:keyva/core/theme/design_system_template_grok.dart';
 
 void main() {
   runApp(KeyvaApp());
@@ -18,11 +18,10 @@ class KeyvaApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      // initialRoute: Routes.home,
-      // getPages: AppPages.routes,
-      home: const ThemeDemoPage(),
+      initialRoute: AppRoutes.themeDemo,
+      getPages: AppRoutes.routes,
       builder: (context, child) {
-        AppScreen.init(context);
+        AppResponsive.init(context);
         return child!;
       },
     );
