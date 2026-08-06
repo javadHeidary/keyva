@@ -19,7 +19,7 @@ class KeyvaApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.splash,
+      initialRoute: AppRoutes.onBoarding,
       getPages: AppRoutes.routes,
       builder: (context, child) {
         AppResponsive.init(context);

@@ -27,26 +27,15 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
-  /// Directory path: assets/images/illustrations
-  $AssetsImagesIllustrationsGen get illustrations =>
-      const $AssetsImagesIllustrationsGen();
-
   /// File path: assets/images/logo_test.svg
   SvgGenImage get logoTest => const SvgGenImage('assets/images/logo_test.svg');
 
-  /// List of all assets
-  List<SvgGenImage> get values => [logoTest];
-}
-
-class $AssetsImagesIllustrationsGen {
-  const $AssetsImagesIllustrationsGen();
-
-  /// File path: assets/images/illustrations/illstration_test.svg
-  SvgGenImage get illstrationTest =>
-      const SvgGenImage('assets/images/illustrations/illstration_test.svg');
+  /// File path: assets/images/onboardin_test.svg
+  SvgGenImage get onboardinTest =>
+      const SvgGenImage('assets/images/onboardin_test.svg');
 
   /// List of all assets
-  List<SvgGenImage> get values => [illstrationTest];
+  List<SvgGenImage> get values => [logoTest, onboardinTest];
 }
 
 abstract final class Assets {
