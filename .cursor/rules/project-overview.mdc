@@ -1,0 +1,96 @@
+---
+alwaysApply: true
+---
+description: Project overview and product vision for Keyva
+alwaysApply: true
+---
+
+# Project Overview
+
+## Project
+
+Project Name: Keyva (Secure Vault)
+Keyva is a secure, offline-first mobile application that allows users to safely store and manage sensitive personal information directly on their own device.
+The application is designed as a personal encrypted vault rather than a cloud password manager.
+
+## Product Vision
+
+Keyva prioritizes:
+1. Security First
+2. Privacy First
+3. Offline First
+4. Simplicity
+5. Performance
+
+Whenever implementation decisions conflict, prefer the option that best aligns with these priorities.
+
+## Core Principles
+
+The application must:
+
+- Work completely offline.
+- Never require a backend server.
+- Never require user registration or login.
+- Keep all user data on the local device.
+- Encrypt all sensitive information before storage.
+- Minimize unnecessary permissions.
+- Be simple, intuitive, and fast.
+
+## Primary Users
+
+Keyva is designed for everyday Android users who want a simple and secure way to manage private information without relying on cloud services.
+Users are not expected to have technical knowledge.
+
+## Scope
+
+Keyva is a secure vault for managing sensitive information such as:
+- Passwords
+- Bank Cards
+- Secure Notes
+- 
+Additional features include:
+
+- Password Generator
+- Password Strength Indicator
+- Favorites
+- Categories
+- Search
+- Local Backup & Restore
+- Biometric Authentication
+- Auto Lock
+- Local Notifications
+
+## Product Constraints
+
+The application must never depend on:
+- Cloud synchronization
+- Online authentication
+- External servers
+- User accounts
+
+Internet access should never be required for core functionality.
+
+## Development Priorities
+
+When implementing new features, prioritize:
+
+1. Security
+2. User Privacy
+3. Data Integrity
+4. Consistency with the project architecture
+5. Design System compliance
+6. Performance
+7. User Experience
+
+## Implementation Mindset
+
+Before implementing any feature, consider:
+
+- Does this expose sensitive user data?
+- Does this keep data local?
+- Is encryption preserved?
+- Is the implementation consistent with the project architecture?
+- Does it follow the Design System?
+- Is there an existing reusable solution?
+
+If the answer to any of these questions is unclear, ask before making assumptions.

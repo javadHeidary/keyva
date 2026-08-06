@@ -14,11 +14,12 @@ class KeyvaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Keyva',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.themeDemo,
+      initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
       builder: (context, child) {
         AppResponsive.init(context);

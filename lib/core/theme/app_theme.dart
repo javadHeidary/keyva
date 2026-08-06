@@ -550,7 +550,6 @@ class AppTheme {
         color: AppColors.primaryDark,
         linearTrackColor: AppColors.strengthBarBgDark,
       ),
-
       // Text Theme
       textTheme: TextTheme(
         displayLarge: AppTypography.displayLarge.copyWith(

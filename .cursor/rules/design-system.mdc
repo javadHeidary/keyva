@@ -1,0 +1,209 @@
+---
+alwaysApply: true
+---
+
+
+# Design System
+
+## Purpose
+
+This project uses a centralized Design System.
+The Design System is the single source of truth for all visual elements.
+Every screen, widget and component must follow these rules.
+Never create your own visual styles if an existing token already exists.
+
+# Source Files
+All design tokens are located under:
+
+lib/core/theme/
+Files:
+
+- app_theme.dart
+- app_colors.dart
+- app_typography.dart
+- app_spacing.dart
+- app_radius.dart
+- app_shadows.dart
+- app_sized.dart
+- app_responsive.dart
+- extensions/theme_extensions.dart
+- extensions/responsive_extensions.dart
+
+The implementation must always reuse these files.
+
+# Colors
+
+DO
+- Use AppColors
+- Use ThemeExtension
+- Use ColorScheme when provided
+DON'T
+- Never use Color(...)
+- Never use hexadecimal colors directly
+- Never create temporary colors inside widgets
+
+# Typography
+
+DO
+- Use AppTypography
+- Reuse predefined text styles
+
+DON'T
+- Never create TextStyle inline
+- Never hardcode font size
+- Never hardcode font weight
+
+AppTypography.bodyMedium ✔ 
+
+TextStyle(
+  fontSize: 15,
+  fontWeight: FontWeight.w600,
+)✘
+
+# Spacing
+Use AppSpacing for every spacing value.
+DO
+AppSpacing.xs
+AppSpacing.sm
+AppSpacing.md
+AppSpacing.lg
+AppSpacing.xl
+
+DON'T
+SizedBox(height: 17)
+Padding(
+  padding: EdgeInsets.all(13),
+)
+
+# Radius
+Always use AppRadius.
+
+Never write
+BorderRadius.circular(14)
+
+Use
+AppRadius.md
+
+# Shadows
+Always use AppShadows.
+Never create BoxShadow manually unless a new design token is added.
+
+# Sizes
+Use AppSized whenever fixed component sizes already exist.
+Avoid magic numbers.
+
+
+# Responsive
+
+Always use the project's responsive utilities.
+Never calculate screen sizes manually if an existing helper exists.
+Reuse:
+- AppResponsive
+- Responsive Extensions
+
+# Theme
+The application supports Light and Dark themes.
+Never check theme manually using arbitrary conditions.
+Always obtain colors from Theme or Theme Extensions.
+
+# Widget
+Before creating a new widget:
+
+1. Search existing global widget in this path : keyva\lib\core\widget
+2. Reuse existing components whenever possible.
+3. Only create a new reusable component if none exists.
+Avoid duplicated UI.
+
+Reusable UI widget:
+lib/core/widget/
+
+Feature specific widgets:
+lib/features/{feature}/widgets/
+
+
+Rules:
+
+- Generic widgets belong to core/widget.
+- Feature widgets must stay inside their feature.
+- Never create UI components inside controllers or views.
+
+# assets
+
+Use the project's assets dirctory.
+assets must have consistent sizes.
+Never hardcode assets sizes if a design token exists.
+
+Icons path :keyva\assets\icons
+Fonts path :keyva\assets\fonts
+Iamges path :keyva\assets\iamges
+Illustrations path :keyva\assets\iamges\illustrations
+
+# Animations
+Keep animations subtle.
+Reuse existing animation durations and curves.
+Avoid custom animation values unless necessary.
+
+# Accessibility
+Every interactive widget should:
+- have sufficient touch target
+- support dark mode
+- support text scaling
+- use semantic widgets where appropriate
+
+# Layout
+
+Use consistent spacing.
+Do not align widgets by trial and error.
+Build layouts using:
+- Row
+- Column
+- Expanded
+- Flexible
+- Spacer
+Avoid unnecessary nested widgets.
+
+
+# Hardcoded Values
+
+The following are forbidden unless explicitly approved.
+- Colors
+- Font sizes
+- Border radius
+- Spacing
+- Shadow values
+- Durations
+- Opacity values
+Always use existing design tokens.
+
+# Before Writing UI
+
+Before implementing any screen:
+
+1. Read the design system.
+2. Search reusable components.
+3. Use existing design tokens.
+4. Keep the implementation consistent with the rest of the application.
+
+If any rule conflicts with existing code, prefer the Design System.
+If documentation is unclear, ask before making assumptions.
+
+# MVVM UI Rules
+
+View:
+- Only responsible for UI rendering.
+- No business logic.
+- No data processing.
+
+Controller/ViewModel:
+- Handles state.
+- Handles UI logic.
+- Exposes observable states.
+
+widget : 
+- Feature specific widgets
+
+
+Never:
+- call repositories directly from widgets.
+- write business logic inside build().
+

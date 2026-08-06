@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:keyva/core/theme/app_colors.dart';
+import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_shadows.dart';
+import 'package:keyva/core/theme/app_spacing.dart';
+
+import '../app_sizes.dart';
 
 // ============================================================
 // COLORS EXTENSION
@@ -272,45 +276,3 @@ extension ThemeContextExtension on BuildContext {
 }
 
 // Keep these simple classes accessible if needed without context
-class AppSpacing {
-  const AppSpacing();
-  double get xs => 4;
-  double get sm => 8;
-  double get md => 12;
-  double get lg => 16;
-  double get xl => 20;
-  double get xxl => 24;
-  double get xxxl => 32;
-  double get huge => 40;
-  double get massive => 48;
-  double get pagePadding => 16;
-  double get cardPadding => 16;
-  double get sectionGap => 24;
-  double get itemGap => 12;
-}
-
-class AppRadius {
-  const AppRadius();
-  double get small => 8;
-  double get medium => 12;
-  double get large => 16;
-  double get extra => 24;
-  double get button => 12;
-  double get input => 12;
-  double get card => 16;
-  double get modal => 24;
-}
-
-class AppSizes {
-  const AppSizes();
-  double get primaryButtonHeight => 52;
-  double get secondaryButtonHeight => 48;
-  double get inputHeight => 52;
-  double get inputBorderWidth => 1;
-  double get iconSm => 16;
-  double get iconMd => 20;
-  double get iconLg => 24;
-  double get iconXl => 28;
-  double get appBarHeight => 56;
-  double get bottomNavHeight => 64;
-}

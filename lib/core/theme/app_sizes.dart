@@ -1,6 +1,4 @@
 class AppSizes {
-  AppSizes._();
-
   static const double primaryButtonHeight = 52;
   static const double secondaryButtonHeight = 48;
 
