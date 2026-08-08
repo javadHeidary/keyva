@@ -63,37 +63,33 @@ class AuthLoginView extends StatelessWidget {
                 SizedBox(height: 40.h),
 
                 Obx(() {
-                  return AppTextField(
-                    controller: controller.passwordController,
-                    obscureText: !controller.isPasswordVisible.value,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => controller.login(),
-                    labelText: 'رمز عبور',
-                    hintText: 'رمز را وارد کنید',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.isPasswordVisible.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                  return Form(
+                    key: controller.loginFormKey,
+                    child: AppTextField(
+                      controller: controller.passwordController,
+                      obscureText: !controller.isPasswordVisible.value,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => controller.login(),
+                      labelText: 'رمز عبور',
+                      hintText: 'رمز را وارد کنید',
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.isPasswordVisible.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: controller.togglePasswordVisibility,
                       ),
-                      onPressed: controller.togglePasswordVisibility,
-                    ),
-                  );
-                }),
-
-                Obx(() {
-                  if (controller.errorMessage.value.isEmpty) {
-                    return SizedBox(height: 8.h);
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(top: 8.s),
-                    child: Text(
-                      controller.errorMessage.value,
-                      style: TextStyle(
-                        color: context.colors.error,
-                        fontSize: 13.s,
-                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'رمز عبور الزامی است';
+                        }
+                        if (value.length < 8) {
+                          return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
+                        }
+                        return null;
+                      },
                     ),
                   );
                 }),
@@ -104,7 +100,11 @@ class AuthLoginView extends StatelessWidget {
                   return AppButton(
                     title: 'ورود',
                     isLoading: controller.isLoading.value,
-                    onPressed: controller.login,
+                    onPressed: () {
+                      if (controller.loginFormKey.currentState!.validate()) {
+                        controller.login();
+                      }
+                    },
                   );
                 }),
                 SizedBox(height: 20.h),

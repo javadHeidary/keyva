@@ -54,70 +54,91 @@ class AuthRegisterView extends StatelessWidget {
                 SizedBox(height: AppSpacing.sectionGap.h + AppSpacing.xs.h),
 
                 SizedBox(height: AppSpacing.xxxl.h),
-                AppTextField(
-                  controller: controller.usernameController,
-                  textInputAction: TextInputAction.next,
-                  labelText: 'نام کاربری',
-                  hintText: 'یک نام برای حساب خود انتخاب کنید',
-                  prefixIcon: const Icon(Icons.person_add_outlined),
+                Form(
+                  key: controller.registerFormKey,
+                  child: Column(
+                    children: [
+                      AppTextField(
+                        controller: controller.usernameController,
+                        textInputAction: TextInputAction.next,
+                        labelText: 'نام کاربری',
+                        hintText: 'یک نام برای حساب خود انتخاب کنید',
+                        prefixIcon: const Icon(Icons.person_add_outlined),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'نام کاربری الزامی است';
+                          }
+                          if (value.trim().length < 3) {
+                            return 'نام کاربری باید حداقل ۳ کاراکتر باشد';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      SizedBox(height: AppSpacing.lg.h),
+                      Obx(() {
+                        return AppTextField(
+                          controller: controller.passwordController,
+                          obscureText: !controller.isPasswordVisible.value,
+                          textInputAction: TextInputAction.next,
+                          labelText: 'Master Password',
+                          hintText: 'رمز اصلی را وارد کنید',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.isPasswordVisible.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: controller.togglePasswordVisibility,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'رمز عبور الزامی است';
+                            }
+                            if (value.length < 8) {
+                              return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
+                            }
+                            return null;
+                          },
+                        );
+                      }),
+                      SizedBox(height: AppSpacing.lg.h),
+                      Obx(() {
+                        return AppTextField(
+                          controller: controller.confirmPasswordController,
+                          obscureText:
+                              !controller.isConfirmPasswordVisible.value,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) =>
+                              _onRegisterPressed(controller),
+                          labelText: 'تکرار Master Password',
+                          hintText: 'رمز اصلی را دوباره وارد کنید',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'رمز عبور الزامی است';
+                            }
+                            if (value.length < 8) {
+                              return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
+                            }
+                            return null;
+                          },
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.isConfirmPasswordVisible.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed:
+                                controller.toggleConfirmPasswordVisibility,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
 
-                SizedBox(height: AppSpacing.lg.h),
-                Obx(() {
-                  return AppTextField(
-                    controller: controller.passwordController,
-                    obscureText: !controller.isPasswordVisible.value,
-                    textInputAction: TextInputAction.next,
-                    labelText: 'Master Password',
-                    hintText: 'رمز اصلی را وارد کنید',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.isPasswordVisible.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: controller.togglePasswordVisibility,
-                    ),
-                  );
-                }),
-                SizedBox(height: AppSpacing.lg.h),
-                Obx(() {
-                  return AppTextField(
-                    controller: controller.confirmPasswordController,
-                    obscureText: !controller.isConfirmPasswordVisible.value,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _onRegisterPressed(controller),
-                    labelText: 'تکرار Master Password',
-                    hintText: 'رمز اصلی را دوباره وارد کنید',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.isConfirmPasswordVisible.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: controller.toggleConfirmPasswordVisibility,
-                    ),
-                  );
-                }),
-                Obx(() {
-                  if (controller.errorMessage.value.isEmpty) {
-                    return SizedBox(height: AppSpacing.md.h);
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      top: AppSpacing.md.h,
-                      bottom: AppSpacing.xs.h,
-                    ),
-                    child: Text(
-                      controller.errorMessage.value,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: colors.error,
-                      ),
-                    ),
-                  );
-                }),
                 SizedBox(height: AppSpacing.xxl.h),
                 Obx(() {
                   return AppButton(
@@ -138,7 +159,7 @@ class AuthRegisterView extends StatelessWidget {
   }
 
   void _onRegisterPressed(RegisterController controller) {
-    if (!controller.validate()) return;
+    if (!controller.registerFormKey.currentState!.validate()) return;
     controller.startWarningDialogCountdown();
     _showMasterPasswordWarningDialog(controller);
   }

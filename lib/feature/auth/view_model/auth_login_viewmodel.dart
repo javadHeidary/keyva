@@ -6,19 +6,13 @@ class LoginController extends GetxController {
   final isPasswordVisible = false.obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
+  final loginFormKey = GlobalKey<FormState>();
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
   Future<void> login() async {
-    final password = passwordController.text.trim();
-
-    if (password.isEmpty) {
-      errorMessage.value = 'لطفاً رمز اصلی را وارد کنید';
-      return;
-    }
-
     isLoading.value = true;
     errorMessage.value = '';
 

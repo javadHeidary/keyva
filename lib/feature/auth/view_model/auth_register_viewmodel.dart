@@ -5,6 +5,7 @@ class RegisterController extends GetxController {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final registerFormKey = GlobalKey<FormState>();
 
   final isPasswordVisible = false.obs;
   final isConfirmPasswordVisible = false.obs;
@@ -20,32 +21,6 @@ class RegisterController extends GetxController {
 
   void toggleConfirmPasswordVisibility() {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
-  }
-
-  bool validate() {
-    final username = usernameController.text.trim();
-    final password = passwordController.text;
-    final confirm = confirmPasswordController.text;
-
-    if (username.isEmpty) {
-      errorMessage.value = 'لطفاً نام کاربری را وارد کنید';
-      return false;
-    }
-    if (password.isEmpty) {
-      errorMessage.value = 'لطفاً رمز اصلی را وارد کنید';
-      return false;
-    }
-    if (password.length < 8) {
-      errorMessage.value = 'رمز اصلی باید حداقل ۸ کاراکتر باشد';
-      return false;
-    }
-    if (password != confirm) {
-      errorMessage.value = 'رمز اصلی و تکرار آن یکسان نیستند';
-      return false;
-    }
-
-    errorMessage.value = '';
-    return true;
   }
 
   void startWarningDialogCountdown() {
