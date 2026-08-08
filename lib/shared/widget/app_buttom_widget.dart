@@ -6,8 +6,8 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
-class AppButton extends StatelessWidget {
-  AppButton({
+class AppButtonWidget extends StatelessWidget {
+  AppButtonWidget({
     super.key,
     required this.title,
     required this.onPressed,

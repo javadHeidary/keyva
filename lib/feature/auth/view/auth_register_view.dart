@@ -58,7 +58,7 @@ class AuthRegisterView extends StatelessWidget {
                   key: controller.registerFormKey,
                   child: Column(
                     children: [
-                      AppTextField(
+                      AppTextFieldWidget(
                         controller: controller.usernameController,
                         textInputAction: TextInputAction.next,
                         labelText: 'نام کاربری',
@@ -77,7 +77,7 @@ class AuthRegisterView extends StatelessWidget {
 
                       SizedBox(height: AppSpacing.lg.h),
                       Obx(() {
-                        return AppTextField(
+                        return AppTextFieldWidget(
                           controller: controller.passwordController,
                           obscureText: !controller.isPasswordVisible.value,
                           textInputAction: TextInputAction.next,
@@ -105,7 +105,7 @@ class AuthRegisterView extends StatelessWidget {
                       }),
                       SizedBox(height: AppSpacing.lg.h),
                       Obx(() {
-                        return AppTextField(
+                        return AppTextFieldWidget(
                           controller: controller.confirmPasswordController,
                           obscureText:
                               !controller.isConfirmPasswordVisible.value,
@@ -141,7 +141,7 @@ class AuthRegisterView extends StatelessWidget {
 
                 SizedBox(height: AppSpacing.xxl.h),
                 Obx(() {
-                  return AppButton(
+                  return AppButtonWidget(
                     title: 'ثبت‌نام',
                     isLoading: controller.isLoading.value,
                     onPressed: () => _onRegisterPressed(controller),

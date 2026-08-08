@@ -6,6 +6,7 @@ import 'package:keyva/feature/auth/view/auth_register_view.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
 import 'package:keyva/feature/splash/view/splash_view.dart';
+import 'package:keyva/feature/widget_builder_test.dart';
 
 class AppRoutes {
   static const String themeDemo = '/theme-demo';
@@ -13,6 +14,7 @@ class AppRoutes {
   static const String onBoarding = '/on-boarding';
   static const String authLogin = '/authLogin';
   static const String authRegister = '/authRegister';
+  static const String widgetBuilderTest = '/widgetBuilderTest';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -32,5 +34,6 @@ class AppRoutes {
       page: () => const AuthRegisterView(),
       binding: AuthBindings(),
     ),
+    GetPage(name: widgetBuilderTest, page: () => const WidgetBuilderTest()),
   ];
 }

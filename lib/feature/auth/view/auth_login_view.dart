@@ -65,7 +65,7 @@ class AuthLoginView extends StatelessWidget {
                 Obx(() {
                   return Form(
                     key: controller.loginFormKey,
-                    child: AppTextField(
+                    child: AppTextFieldWidget(
                       controller: controller.passwordController,
                       obscureText: !controller.isPasswordVisible.value,
                       textInputAction: TextInputAction.done,
@@ -97,7 +97,7 @@ class AuthLoginView extends StatelessWidget {
                 SizedBox(height: 28.h),
 
                 Obx(() {
-                  return AppButton(
+                  return AppButtonWidget(
                     title: 'ورود',
                     isLoading: controller.isLoading.value,
                     onPressed: () {

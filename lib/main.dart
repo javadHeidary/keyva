@@ -16,11 +16,20 @@ class KeyvaApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Keyva',
+      // locale: const Locale('fa', 'IR'),
+      // fallbackLocale: const Locale('fa', 'IR'),
+      // supportedLocales: const [Locale('fa', 'IR'), Locale('en', 'US')],
+      // localizationsDelegates: const [
+      //   // GlobalMaterialLocalizations.delegate,
+      //   // GlobalWidgetsLocalizations.delegate,
+      //   // GlobalCupertinoLocalizations.delegate,
+      // ],
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.onBoarding,
+      initialRoute: AppRoutes.widgetBuilderTest,
       getPages: AppRoutes.routes,
+
       builder: (context, child) {
         AppResponsive.init(context);
         return child!;

@@ -12,4 +12,5 @@ class AppSizes {
 
   static const double appBarHeight = 56;
   static const double bottomNavHeight = 64;
+  static const double itemHeight = 64;
 }

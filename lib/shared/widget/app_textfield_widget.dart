@@ -5,8 +5,8 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
-class AppTextField extends StatefulWidget {
-  const AppTextField({
+class AppTextFieldWidget extends StatefulWidget {
+  const AppTextFieldWidget({
     super.key,
     this.controller,
     this.focusNode,
@@ -60,10 +60,10 @@ class AppTextField extends StatefulWidget {
   final TextAlign textAlign;
 
   @override
-  State<AppTextField> createState() => _AppTextFieldState();
+  State<AppTextFieldWidget> createState() => _AppTextFieldWidgetState();
 }
 
-class _AppTextFieldState extends State<AppTextField> {
+class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
   late FocusNode _focusNode;
   bool _isFocused = false;
 
@@ -75,7 +75,7 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 
   @override
-  void didUpdateWidget(covariant AppTextField oldWidget) {
+  void didUpdateWidget(covariant AppTextFieldWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.focusNode != oldWidget.focusNode) {
       _focusNode.removeListener(_handleFocusChange);
