@@ -3,6 +3,7 @@ import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
@@ -171,6 +172,31 @@ class WidgetBuilderTest extends StatelessWidget {
                   rightLabel: 'تاریخ انقضا',
                   rightValue: '۱۲/۲۸',
                   onRightCopy: () {},
+                ),
+                SizedBox(height: AppSpacing.md.h),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButtonWidget(
+                        title: 'ویرایش',
+                        icon: Icon(Icons.edit_rounded, size: 18.s),
+                        backgroundColor: context.colors.secondaryButton,
+                        foregroundColor: context.colors.textPrimary,
+                        onPressed: () {},
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.md.s),
+                    Expanded(
+                      child: AppButtonWidget(
+                        title: 'حذف',
+                        icon: Icon(Icons.delete_rounded, size: 18.s),
+                        backgroundColor: context.colors.secondaryButton,
+                        foregroundColor: context.colors.textPrimary,
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
