@@ -1,12 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
 class AuthRegisterView extends StatelessWidget {
@@ -120,24 +120,10 @@ class AuthRegisterView extends StatelessWidget {
                 }),
                 SizedBox(height: AppSpacing.xxl.h),
                 Obx(() {
-                  return SizedBox(
-                    width: double.infinity,
-                    height: AppSizes.primaryButtonHeight.h,
-                    child: ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : () => _onRegisterPressed(controller),
-                      child: controller.isLoading.value
-                          ? SizedBox(
-                              width: AppSizes.iconLg.s,
-                              height: AppSizes.iconLg.s,
-                              child: CircularProgressIndicator(
-                                strokeWidth: AppSpacing.xs / 2,
-                                color: colors.onPrimary,
-                              ),
-                            )
-                          : Text('ثبت‌نام', style: AppTypography.button),
-                    ),
+                  return AppButton(
+                    title: 'ثبت‌نام',
+                    isLoading: controller.isLoading.value,
+                    onPressed: () => _onRegisterPressed(controller),
                   );
                 }),
                 SizedBox(height: AppSpacing.sectionGap.h + AppSpacing.xs.h),

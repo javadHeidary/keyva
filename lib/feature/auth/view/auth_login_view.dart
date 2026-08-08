@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
 class AuthLoginView extends StatelessWidget {
@@ -100,23 +101,10 @@ class AuthLoginView extends StatelessWidget {
                 SizedBox(height: 28.h),
 
                 Obx(() {
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 52.h,
-                    child: ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.login,
-                      child: controller.isLoading.value
-                          ? SizedBox(
-                              width: 22.w,
-                              height: 22.h,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.s,
-                              ),
-                            )
-                          : Text('ورود', style: AppTypography.titleMedium),
-                    ),
+                  return AppButton(
+                    title: 'ورود',
+                    isLoading: controller.isLoading.value,
+                    onPressed: controller.login,
                   );
                 }),
                 SizedBox(height: 20.h),
