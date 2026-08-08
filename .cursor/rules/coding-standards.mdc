@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+description: General coding standards for the Keyva Flutter project
+
+# Coding Standards
+
+- Write comments only when they provide meaningful context.
+- Use English for all code comments.

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/gen/assets.gen.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/onboarding/model/onboadrding_model.dart';
 
 class OnboardingController extends GetxController {
+  final durationValue = 300.milliseconds;
   final pageController = PageController();
   final currentPage = 0.obs;
 
@@ -34,12 +36,9 @@ class OnboardingController extends GetxController {
 
   void nextPage() {
     if (currentPage.value < slides.length - 1) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      pageController.nextPage(duration: durationValue, curve: Curves.easeInOut);
     } else {
-      Get.offNamed('/create-account');
+      Get.offNamed(AppRoutes.authLogin);
     }
   }
 

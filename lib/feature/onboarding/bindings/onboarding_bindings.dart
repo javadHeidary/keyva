@@ -5,6 +5,8 @@ import 'package:keyva/feature/onboarding/viewmodel/onboarding_viewmodel.dart';
 class OnboardingBindings extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => OnboardingController());
+    if (!Get.isRegistered<OnboardingController>()) {
+      Get.lazyPut(() => OnboardingController());
+    }
   }
 }

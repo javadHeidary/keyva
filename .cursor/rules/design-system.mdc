@@ -1,7 +1,7 @@
 ---
 alwaysApply: true
 ---
-
+description: Design system rules for all Flutter UI implementation
 
 # Design System
 
@@ -207,3 +207,4 @@ Never:
 - call repositories directly from widgets.
 - write business logic inside build().
 
+# 

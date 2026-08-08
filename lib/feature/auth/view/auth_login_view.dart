@@ -1,24 +1,155 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
+import 'package:keyva/core/gen/assets.gen.dart';
+import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/theme/app_typography.dart';
+import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
+import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
 class AuthLoginView extends StatelessWidget {
   const AuthLoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<LoginController>();
+
     return Scaffold(
-      body: SafeArea(child: Column(children: [])),
-    );
-  }
-}
+      body: SafeArea(
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.s, vertical: 16.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: SvgPicture.asset(Assets.icons.trashTest.path),
+                ),
 
-class HeaderWidget extends StatelessWidget {
-  const HeaderWidget({super.key});
+                const Spacer(flex: 1),
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: [
-        
-      ],
+                Row(
+                  children: [
+                    Container(
+                      width: 65.s,
+                      height: 65.s,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        color: context.colors.strengthBarBg,
+                        borderRadius: BorderRadius.circular(18.s),
+                      ),
+                      child: Icon(Icons.lock),
+                    ),
+                    SizedBox(width: 20.h),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('ورود به کیوا', style: AppTypography.titleLarge),
+                        SizedBox(height: 8.h),
+                        Text(
+                          'رمز اکانت خود را وارد کنید',
+                          style: AppTypography.bodyLarge,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: 40.h),
+
+                Obx(() {
+                  return AppTextField(
+                    controller: controller.passwordController,
+                    obscureText: !controller.isPasswordVisible.value,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => controller.login(),
+                    labelText: 'رمز عبور',
+                    hintText: 'رمز را وارد کنید',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.isPasswordVisible.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: controller.togglePasswordVisibility,
+                    ),
+                  );
+                }),
+
+                Obx(() {
+                  if (controller.errorMessage.value.isEmpty) {
+                    return SizedBox(height: 8.h);
+                  }
+                  return Padding(
+                    padding: EdgeInsets.only(top: 8.s),
+                    child: Text(
+                      controller.errorMessage.value,
+                      style: TextStyle(
+                        color: context.colors.error,
+                        fontSize: 13.s,
+                      ),
+                    ),
+                  );
+                }),
+
+                SizedBox(height: 28.h),
+
+                Obx(() {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 52.h,
+                    child: ElevatedButton(
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : controller.login,
+                      child: controller.isLoading.value
+                          ? SizedBox(
+                              width: 22.w,
+                              height: 22.h,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.s,
+                              ),
+                            )
+                          : Text('ورود', style: AppTypography.titleMedium),
+                    ),
+                  );
+                }),
+                SizedBox(height: 20.h),
+                Align(
+                  alignment: Alignment.center,
+                  child: Text.rich(
+                    TextSpan(
+                      text: 'اکانتی ندارید؟ ',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: context.colors.textTertiary,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: 'ثبت‌نام',
+                          style: AppTypography.titleMedium.copyWith(
+                            color: context.colors.primary,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Get.toNamed(AppRoutes.authRegister);
+                            },
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const Spacer(flex: 2),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
