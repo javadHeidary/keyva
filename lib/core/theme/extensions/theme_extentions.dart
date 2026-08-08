@@ -41,6 +41,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color overlay;
 
   final Color secondaryButton;
+  final Color info;
+  final Color neutral;
 
   const AppColorsExtension({
     required this.primary,
@@ -66,6 +68,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.divider,
     required this.overlay,
     required this.secondaryButton,
+    required this.info,
+    required this.neutral,
   });
 
   static const light = AppColorsExtension(
@@ -92,6 +96,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     divider: AppColors.dividerLight,
     overlay: AppColors.overlayLight,
     secondaryButton: AppColors.secondaryButtonLight,
+    info: AppColors.infoLight,
+    neutral: AppColors.neutralLight,
   );
 
   static const dark = AppColorsExtension(
@@ -118,6 +124,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     divider: AppColors.dividerDark,
     overlay: AppColors.overlayDark,
     secondaryButton: AppColors.secondaryButtonDark,
+    info: AppColors.infoDark,
+    neutral: AppColors.neutralDark,
   );
 
   @override
@@ -145,6 +153,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? divider,
     Color? overlay,
     Color? secondaryButton,
+    Color? info,
+    Color? neutral,
   }) {
     return AppColorsExtension(
       primary: primary ?? this.primary,
@@ -170,6 +180,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       divider: divider ?? this.divider,
       overlay: overlay ?? this.overlay,
       secondaryButton: secondaryButton ?? this.secondaryButton,
+      info: info ?? this.info,
+      neutral: neutral ?? this.neutral,
     );
   }
 
@@ -201,6 +213,8 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       divider: Color.lerp(divider, other.divider, t)!,
       overlay: Color.lerp(overlay, other.overlay, t)!,
       secondaryButton: Color.lerp(secondaryButton, other.secondaryButton, t)!,
+      info: Color.lerp(info, other.info, t)!,
+      neutral: Color.lerp(neutral, other.neutral, t)!,
     );
   }
 }
