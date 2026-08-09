@@ -3,12 +3,20 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
+class AppHeaderTrailingAction {
+  const AppHeaderTrailingAction({required this.child, this.onTap});
+
+  final Widget child;
+  final VoidCallback? onTap;
+}
+
 class AppHeaderWidget extends StatelessWidget {
   const AppHeaderWidget({
     super.key,
     this.title,
     this.leading,
     this.trailing,
+    this.trailingActions,
     this.onLeadingTap,
     this.onTrailingTap,
     this.titleAlign = TextAlign.center,
@@ -21,6 +29,8 @@ class AppHeaderWidget extends StatelessWidget {
   final Widget? leading;
 
   final Widget? trailing;
+
+  final List<AppHeaderTrailingAction>? trailingActions;
 
   final VoidCallback? onLeadingTap;
   final VoidCallback? onTrailingTap;
@@ -66,7 +76,20 @@ class AppHeaderWidget extends StatelessWidget {
                 : const SizedBox.shrink(),
           ),
 
-          if (trailing != null)
+          if (trailingActions != null && trailingActions!.isNotEmpty)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < trailingActions!.length; i++) ...[
+                  if (i > 0) SizedBox(width: 4.s),
+                  _HeaderIconButton(
+                    onTap: trailingActions![i].onTap,
+                    child: trailingActions![i].child,
+                  ),
+                ],
+              ],
+            )
+          else if (trailing != null)
             _HeaderIconButton(onTap: onTrailingTap, child: trailing!)
           else
             SizedBox(width: 40.s),

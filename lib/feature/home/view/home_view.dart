@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/gen/assets.gen.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
@@ -180,6 +181,7 @@ class _TypeListTile extends GetView<HomeController> {
           ),
         ),
         leadingIcon: Icon(Icons.chevron_right_rounded, size: AppSizes.iconMd.s),
+        onTap: () => Get.toNamed(AppRoutes.typeList, arguments: summary.type),
         onLeadingPressed: () => controller.onTypeMoreActions(summary.type),
       ),
     );
@@ -278,10 +280,7 @@ class _ItemsSection extends GetView<HomeController> {
     final colors = context.colors;
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm.s,
-        vertical: AppSpacing.lg.s,
-      ),
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.lg.s),
       child: Obx(() {
         final items = controller.visibleItems;
         if (items.isEmpty) {
@@ -396,10 +395,7 @@ class _TrashSection extends GetView<HomeController> {
     final colors = context.colors;
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm.s,
-        vertical: AppSpacing.lg.s,
-      ),
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.lg.s),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

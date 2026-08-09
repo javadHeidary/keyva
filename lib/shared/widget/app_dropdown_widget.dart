@@ -21,18 +21,28 @@ class AppDropdownWidget<T> extends StatelessWidget {
     required this.onChanged,
     this.value,
     this.hint,
+    this.leadingIcon,
     this.trailingIcon,
     this.height,
     this.padding,
+    this.labelText,
+    this.labelAlwaysVisible = false,
+    this.fillColor,
+    this.useOutlinedStyle = false,
   });
 
   final List<AppDropdownItem<T>> items;
   final ValueChanged<T?> onChanged;
   final T? value;
   final String? hint;
+  final Widget? leadingIcon;
   final Widget? trailingIcon;
   final double? height;
   final EdgeInsetsGeometry? padding;
+  final String? labelText;
+  final bool labelAlwaysVisible;
+  final Color? fillColor;
+  final bool useOutlinedStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +53,7 @@ class AppDropdownWidget<T> extends StatelessWidget {
       orElse: () => null,
     );
 
-    return SizedBox(
+    final dropdown = SizedBox(
       height: height ?? AppSizes.itemHeight.s,
       child: PopupMenuButton<T>(
         onSelected: onChanged,
@@ -83,16 +93,14 @@ class AppDropdownWidget<T> extends StatelessWidget {
               ),
           child: Row(
             children: [
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: colors.textSecondary,
-                size: AppSizes.iconMd.s,
-              ),
-              SizedBox(width: AppSpacing.md.s),
+              if (leadingIcon != null) ...[
+                leadingIcon!,
+                SizedBox(width: AppSpacing.md.s),
+              ],
               Expanded(
                 child: Text(
                   selectedItem?.label ?? hint ?? '',
-                  style: AppTypography.titleMedium.copyWith(
+                  style: AppTypography.bodyMedium.copyWith(
                     color: selectedItem != null
                         ? colors.textPrimary
                         : colors.textTertiary,
@@ -105,10 +113,48 @@ class AppDropdownWidget<T> extends StatelessWidget {
                 SizedBox(width: AppSpacing.md.s),
                 trailingIcon!,
               ],
+              SizedBox(width: AppSpacing.sm.s),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: colors.textSecondary,
+                size: AppSizes.iconMd.s,
+              ),
             ],
           ),
         ),
       ),
+    );
+
+    Widget body = dropdown;
+    if (useOutlinedStyle) {
+      body = DecoratedBox(
+        decoration: BoxDecoration(
+          color: fillColor ?? colors.card,
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          border: Border.all(color: colors.border, width: 1),
+        ),
+        child: dropdown,
+      );
+    }
+
+    if (!labelAlwaysVisible || labelText == null) {
+      return body;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          labelText!,
+          style: AppTypography.labelLarge.copyWith(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        body,
+      ],
     );
   }
 }

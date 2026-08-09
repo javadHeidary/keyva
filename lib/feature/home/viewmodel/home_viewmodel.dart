@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 
 class HomeController extends GetxController {
@@ -71,6 +72,62 @@ class HomeController extends GetxController {
       subtitle: 'یادداشت پشتیبان',
       categoryId: 'personal',
     ),
+    const VaultListItem(
+      id: '4',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '5',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '6',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '7',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '4',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '5',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '6',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
+    const VaultListItem(
+      id: '7',
+      type: VaultItemType.secureNote,
+      title: 'کدهای بازیابی',
+      subtitle: 'یادداشت پشتیبان',
+      categoryId: 'personal',
+    ),
   ].obs;
 
   List<VaultTypeSummary> get typeSummaries {
@@ -105,6 +162,26 @@ class HomeController extends GetxController {
           item.subtitle.toLowerCase().contains(query);
     }).toList();
   }
+
+  List<VaultCategory> get selectableCategories =>
+      categories.where((category) => category.id != 'all').toList();
+
+  void syncLoginItems(List<VaultListItem> loginItems) {
+    vaultItems.removeWhere((item) => item.type == VaultItemType.login);
+    vaultItems.addAll(loginItems);
+  }
+
+  void incrementTrashCount() {
+    trashItemCount.value++;
+  }
+
+  List<VaultListItem> itemsForType(VaultItemType type) {
+    return vaultItems.where((item) => item.type == type).toList();
+  }
+
+  void onTypeListSearchTap() {}
+
+  void onTypeListMenuTap() {}
 
   @override
   void onInit() {
@@ -142,7 +219,11 @@ class HomeController extends GetxController {
 
   void onTypeMoreActions(VaultItemType type) {}
 
-  void onItemTap(VaultListItem item) {}
+  void onItemTap(VaultListItem item) {
+    if (item.type == VaultItemType.login) {
+      Get.toNamed(AppRoutes.loginDetails, arguments: item.id);
+    }
+  }
 
   void onItemMoreAction(VaultListItem item, String action) {}
 
@@ -151,6 +232,17 @@ class HomeController extends GetxController {
   void onCreateFirstItem() {}
 
   void onAddItem() {}
+
+  void onAddItemForType(VaultItemType type) {
+    switch (type) {
+      case VaultItemType.login:
+        Get.toNamed(AppRoutes.loginCreate);
+        break;
+      case VaultItemType.bankCard:
+      case VaultItemType.secureNote:
+        break;
+    }
+  }
 
   @override
   void onClose() {

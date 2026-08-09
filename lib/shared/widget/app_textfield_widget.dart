@@ -32,6 +32,8 @@ class AppTextFieldWidget extends StatefulWidget {
     this.inputFormatters,
     this.autovalidateMode,
     this.textAlign = TextAlign.start,
+    this.labelAlwaysVisible = false,
+    this.fillColor,
   });
 
   final TextEditingController? controller;
@@ -58,6 +60,8 @@ class AppTextFieldWidget extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final AutovalidateMode? autovalidateMode;
   final TextAlign textAlign;
+  final bool labelAlwaysVisible;
+  final Color? fillColor;
 
   @override
   State<AppTextFieldWidget> createState() => _AppTextFieldWidgetState();
@@ -105,11 +109,12 @@ class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
     final bool hasError =
         widget.errorText != null && widget.errorText!.isNotEmpty;
 
-    final Color fillColor = !widget.enabled
-        ? colors.disabled
-        : _isFocused
-        ? colors.inputFocus
-        : colors.input;
+    final Color fillColor = widget.fillColor ??
+        (!widget.enabled
+            ? colors.disabled
+            : _isFocused
+            ? colors.inputFocus
+            : colors.input);
 
     final Color borderColor = hasError
         ? colors.borderError
@@ -119,7 +124,7 @@ class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
 
     final double borderWidth = (_isFocused || hasError) ? 1.5 : 1.0;
 
-    return TextFormField(
+    final field = TextFormField(
       controller: widget.controller,
       focusNode: _focusNode,
       obscureText: widget.obscureText,
@@ -144,9 +149,12 @@ class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
       ),
       cursorColor: colors.primary,
       decoration: InputDecoration(
-        labelText: widget.labelText,
+        labelText: widget.labelAlwaysVisible ? null : widget.labelText,
         hintText: widget.hintText,
         errorText: widget.errorText,
+        floatingLabelBehavior: widget.labelAlwaysVisible
+            ? FloatingLabelBehavior.never
+            : null,
         prefixIcon: widget.prefixIcon != null
             ? Padding(
                 padding: const EdgeInsetsDirectional.only(
@@ -171,7 +179,7 @@ class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
         fillColor: fillColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
-          vertical: AppSpacing.lg, // ← این خط مهمه
+          vertical: AppSpacing.lg,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
@@ -212,6 +220,26 @@ class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
         ),
         errorStyle: AppTypography.bodySmall.copyWith(color: colors.error),
       ),
+    );
+
+    if (!widget.labelAlwaysVisible || widget.labelText == null) {
+      return field;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          widget.labelText!,
+          style: AppTypography.labelLarge.copyWith(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        field,
+      ],
     );
   }
 }
