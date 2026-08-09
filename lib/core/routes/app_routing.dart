@@ -17,6 +17,10 @@ import 'package:keyva/feature/type/bank_card/bindings/bank_card_bindings.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_create_view.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_details_view.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_edit_view.dart';
+import 'package:keyva/feature/type/note/bindings/note_bindings.dart';
+import 'package:keyva/feature/type/note/view/note_create_view.dart';
+import 'package:keyva/feature/type/note/view/note_details_view.dart';
+import 'package:keyva/feature/type/note/view/note_edit_view.dart';
 import 'package:keyva/feature/widget_builder_test.dart';
 
 class AppRoutes {
@@ -34,6 +38,9 @@ class AppRoutes {
   static const String bankCardCreate = '/bank-card/create';
   static const String bankCardEdit = '/bank-card/edit';
   static const String bankCardDetails = '/bank-card/details';
+  static const String noteCreate = '/note/create';
+  static const String noteEdit = '/note/edit';
+  static const String noteDetails = '/note/details';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -89,6 +96,21 @@ class AppRoutes {
       name: bankCardDetails,
       page: () => const BankCardDetailsView(),
       binding: BankCardDetailsBindings(),
+    ),
+    GetPage(
+      name: noteCreate,
+      page: () => const NoteCreateView(),
+      binding: NoteCreateBindings(),
+    ),
+    GetPage(
+      name: noteEdit,
+      page: () => const NoteEditView(),
+      binding: NoteEditBindings(),
+    ),
+    GetPage(
+      name: noteDetails,
+      page: () => const NoteDetailsView(),
+      binding: NoteDetailsBindings(),
     ),
   ];
 }
