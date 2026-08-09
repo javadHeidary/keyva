@@ -9,12 +9,11 @@ import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
-class AuthRegisterView extends StatelessWidget {
+class AuthRegisterView extends GetView<RegisterController> {
   const AuthRegisterView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<RegisterController>();
     final colors = context.colors;
 
     return Scaffold(
@@ -22,10 +21,13 @@ class AuthRegisterView extends StatelessWidget {
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.s),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.pagePadding.s,
+              vertical: AppSpacing.pagePadding.h,
+            ),
             child: Column(
               children: [
-                SizedBox(height: 24.h),
+                SizedBox(height: AppSpacing.sectionGap.h),
                 Container(
                   width: 72.s,
                   height: 72.s,

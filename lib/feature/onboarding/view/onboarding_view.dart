@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/theme/app_radius.dart';
+import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/onboarding/viewmodel/onboarding_viewmodel.dart';
 
-class OnboardingView extends StatelessWidget {
+class OnboardingView extends GetView<OnboardingController> {
   const OnboardingView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(OnboardingController());
-
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -22,6 +22,7 @@ class OnboardingView extends StatelessWidget {
                 controller: controller.pageController,
                 onPageChanged: controller.onPageChanged,
                 itemCount: controller.slides.length,
+
                 itemBuilder: (context, index) {
                   final slide = controller.slides[index];
                   return Padding(
@@ -29,9 +30,8 @@ class OnboardingView extends StatelessWidget {
                     child: Directionality(
                       textDirection: TextDirection.rtl,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 40.s),
+                          SizedBox(height: AppSpacing.xxl.h),
 
                           Expanded(
                             flex: 3,
@@ -89,7 +89,7 @@ class OnboardingView extends StatelessWidget {
                             color: isActive
                                 ? context.colors.primary
                                 : context.colors.strengthBarBg,
-                            borderRadius: BorderRadius.circular(4.s),
+                            borderRadius: BorderRadius.circular(AppRadius.ssm),
                           ),
                         );
                       }),

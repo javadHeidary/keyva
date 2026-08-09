@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
+import 'package:keyva/shared/widget/app_dialog_widget.dart';
 import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
@@ -224,7 +225,12 @@ class WidgetBuilderTest extends StatelessWidget {
                     Assets.images.logoTest.path,
                     fit: BoxFit.contain,
                   ),
-                  onTap: () {},
+                  onTap: () => AppDialogWidget.show(
+                    context,
+                    type: AppDialogType.success,
+                    title: 'عملیات موفق',
+                    description: 'اطلاعات با موفقیت ذخیره شد.',
+                  ),
                 ),
                 SizedBox(height: AppSpacing.md.h),
                 UserInfoWidget(

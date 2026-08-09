@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
@@ -11,19 +12,20 @@ import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
-class AuthLoginView extends StatelessWidget {
+class AuthLoginView extends GetView<LoginController> {
   const AuthLoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<LoginController>();
-
     return Scaffold(
       body: SafeArea(
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.s, vertical: 16.h),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.pagePadding.s,
+              vertical: AppSpacing.pagePadding.h,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -46,12 +48,12 @@ class AuthLoginView extends StatelessWidget {
                       ),
                       child: Icon(Icons.lock),
                     ),
-                    SizedBox(width: 20.h),
+                    SizedBox(width: AppSpacing.xl.h),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('ورود به کیوا', style: AppTypography.titleLarge),
-                        SizedBox(height: 8.h),
+                        SizedBox(height: AppSpacing.sm.h),
                         Text(
                           'رمز اکانت خود را وارد کنید',
                           style: AppTypography.bodyLarge,
@@ -60,7 +62,7 @@ class AuthLoginView extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 40.h),
+                SizedBox(height: AppSpacing.xxl.h),
 
                 Obx(() {
                   return Form(
@@ -94,7 +96,7 @@ class AuthLoginView extends StatelessWidget {
                   );
                 }),
 
-                SizedBox(height: 28.h),
+                SizedBox(height: AppSpacing.sectionGap.h),
 
                 Obx(() {
                   return AppButtonWidget(
@@ -107,7 +109,7 @@ class AuthLoginView extends StatelessWidget {
                     },
                   );
                 }),
-                SizedBox(height: 20.h),
+                SizedBox(height: AppSpacing.sectionGap.h),
                 Align(
                   alignment: Alignment.center,
                   child: Text.rich(
