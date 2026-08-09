@@ -207,4 +207,10 @@ Never:
 - call repositories directly from widgets.
 - write business logic inside build().
 
-# 
+## Custom Widgets
+
+The project contains reusable custom UI widgets under:
+
+lib/shared/widgets/
+
+These widgets are the project's standard UI building blocks.

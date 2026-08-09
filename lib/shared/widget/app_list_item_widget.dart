@@ -31,7 +31,7 @@ class AppListItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
       child: SizedBox(
         height: height ?? AppSizes.itemHeight.h,

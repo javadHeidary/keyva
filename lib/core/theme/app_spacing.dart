@@ -10,6 +10,7 @@ class AppSpacing {
   static const double xxxl = 32;
   static const double huge = 40;
   static const double massive = 48;
+  static const double hugePlus = 64;
 
   static const double pagePadding = 16;
   static const double cardPadding = 16;

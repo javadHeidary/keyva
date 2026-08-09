@@ -3,6 +3,8 @@ import 'package:keyva/core/theme/design_system_example.dart';
 import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
+import 'package:keyva/feature/home/bindings/home_bindings.dart';
+import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
 import 'package:keyva/feature/splash/view/splash_view.dart';
@@ -15,6 +17,7 @@ class AppRoutes {
   static const String authLogin = '/authLogin';
   static const String authRegister = '/authRegister';
   static const String widgetBuilderTest = '/widgetBuilderTest';
+  static const String home = '/home';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -35,5 +38,6 @@ class AppRoutes {
       binding: AuthBindings(),
     ),
     GetPage(name: widgetBuilderTest, page: () => const WidgetBuilderTest()),
+    GetPage(name: home, page: () => const HomeView(), binding: HomeBindings()),
   ];
 }
