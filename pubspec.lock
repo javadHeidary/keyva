@@ -357,6 +357,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  iranian_banks:
+    dependency: "direct main"
+    description:
+      name: iranian_banks
+      sha256: "5de06912b694d056c6b465704f04fa020f76ed5646e0b1c20e041758d81c5e59"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   json_annotation:
     dependency: transitive
     description:
@@ -485,6 +493,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  persian_number_utility:
+    dependency: "direct main"
+    description:
+      name: persian_number_utility
+      sha256: a4b54a9236f0a36b5955611bb4ad7d58b6f67cec57b09948f45e449cf9937aa1
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.6"
   petitparser:
     dependency: transitive
     description:

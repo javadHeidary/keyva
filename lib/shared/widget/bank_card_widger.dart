@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keyva/core/theme/app_radius.dart';
+import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -79,48 +80,50 @@ class BankCardWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (leftLogo != null)
-                      SizedBox(width: 36.s, height: 28.s, child: leftLogo)
-                    else
-                      Container(
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLogoSlot(
+                        logo: leftLogo,
                         width: 36.s,
                         height: 28.s,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E3A8A),
-                          borderRadius: BorderRadius.circular(4.s),
+                        icon: Icons.credit_card_rounded,
+                        iconColor: txt,
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              bankName,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.titleSmall.copyWith(
+                                color: txt,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            SizedBox(height: 2.s),
+                            Text(
+                              cardType,
+                              textAlign: TextAlign.center,
+                              style: AppTypography.labelSmall.copyWith(
+                                color: txt.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Text(
-                            bankName,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.titleSmall.copyWith(
-                              color: txt,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                          SizedBox(height: 2.s),
-                          Text(
-                            cardType,
-                            textAlign: TextAlign.center,
-                            style: AppTypography.labelSmall.copyWith(
-                              color: txt.withValues(alpha: 0.85),
-                            ),
-                          ),
-                        ],
+                      _buildLogoSlot(
+                        logo: rightLogo,
+                        width: 36.s,
+                        height: 32.s,
+                        icon: Icons.account_balance_rounded,
+                        iconColor: txt,
                       ),
-                    ),
-                    if (rightLogo != null)
-                      SizedBox(width: 36.s, height: 32.s, child: rightLogo)
-                    else
-                      SizedBox(width: 36.s),
-                  ],
+                    ],
+                  ),
                 ),
                 const Spacer(flex: 2),
                 Text(
@@ -156,6 +159,35 @@ class BankCardWidget extends StatelessWidget {
                 SizedBox(height: AppSpacing.sm.s),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoSlot({
+    required Widget? logo,
+    required double width,
+    required double height,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    if (logo != null) {
+      return SizedBox(width: width, height: height, child: logo);
+    }
+    return SizedBox(
+      width: width,
+      height: height,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: iconColor.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppRadius.ssm.s),
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            size: AppSizes.iconMd.s,
+            color: iconColor.withValues(alpha: 0.92),
           ),
         ),
       ),

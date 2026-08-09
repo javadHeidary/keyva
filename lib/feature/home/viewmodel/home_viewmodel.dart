@@ -171,6 +171,11 @@ class HomeController extends GetxController {
     vaultItems.addAll(loginItems);
   }
 
+  void syncBankCardItems(List<VaultListItem> bankCardItems) {
+    vaultItems.removeWhere((item) => item.type == VaultItemType.bankCard);
+    vaultItems.addAll(bankCardItems);
+  }
+
   void incrementTrashCount() {
     trashItemCount.value++;
   }
@@ -222,6 +227,10 @@ class HomeController extends GetxController {
   void onItemTap(VaultListItem item) {
     if (item.type == VaultItemType.login) {
       Get.toNamed(AppRoutes.loginDetails, arguments: item.id);
+      return;
+    }
+    if (item.type == VaultItemType.bankCard) {
+      Get.toNamed(AppRoutes.bankCardDetails, arguments: item.id);
     }
   }
 
@@ -239,6 +248,8 @@ class HomeController extends GetxController {
         Get.toNamed(AppRoutes.loginCreate);
         break;
       case VaultItemType.bankCard:
+        Get.toNamed(AppRoutes.bankCardCreate);
+        break;
       case VaultItemType.secureNote:
         break;
     }

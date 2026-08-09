@@ -13,6 +13,10 @@ import 'package:keyva/feature/type/login/bindings/login_bindings.dart';
 import 'package:keyva/feature/type/login/view/login_create_view.dart';
 import 'package:keyva/feature/type/login/view/login_details_view.dart';
 import 'package:keyva/feature/type/login/view/login_edit_view.dart';
+import 'package:keyva/feature/type/bank_card/bindings/bank_card_bindings.dart';
+import 'package:keyva/feature/type/bank_card/view/bank_card_create_view.dart';
+import 'package:keyva/feature/type/bank_card/view/bank_card_details_view.dart';
+import 'package:keyva/feature/type/bank_card/view/bank_card_edit_view.dart';
 import 'package:keyva/feature/widget_builder_test.dart';
 
 class AppRoutes {
@@ -27,6 +31,9 @@ class AppRoutes {
   static const String loginCreate = '/login/create';
   static const String loginEdit = '/login/edit';
   static const String loginDetails = '/login/details';
+  static const String bankCardCreate = '/bank-card/create';
+  static const String bankCardEdit = '/bank-card/edit';
+  static const String bankCardDetails = '/bank-card/details';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -67,6 +74,21 @@ class AppRoutes {
       name: loginDetails,
       page: () => const LoginDetailsView(),
       binding: LoginDetailsBindings(),
+    ),
+    GetPage(
+      name: bankCardCreate,
+      page: () => const BankCardCreateView(),
+      binding: BankCardCreateBindings(),
+    ),
+    GetPage(
+      name: bankCardEdit,
+      page: () => const BankCardEditView(),
+      binding: BankCardEditBindings(),
+    ),
+    GetPage(
+      name: bankCardDetails,
+      page: () => const BankCardDetailsView(),
+      binding: BankCardDetailsBindings(),
     ),
   ];
 }
