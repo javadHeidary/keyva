@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/view/category_list_view.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/password_generator/view/password_generator_view.dart';
@@ -41,6 +42,7 @@ class MainShellView extends GetView<MainShellController> {
 
       return Scaffold(
         extendBody: true,
+        backgroundColor: context.colors.pageBackground,
         body: Stack(
           children: [
             IndexedStack(

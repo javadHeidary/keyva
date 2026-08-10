@@ -12,9 +12,8 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
-import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
-import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
+import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_search_header_widger.dart';
 
@@ -23,24 +22,12 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return Scaffold(
       key: controller.scaffoldKey,
-      endDrawer: const _HomeNavigationDrawer(),
-      floatingActionButton: Obx(() {
-        if (controller.vaultItems.isEmpty) return const SizedBox.shrink();
-        return FloatingActionButton.small(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.medium),
-          ),
-          heroTag: 'home_vault_fab',
-          onPressed: controller.onAddItem,
-          backgroundColor: colors.primary,
-          foregroundColor: colors.onPrimary,
-          child: Icon(Icons.add_rounded, size: AppSizes.iconLg.s),
-        );
-      }),
+      floatingActionButton: AppFloatingActionButton(
+        onPressed: controller.onCreateFirstItem,
+        icon: Icons.add_rounded,
+      ),
       body: SafeArea(
         child: Obx(() {
           if (controller.vaultItems.isEmpty) {
@@ -58,21 +45,25 @@ class _VaultContent extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: AppSpacing.lg.s, right: AppSpacing.lg.s),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl.h)),
-          SliverToBoxAdapter(child: _AccountHeader()),
-          SliverToBoxAdapter(child: _TypesSection()),
-          SliverToBoxAdapter(child: _CategoriesSection()),
-          SliverToBoxAdapter(child: _ItemsSection()),
-          SliverToBoxAdapter(child: _TrashSection()),
-          SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg.h)),
-        ],
-      ),
+    return CustomScrollView(
+      slivers: [
+        _homePaddedSliver(child: SizedBox(height: AppSpacing.xxl.h)),
+        _homePaddedSliver(child: _AccountHeader()),
+        _homePaddedSliver(child: _TypesSection()),
+        _homePaddedSliver(child: _CategoriesSection()),
+        _homePaddedSliver(child: _ItemsSection()),
+        _homePaddedSliver(child: _TrashSection()),
+        _homePaddedSliver(child: SizedBox(height: AppSpacing.hugePlus.h)),
+      ],
     );
   }
+}
+
+SliverPadding _homePaddedSliver({required Widget child}) {
+  return SliverPadding(
+    padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.s),
+    sliver: SliverToBoxAdapter(child: child),
+  );
 }
 
 class _AccountHeader extends GetView<HomeController> {
@@ -556,59 +547,6 @@ class _VaultEmptyState extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.xxl.h),
         ],
-      ),
-    );
-  }
-}
-
-class _HomeNavigationDrawer extends StatelessWidget {
-  const _HomeNavigationDrawer();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Drawer(
-      backgroundColor: colors.card,
-      child: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.all(AppSpacing.lg.s),
-          children: [
-            Text(
-              'منوی ناوبری',
-              style: AppTypography.titleMedium.copyWith(
-                color: colors.textPrimary,
-              ),
-            ),
-            SizedBox(height: AppSpacing.lg.h),
-            ListTile(
-              leading: Icon(Icons.settings_rounded, color: colors.primary),
-              title: Text(
-                'تنظیمات',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: colors.textPrimary,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                switchMainShellTab(MainShellTab.settings);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.password_rounded, color: colors.primary),
-              title: Text(
-                'تولید رمز عبور',
-                style: AppTypography.bodyMedium.copyWith(
-                  color: colors.textPrimary,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                switchMainShellTab(MainShellTab.passwordGenerator);
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

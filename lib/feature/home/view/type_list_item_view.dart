@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 
@@ -27,12 +28,11 @@ class TypeListItemView extends GetView<HomeController> {
 
     return Scaffold(
       backgroundColor: colors.pageBackground,
-      floatingActionButton: FloatingActionButton.small(
+      floatingActionButton: AppFloatingActionButton(
         onPressed: () => controller.onAddItemForType(vaultType),
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
-        child: Icon(Icons.add_rounded, size: AppSizes.iconLg.s),
+        icon: Icons.add_rounded,
       ),
+
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -104,6 +104,7 @@ class TypeListItemView extends GetView<HomeController> {
                 }),
               ),
             ),
+            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.hugePlus.h)),
           ],
         ),
       ),

@@ -16,8 +16,4 @@ class MainShellController extends GetxController {
     if (index < 0 || index >= MainShellTab.tabCount) return;
     currentIndex.value = index;
   }
-
-  void resetToHome() {
-    currentIndex.value = MainShellTab.home;
-  }
 }
