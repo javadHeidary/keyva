@@ -24,6 +24,8 @@ import 'package:keyva/feature/type/note/view/note_edit_view.dart';
 import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
 import 'package:keyva/feature/password_generator/view/password_generator_view.dart';
 import 'package:keyva/feature/password_generator/view/password_history_view.dart';
+import 'package:keyva/feature/settings/bindings/settings_bindings.dart';
+import 'package:keyva/feature/settings/view/settings_view.dart';
 import 'package:keyva/feature/widget_builder_test.dart';
 
 class AppRoutes {
@@ -46,6 +48,7 @@ class AppRoutes {
   static const String noteDetails = '/note/details';
   static const String passwordGenerator = '/password-generator';
   static const String passwordGeneratorHistory = '/password-generator/history';
+  static const String settings = '/settings';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -126,6 +129,11 @@ class AppRoutes {
       name: passwordGeneratorHistory,
       page: () => const PasswordHistoryView(),
       binding: PasswordHistoryBindings(),
+    ),
+    GetPage(
+      name: settings,
+      page: () => const SettingsView(),
+      binding: SettingsBindings(),
     ),
   ];
 }

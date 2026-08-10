@@ -93,19 +93,25 @@ class _AccountHeader extends GetView<HomeController> {
         SizedBox(width: AppSpacing.sm.s),
         Expanded(
           flex: 1,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                controller.accountOwnerName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.titleLarge.copyWith(
-                  color: colors.textPrimary,
+          child: GestureDetector(
+            onTap: controller.openSettings,
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Obx(
+                  () => Text(
+                    controller.accountOwnerName.value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.titleLarge.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Expanded(
@@ -567,6 +573,22 @@ class _HomeNavigationDrawer extends StatelessWidget {
               ),
             ),
             SizedBox(height: AppSpacing.lg.h),
+            ListTile(
+              leading: Icon(
+                Icons.settings_rounded,
+                color: colors.primary,
+              ),
+              title: Text(
+                'تنظیمات',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colors.textPrimary,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                Get.toNamed(AppRoutes.settings);
+              },
+            ),
             ListTile(
               leading: Icon(
                 Icons.password_rounded,

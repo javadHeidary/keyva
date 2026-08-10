@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
+import 'package:keyva/feature/settings/model/user_profile.dart';
 
 class HomeController extends GetxController {
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -11,8 +12,18 @@ class HomeController extends GetxController {
   final selectedCategoryId = Rxn<String>();
   final trashItemCount = 2.obs;
 
-  final accountOwnerName = 'علی رضایی';
+  final accountOwnerName = UserProfile.defaultName.obs;
+  final accountAvatarId = UserProfileAvatars.defaultId.obs;
   final accountGreeting = 'گاوصندوق شخصی شما';
+
+  void updateAccountProfile({required String name, required String avatarId}) {
+    accountOwnerName.value = name;
+    accountAvatarId.value = avatarId;
+  }
+
+  void openSettings() {
+    Get.toNamed(AppRoutes.settings);
+  }
 
   final categories = <VaultCategory>[
     const VaultCategory(id: 'all', name: 'همه'),

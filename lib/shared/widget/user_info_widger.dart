@@ -30,14 +30,14 @@ class UserInfoWidget extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: colors.card,
+        shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(AppRadius.medium),
-        boxShadow: context.shadows.card,
       ),
       child: Row(
         children: [
           // Avatar
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.extra),
+            borderRadius: BorderRadius.circular(AppRadius.medium),
             child: SizedBox(
               width: 48.s,
               height: 48.s,
