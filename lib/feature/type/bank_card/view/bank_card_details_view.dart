@@ -6,7 +6,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
-import 'package:keyva/feature/type/login/widget/login_section_card.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
@@ -73,7 +73,10 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         backgroundColor: bankInfo?.primaryColor,
                         textColor: bankInfo?.onPrimaryColor,
                         accentColor: bankInfo?.lighterColor,
-                        rightLogo: bankInfo?.logoBuilder(width: 36.s, height: 32.s),
+                        rightLogo: bankInfo?.logoBuilder(
+                          width: 36.s,
+                          height: 32.s,
+                        ),
                       ),
                       SizedBox(height: AppSpacing.sectionGap.h),
                       const AppTitleItemWidget(title: 'مشخصات کارت'),
@@ -113,7 +116,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         ),
                       ),
                       SizedBox(height: _cardGap.h),
-                      LoginSectionCard(
+                      AppSectionCardWidget(
                         padding: EdgeInsets.all(AppSpacing.md.s),
                         children: [
                           SplitDateInfoWidget(
@@ -122,7 +125,10 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                             rightLabel: 'تاریخ انقضا',
                             rightValue: card.expiry,
                             icon: bankInfo != null
-                                ? bankInfo.logoBuilder(width: 18.s, height: 18.s)
+                                ? bankInfo.logoBuilder(
+                                    width: 18.s,
+                                    height: 18.s,
+                                  )
                                 : Icon(
                                     Icons.account_balance_rounded,
                                     size: AppSizes.iconSm.s,

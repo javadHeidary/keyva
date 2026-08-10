@@ -58,7 +58,13 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-
+      sliderTheme: SliderThemeData(
+        trackHeight: 4,
+        activeTrackColor: Colors.transparent,
+        inactiveTrackColor: Colors.transparent,
+        thumbColor: AppColors.primaryLight,
+        overlayColor: AppColors.primaryLight.withValues(alpha: 0.12),
+      ),
       // Elevated Button (Primary)
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

@@ -6,11 +6,11 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
-import 'package:keyva/feature/type/login/widget/login_section_card.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/widget/note_body_text_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
 class NoteDetailsView extends GetView<NoteDetailsViewModel> {
   const NoteDetailsView({super.key});
@@ -79,7 +79,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                         ],
                       ),
                       SizedBox(height: AppSpacing.sm.h),
-                      LoginSectionCard(
+                      AppSectionCardWidget(
                         padding: EdgeInsets.all(AppSpacing.lg.s),
                         children: [
                           ConstrainedBox(
@@ -89,8 +89,8 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                             child: SingleChildScrollView(
                               child: NoteBodyTextWidget(
                                 text: note.body,
-                                onLinkTap: (type, value) =>
-                                    controller.openNoteLink(context, type, value),
+                                onLinkTap: (type, value) => controller
+                                    .openNoteLink(context, type, value),
                               ),
                             ),
                           ),

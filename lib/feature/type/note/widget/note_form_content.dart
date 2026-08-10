@@ -4,10 +4,10 @@ import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-import 'package:keyva/feature/type/login/widget/login_section_card.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_form_viewmodel.dart';
 import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
 class NoteFormContent extends StatelessWidget {
   const NoteFormContent({super.key, required this.controller});
@@ -23,7 +23,7 @@ class NoteFormContent extends StatelessWidget {
 
     return Form(
       key: controller.formKey,
-      child: LoginSectionCard(
+      child: AppSectionCardWidget(
         children: [
           Obx(() {
             final categories = controller.selectableCategories;

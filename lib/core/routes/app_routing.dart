@@ -21,6 +21,9 @@ import 'package:keyva/feature/type/note/bindings/note_bindings.dart';
 import 'package:keyva/feature/type/note/view/note_create_view.dart';
 import 'package:keyva/feature/type/note/view/note_details_view.dart';
 import 'package:keyva/feature/type/note/view/note_edit_view.dart';
+import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
+import 'package:keyva/feature/password_generator/view/password_generator_view.dart';
+import 'package:keyva/feature/password_generator/view/password_history_view.dart';
 import 'package:keyva/feature/widget_builder_test.dart';
 
 class AppRoutes {
@@ -41,6 +44,8 @@ class AppRoutes {
   static const String noteCreate = '/note/create';
   static const String noteEdit = '/note/edit';
   static const String noteDetails = '/note/details';
+  static const String passwordGenerator = '/password-generator';
+  static const String passwordGeneratorHistory = '/password-generator/history';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -111,6 +116,16 @@ class AppRoutes {
       name: noteDetails,
       page: () => const NoteDetailsView(),
       binding: NoteDetailsBindings(),
+    ),
+    GetPage(
+      name: passwordGenerator,
+      page: () => const PasswordGeneratorView(),
+      binding: PasswordGeneratorBindings(),
+    ),
+    GetPage(
+      name: passwordGeneratorHistory,
+      page: () => const PasswordHistoryView(),
+      binding: PasswordHistoryBindings(),
     ),
   ];
 }

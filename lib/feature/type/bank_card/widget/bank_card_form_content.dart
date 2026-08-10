@@ -7,10 +7,10 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_form_viewmodel.dart';
-import 'package:keyva/feature/type/login/widget/login_section_card.dart';
 import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
 class BankCardFormContent extends StatelessWidget {
   const BankCardFormContent({super.key, required this.controller});
@@ -29,7 +29,7 @@ class BankCardFormContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          LoginSectionCard(
+          AppSectionCardWidget(
             children: [
               Padding(
                 padding: EdgeInsets.only(
@@ -61,7 +61,7 @@ class BankCardFormContent extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.lg.h),
           AppTitleItemWidget(title: 'اطلاعات کارت'),
-          LoginSectionCard(
+          AppSectionCardWidget(
             children: [
               Obx(() {
                 final categories = controller.selectableCategories;
@@ -189,7 +189,7 @@ class BankCardFormContent extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.lg.h),
           AppTitleItemWidget(title: 'یادداشت'),
-          LoginSectionCard(
+          AppSectionCardWidget(
             children: [
               AppTextFieldWidget(
                 controller: controller.notesController,

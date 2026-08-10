@@ -78,7 +78,7 @@ class _AccountHeader extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         InkWell(
-          onTap: () {},
+          onTap: () => controller.scaffoldKey.currentState?.openEndDrawer(),
           borderRadius: BorderRadius.circular(AppRadius.extra),
           child: SizedBox(
             width: 40.s,
@@ -557,14 +557,33 @@ class _HomeNavigationDrawer extends StatelessWidget {
     return Drawer(
       backgroundColor: colors.card,
       child: SafeArea(
-        child: Padding(
+        child: ListView(
           padding: EdgeInsets.all(AppSpacing.lg.s),
-          child: Text(
-            'منوی ناوبری',
-            style: AppTypography.titleMedium.copyWith(
-              color: colors.textPrimary,
+          children: [
+            Text(
+              'منوی ناوبری',
+              style: AppTypography.titleMedium.copyWith(
+                color: colors.textPrimary,
+              ),
             ),
-          ),
+            SizedBox(height: AppSpacing.lg.h),
+            ListTile(
+              leading: Icon(
+                Icons.password_rounded,
+                color: colors.primary,
+              ),
+              title: Text(
+                'تولید رمز عبور',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colors.textPrimary,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                Get.toNamed(AppRoutes.passwordGenerator);
+              },
+            ),
+          ],
         ),
       ),
     );

@@ -4,8 +4,8 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
-class LoginSectionCard extends StatelessWidget {
-  const LoginSectionCard({super.key, required this.children, this.padding});
+class AppSectionCardWidget extends StatelessWidget {
+  const AppSectionCardWidget({super.key, required this.children, this.padding});
 
   final List<Widget> children;
   final EdgeInsetsGeometry? padding;

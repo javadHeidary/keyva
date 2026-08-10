@@ -10,7 +10,7 @@ import 'package:keyva/feature/type/login/util/login_password_util.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/login/widget/login_favicon_widget.dart';
-import 'package:keyva/feature/type/login/widget/login_section_card.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
@@ -154,7 +154,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                       ],
                       SizedBox(height: AppSpacing.sectionGap.h),
                       const AppTitleItemWidget(title: 'وضعیت امنیتی'),
-                      LoginSectionCard(
+                      AppSectionCardWidget(
                         padding: EdgeInsets.all(AppSpacing.lg.s),
                         children: [
                           Row(

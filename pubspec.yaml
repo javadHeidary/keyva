@@ -14,6 +14,7 @@ dependencies:
   flutter_localization: ^0.3.3
   flutter_svg: ^2.2.3
   get: ^4.7.3
+  shared_preferences: ^2.5.3
   url_launcher: ^6.3.1
   iranian_banks: ^2.0.0
   persian_number_utility: ^1.1.6

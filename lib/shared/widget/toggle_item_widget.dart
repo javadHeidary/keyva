@@ -13,6 +13,7 @@ class ToggleItemWidget extends StatelessWidget {
     required this.onChanged,
     this.icon,
     this.subtitle,
+    this.titleColor,
   });
 
   final String title;
@@ -20,6 +21,7 @@ class ToggleItemWidget extends StatelessWidget {
   final ValueChanged<bool> onChanged;
   final Widget? icon;
   final String? subtitle;
+  final Color? titleColor;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +51,7 @@ class ToggleItemWidget extends StatelessWidget {
                     Text(
                       title,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: colors.textPrimary,
+                        color: titleColor ?? colors.textPrimary,
                       ),
                     ),
                     if (subtitle != null) ...[

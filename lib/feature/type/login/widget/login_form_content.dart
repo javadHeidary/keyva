@@ -7,10 +7,10 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_form_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_favicon_widget.dart';
-import 'package:keyva/feature/type/login/widget/login_section_card.dart';
 import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/password_strengthbar_widget.dart';
 
 class LoginFormContent extends StatelessWidget {
@@ -31,7 +31,7 @@ class LoginFormContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppTitleItemWidget(title: 'مشخصات ورود'),
-          LoginSectionCard(
+          AppSectionCardWidget(
             children: [
               Padding(
                 padding: EdgeInsets.only(
@@ -96,7 +96,7 @@ class LoginFormContent extends StatelessWidget {
           ),
           SizedBox(height: AppSpacing.lg.h),
           AppTitleItemWidget(title: 'اطلاعات ورودی'),
-          LoginSectionCard(
+          AppSectionCardWidget(
             children: [
               Obx(() {
                 final fields = controller.websiteFields;
@@ -234,7 +234,7 @@ class LoginFormContent extends StatelessWidget {
             ],
           ),
           SizedBox(height: AppSpacing.lg.h),
-          LoginSectionCard(
+          AppSectionCardWidget(
             children: [
               AppTextFieldWidget(
                 controller: controller.notesController,
