@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/login/model/login_item_model.dart';
 import 'package:keyva/feature/type/login/util/login_password_util.dart';
@@ -33,14 +33,12 @@ class LoginDetailsViewModel extends GetxController {
   String get categoryLabel {
     final login = item;
     if (login == null) return 'بدون دسته‌بندی';
-    if (login.categoryId == null) return 'بدون دسته‌بندی';
-
-    if (!Get.isRegistered<HomeController>()) return 'بدون دسته‌بندی';
-    final categories = Get.find<HomeController>().categories;
-    for (final category in categories) {
-      if (category.id == login.categoryId) return category.name;
+    if (!Get.isRegistered<CategoryCatalogController>()) {
+      return 'بدون دسته‌بندی';
     }
-    return 'بدون دسته‌بندی';
+    return Get.find<CategoryCatalogController>().labelForCategoryId(
+      login.categoryId,
+    );
   }
 
   String get createdAtLabel {

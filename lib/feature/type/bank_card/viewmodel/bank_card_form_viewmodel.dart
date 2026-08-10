@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iranian_banks/iranian_banks.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
-import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
 
 abstract class BankCardFormViewModel extends GetxController {
@@ -25,8 +25,8 @@ abstract class BankCardFormViewModel extends GetxController {
   bool get showDeleteAction => false;
 
   List<VaultCategory> get selectableCategories {
-    if (!Get.isRegistered<HomeController>()) return const [];
-    return Get.find<HomeController>().selectableCategories;
+    if (!Get.isRegistered<CategoryCatalogController>()) return const [];
+    return Get.find<CategoryCatalogController>().vaultCategories;
   }
 
   void initFormFields({

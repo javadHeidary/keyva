@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
+import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 
@@ -25,13 +27,22 @@ class HomeController extends GetxController {
     Get.toNamed(AppRoutes.settings);
   }
 
-  final categories = <VaultCategory>[
-    const VaultCategory(id: 'all', name: 'همه'),
-    const VaultCategory(id: 'work', name: 'کاری'),
-    const VaultCategory(id: 'personal', name: 'شخصی'),
-    const VaultCategory(id: 'finance', name: 'مالی'),
-    const VaultCategory(id: 'network', name: 'شرکت'),
-  ];
+  CategoryCatalogController? get _catalog =>
+      Get.isRegistered<CategoryCatalogController>()
+      ? Get.find<CategoryCatalogController>()
+      : null;
+
+  List<VaultCategory> get filterCategories {
+    final catalog = _catalog;
+    final user = catalog?.vaultCategories ?? const <VaultCategory>[];
+    return [
+      const VaultCategory(
+        id: CategoryConstants.filterAllId,
+        name: CategoryConstants.filterAllName,
+      ),
+      ...user,
+    ];
+  }
 
   final vaultItems = <VaultListItem>[
     const VaultListItem(
@@ -164,7 +175,7 @@ class HomeController extends GetxController {
     return items.where((item) {
       if (type != null && item.type != type) return false;
       if (categoryId != null &&
-          categoryId != 'all' &&
+          categoryId != CategoryConstants.filterAllId &&
           item.categoryId != categoryId) {
         return false;
       }
@@ -173,9 +184,6 @@ class HomeController extends GetxController {
           item.subtitle.toLowerCase().contains(query);
     }).toList();
   }
-
-  List<VaultCategory> get selectableCategories =>
-      categories.where((category) => category.id != 'all').toList();
 
   void syncLoginItems(List<VaultListItem> loginItems) {
     vaultItems.removeWhere((item) => item.type == VaultItemType.login);
@@ -207,7 +215,7 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    selectedCategoryId.value = categories.first.id;
+    selectedCategoryId.value = CategoryConstants.filterAllId;
     searchController.addListener(_onSearchChanged);
   }
 

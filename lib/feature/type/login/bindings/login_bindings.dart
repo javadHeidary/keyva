@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_create_viewmodel.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
@@ -11,6 +12,7 @@ class LoginBindings extends Bindings {
   }
 
   static void _ensureStore() {
+    CategoryBindings().dependencies();
     if (!Get.isRegistered<LoginVaultStore>()) {
       Get.put(LoginVaultStore(), permanent: true);
     }

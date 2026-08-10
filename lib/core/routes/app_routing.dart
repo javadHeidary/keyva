@@ -3,8 +3,11 @@ import 'package:keyva/core/theme/design_system_example.dart';
 import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
+import 'package:keyva/feature/category/bindings/category_bindings.dart';
+import 'package:keyva/feature/category/view/category_create_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
-import 'package:keyva/feature/home/view/home_view.dart';
+import 'package:keyva/feature/shell/bindings/main_shell_bindings.dart';
+import 'package:keyva/feature/shell/view/main_shell_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
@@ -49,6 +52,8 @@ class AppRoutes {
   static const String passwordGenerator = '/password-generator';
   static const String passwordGeneratorHistory = '/password-generator/history';
   static const String settings = '/settings';
+  static const String categoryCreate = '/category/create';
+  static const String categoryEdit = '/category/edit';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
@@ -69,7 +74,11 @@ class AppRoutes {
       binding: AuthBindings(),
     ),
     GetPage(name: widgetBuilderTest, page: () => const WidgetBuilderTest()),
-    GetPage(name: home, page: () => const HomeView(), binding: HomeBindings()),
+    GetPage(
+      name: home,
+      page: () => const MainShellView(),
+      binding: MainShellBindings(),
+    ),
     GetPage(
       name: typeList,
       page: () => const TypeListItemView(),
@@ -134,6 +143,16 @@ class AppRoutes {
       name: settings,
       page: () => const SettingsView(),
       binding: SettingsBindings(),
+    ),
+    GetPage(
+      name: categoryCreate,
+      page: () => const CategoryCreateView(),
+      binding: CategoryCreateBindings(),
+    ),
+    GetPage(
+      name: categoryEdit,
+      page: () => const CategoryEditView(),
+      binding: CategoryEditBindings(),
     ),
   ];
 }

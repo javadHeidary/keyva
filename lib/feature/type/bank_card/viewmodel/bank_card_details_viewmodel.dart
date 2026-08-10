@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iranian_banks/iranian_banks.dart';
 import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
 import 'package:keyva/feature/type/bank_card/model/bank_card_item_model.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
@@ -33,14 +33,12 @@ class BankCardDetailsViewModel extends GetxController {
   String get categoryLabel {
     final card = item;
     if (card == null) return 'بدون دسته‌بندی';
-    if (card.categoryId == null) return 'بدون دسته‌بندی';
-
-    if (!Get.isRegistered<HomeController>()) return 'بدون دسته‌بندی';
-    final categories = Get.find<HomeController>().categories;
-    for (final category in categories) {
-      if (category.id == card.categoryId) return category.name;
+    if (!Get.isRegistered<CategoryCatalogController>()) {
+      return 'بدون دسته‌بندی';
     }
-    return 'بدون دسته‌بندی';
+    return Get.find<CategoryCatalogController>().labelForCategoryId(
+      card.categoryId,
+    );
   }
 
   String get createdAtLabel {

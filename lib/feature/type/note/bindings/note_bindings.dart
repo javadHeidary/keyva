@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/type/note/data/note_vault_store.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_create_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
@@ -11,6 +12,7 @@ class NoteBindings extends Bindings {
   }
 
   static void _ensureStore() {
+    CategoryBindings().dependencies();
     if (!Get.isRegistered<NoteVaultStore>()) {
       Get.put(NoteVaultStore(), permanent: true);
     }

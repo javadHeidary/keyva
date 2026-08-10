@@ -27,10 +27,15 @@ extension VaultItemTypeX on VaultItemType {
 }
 
 class VaultCategory {
-  const VaultCategory({required this.id, required this.name});
+  const VaultCategory({
+    required this.id,
+    required this.name,
+    this.iconId = 'folder',
+  });
 
   final String id;
   final String name;
+  final String iconId;
 }
 
 class VaultTypeSummary {

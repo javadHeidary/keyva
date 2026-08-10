@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_create_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
@@ -11,6 +12,7 @@ class BankCardBindings extends Bindings {
   }
 
   static void _ensureStore() {
+    CategoryBindings().dependencies();
     if (!Get.isRegistered<BankCardVaultStore>()) {
       Get.put(BankCardVaultStore(), permanent: true);
     }

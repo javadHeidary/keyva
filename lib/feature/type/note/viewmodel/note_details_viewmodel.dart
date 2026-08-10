@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/type/note/data/note_vault_store.dart';
 import 'package:keyva/feature/type/note/model/note_item_model.dart';
 import 'package:keyva/feature/type/note/util/note_util.dart';
@@ -31,14 +31,12 @@ class NoteDetailsViewModel extends GetxController {
   String get categoryLabel {
     final note = item;
     if (note == null) return 'بدون دسته‌بندی';
-    if (note.categoryId == null) return 'بدون دسته‌بندی';
-
-    if (!Get.isRegistered<HomeController>()) return 'بدون دسته‌بندی';
-    final categories = Get.find<HomeController>().categories;
-    for (final category in categories) {
-      if (category.id == note.categoryId) return category.name;
+    if (!Get.isRegistered<CategoryCatalogController>()) {
+      return 'بدون دسته‌بندی';
     }
-    return 'بدون دسته‌بندی';
+    return Get.find<CategoryCatalogController>().labelForCategoryId(
+      note.categoryId,
+    );
   }
 
   String get createdAtLabel {

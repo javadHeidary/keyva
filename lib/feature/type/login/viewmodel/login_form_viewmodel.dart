@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
-import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/login/model/login_website_field.dart';
 import 'package:keyva/feature/type/login/util/login_password_util.dart';
 
@@ -24,8 +24,8 @@ abstract class LoginFormViewModel extends GetxController {
   bool get showDeleteAction => false;
 
   List<VaultCategory> get selectableCategories {
-    if (!Get.isRegistered<HomeController>()) return const [];
-    return Get.find<HomeController>().selectableCategories;
+    if (!Get.isRegistered<CategoryCatalogController>()) return const [];
+    return Get.find<CategoryCatalogController>().vaultCategories;
   }
 
   void initFormFields({

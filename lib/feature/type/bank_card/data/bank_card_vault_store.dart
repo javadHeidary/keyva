@@ -53,6 +53,18 @@ class BankCardVaultStore extends GetxService {
     }
   }
 
+  void clearCategoryId(String categoryId) {
+    var changed = false;
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (item.categoryId == categoryId) {
+        items[i] = item.copyWith(clearCategoryId: true);
+        changed = true;
+      }
+    }
+    if (changed) _syncHomeVaultList();
+  }
+
   VaultListItem toVaultListItem(BankCardItem item) {
     return VaultListItem(
       id: item.id,

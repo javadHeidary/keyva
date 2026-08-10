@@ -10,6 +10,7 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
@@ -29,6 +30,7 @@ class HomeView extends GetView<HomeController> {
       floatingActionButton: Obx(() {
         if (controller.vaultItems.isEmpty) return const SizedBox.shrink();
         return FloatingActionButton(
+          heroTag: 'home_vault_fab',
           onPressed: controller.onAddItem,
           backgroundColor: colors.primary,
           foregroundColor: colors.onPrimary,
@@ -215,13 +217,15 @@ class _CategoriesSection extends GetView<HomeController> {
         SizedBox(
           height: 44.h,
           child: Obx(() {
+            final _ = Get.find<CategoryCatalogController>().categories.length;
             final selectedCategoryId = controller.selectedCategoryId.value;
+            final filterCategories = controller.filterCategories;
             return ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: controller.categories.length,
+              itemCount: filterCategories.length,
               separatorBuilder: (_, __) => SizedBox(width: AppSpacing.sm.s),
               itemBuilder: (context, index) {
-                final category = controller.categories[index];
+                final category = filterCategories[index];
                 final isSelected = selectedCategoryId == category.id;
                 return _CategoryChip(
                   label: category.name,
