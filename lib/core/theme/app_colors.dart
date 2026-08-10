@@ -24,7 +24,7 @@ class AppColors {
   static const Color elevatedDark = Color(0xFF242424);
 
   static const Color inputLight = Color(0xFFF0F0F0);
-  static const Color inputDark = Color(0xFF1A1A1A);
+  static const Color inputDark = Color.fromARGB(255, 44, 44, 44);
 
   static const Color inputFocusLight = Color(0xFFFFFFFF);
   static const Color inputFocusDark = Color(0xFF0F0F0F);

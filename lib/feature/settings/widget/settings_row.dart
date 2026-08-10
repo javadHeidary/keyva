@@ -165,7 +165,7 @@ class _SettingsCircleIcon extends StatelessWidget {
       width: 40.s,
       height: 40.s,
       decoration: BoxDecoration(
-        color: colors.input,
+        color: colors.backgroundInput,
         shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(AppRadius.medium),
       ),

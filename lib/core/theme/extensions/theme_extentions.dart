@@ -43,6 +43,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color secondaryButton;
   final Color info;
   final Color neutral;
+  final Color backgroundInput;
 
   const AppColorsExtension({
     required this.primary,
@@ -70,6 +71,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.secondaryButton,
     required this.info,
     required this.neutral,
+    required this.backgroundInput,
   });
 
   static const light = AppColorsExtension(
@@ -98,6 +100,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     secondaryButton: AppColors.secondaryButtonLight,
     info: AppColors.infoLight,
     neutral: AppColors.neutralLight,
+    backgroundInput: AppColors.neutralLight,
   );
 
   static const dark = AppColorsExtension(
@@ -126,6 +129,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     secondaryButton: AppColors.secondaryButtonDark,
     info: AppColors.infoDark,
     neutral: AppColors.neutralDark,
+    backgroundInput: AppColors.neutralLight,
   );
 
   @override
@@ -155,6 +159,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? secondaryButton,
     Color? info,
     Color? neutral,
+    Color? backgroundInput,
   }) {
     return AppColorsExtension(
       primary: primary ?? this.primary,
@@ -182,6 +187,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       secondaryButton: secondaryButton ?? this.secondaryButton,
       info: info ?? this.info,
       neutral: neutral ?? this.neutral,
+      backgroundInput: backgroundInput ?? this.backgroundInput,
     );
   }
 
@@ -215,6 +221,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       secondaryButton: Color.lerp(secondaryButton, other.secondaryButton, t)!,
       info: Color.lerp(info, other.info, t)!,
       neutral: Color.lerp(neutral, other.neutral, t)!,
+      backgroundInput: Color.lerp(backgroundInput, other.backgroundInput, t)!,
     );
   }
 }
