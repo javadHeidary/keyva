@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 
 class RegisterController extends GetxController {
   final usernameController = TextEditingController();
@@ -43,7 +44,7 @@ class RegisterController extends GetxController {
 
     try {
       await Future.delayed(const Duration(milliseconds: 900));
-      Get.offAllNamed('/vault');
+      Get.offAllNamed(AppRoutes.home);
     } catch (e) {
       errorMessage.value = 'خطا در ایجاد حساب. لطفاً دوباره تلاش کنید';
     } finally {

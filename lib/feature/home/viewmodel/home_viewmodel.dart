@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
+import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
@@ -24,7 +26,7 @@ class HomeController extends GetxController {
   }
 
   void openSettings() {
-    Get.toNamed(AppRoutes.settings);
+    switchMainShellTab(MainShellTab.settings);
   }
 
   CategoryCatalogController? get _catalog =>

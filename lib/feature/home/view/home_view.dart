@@ -9,9 +9,11 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
+import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
+import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_search_header_widger.dart';
@@ -25,11 +27,13 @@ class HomeView extends GetView<HomeController> {
 
     return Scaffold(
       key: controller.scaffoldKey,
-      backgroundColor: colors.pageBackground,
       endDrawer: const _HomeNavigationDrawer(),
       floatingActionButton: Obx(() {
         if (controller.vaultItems.isEmpty) return const SizedBox.shrink();
-        return FloatingActionButton(
+        return FloatingActionButton.small(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.medium),
+          ),
           heroTag: 'home_vault_fab',
           onPressed: controller.onAddItem,
           backgroundColor: colors.primary,
@@ -64,7 +68,7 @@ class _VaultContent extends GetView<HomeController> {
           SliverToBoxAdapter(child: _CategoriesSection()),
           SliverToBoxAdapter(child: _ItemsSection()),
           SliverToBoxAdapter(child: _TrashSection()),
-          SliverToBoxAdapter(child: SizedBox(height: AppSpacing.hugePlus.h)),
+          SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg.h)),
         ],
       ),
     );
@@ -578,10 +582,7 @@ class _HomeNavigationDrawer extends StatelessWidget {
             ),
             SizedBox(height: AppSpacing.lg.h),
             ListTile(
-              leading: Icon(
-                Icons.settings_rounded,
-                color: colors.primary,
-              ),
+              leading: Icon(Icons.settings_rounded, color: colors.primary),
               title: Text(
                 'تنظیمات',
                 style: AppTypography.bodyMedium.copyWith(
@@ -590,14 +591,11 @@ class _HomeNavigationDrawer extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                Get.toNamed(AppRoutes.settings);
+                switchMainShellTab(MainShellTab.settings);
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.password_rounded,
-                color: colors.primary,
-              ),
+              leading: Icon(Icons.password_rounded, color: colors.primary),
               title: Text(
                 'تولید رمز عبور',
                 style: AppTypography.bodyMedium.copyWith(
@@ -606,7 +604,7 @@ class _HomeNavigationDrawer extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.of(context).pop();
-                Get.toNamed(AppRoutes.passwordGenerator);
+                switchMainShellTab(MainShellTab.passwordGenerator);
               },
             ),
           ],

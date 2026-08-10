@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 
 class LoginController extends GetxController {
   final passwordController = TextEditingController();
@@ -18,6 +19,7 @@ class LoginController extends GetxController {
 
     try {
       await Future.delayed(const Duration(milliseconds: 800));
+      Get.offAllNamed(AppRoutes.home);
     } catch (e) {
       errorMessage.value = 'خطا در ورود. لطفاً دوباره تلاش کنید';
     } finally {

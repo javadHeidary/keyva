@@ -49,7 +49,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                   AppSpacing.pagePadding.s,
                   AppSpacing.sm.h,
                   AppSpacing.pagePadding.s,
-                  AppSpacing.xxl.h,
+                  AppSpacing.lg.h,
                 ),
                 sliver: SliverToBoxAdapter(
                   child: Column(

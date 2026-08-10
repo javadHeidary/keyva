@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
+import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/feature/category/util/category_icons.dart';
 import 'package:keyva/feature/category/viewmodel/category_list_viewmodel.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
@@ -20,7 +21,10 @@ class CategoryListView extends GetView<CategoryListViewModel> {
 
     return Scaffold(
       backgroundColor: colors.pageBackground,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.small(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.medium),
+        ),
         heroTag: 'category_list_fab',
         onPressed: controller.openCreate,
         backgroundColor: colors.primary,
@@ -44,7 +48,7 @@ class CategoryListView extends GetView<CategoryListViewModel> {
                   AppSpacing.pagePadding.s,
                   AppSpacing.md.h,
                   AppSpacing.pagePadding.s,
-                  96.h,
+                  AppSpacing.sm.h,
                 ),
                 sliver: categories.isEmpty
                     ? SliverToBoxAdapter(

@@ -27,7 +27,7 @@ class TypeListItemView extends GetView<HomeController> {
 
     return Scaffold(
       backgroundColor: colors.pageBackground,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.small(
         onPressed: () => controller.onAddItemForType(vaultType),
         backgroundColor: colors.primary,
         foregroundColor: colors.onPrimary,

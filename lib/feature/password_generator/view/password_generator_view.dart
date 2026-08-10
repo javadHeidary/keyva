@@ -16,7 +16,9 @@ import 'package:keyva/shared/widget/password_strengthbar_widget.dart';
 import 'package:keyva/shared/widget/toggle_item_widget.dart';
 
 class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
-  const PasswordGeneratorView({super.key});
+  const PasswordGeneratorView({super.key, this.embeddedInShell = false});
+
+  final bool embeddedInShell;
 
   @override
   Widget build(BuildContext context) {
@@ -37,12 +39,14 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                 child: AppHeaderWidget(
                   title: 'تولید رمز عبور',
                   titleAlign: TextAlign.center,
-                  leading: Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: AppSizes.iconMd.s,
-                    color: colors.textPrimary,
-                  ),
-                  onLeadingTap: Get.back,
+                  leading: embeddedInShell
+                      ? null
+                      : Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: AppSizes.iconMd.s,
+                          color: colors.textPrimary,
+                        ),
+                  onLeadingTap: embeddedInShell ? null : Get.back,
                   trailingActions: [
                     AppHeaderTrailingAction(
                       child: Icon(
@@ -60,7 +64,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                   AppSpacing.pagePadding.s,
                   AppSpacing.sm.h,
                   AppSpacing.pagePadding.s,
-                  AppSpacing.xxl.h,
+                  AppSpacing.lg.h,
                 ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
