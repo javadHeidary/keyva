@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:keyva/core/theme/app_radius.dart';
+import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
 class SettingsGroupCard extends StatelessWidget {
@@ -39,8 +40,8 @@ class SettingsGroupDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
-      child: Divider(height: 1, thickness: 1, color: context.colors.divider),
+      width: 300.w,
+      child: Divider(height: 1, thickness: 2, color: context.colors.divider),
     );
   }
 }
