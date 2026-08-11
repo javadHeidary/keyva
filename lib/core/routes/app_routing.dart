@@ -6,27 +6,28 @@ import 'package:keyva/feature/auth/view/auth_register_view.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/category/view/category_create_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
-import 'package:keyva/feature/shell/bindings/main_shell_bindings.dart';
-import 'package:keyva/feature/shell/view/main_shell_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
+import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
+import 'package:keyva/feature/password_generator/view/password_history_view.dart';
+import 'package:keyva/feature/shell/bindings/main_shell_bindings.dart';
+import 'package:keyva/feature/shell/view/main_shell_view.dart';
 import 'package:keyva/feature/splash/view/splash_view.dart';
-import 'package:keyva/feature/type/login/bindings/login_bindings.dart';
-import 'package:keyva/feature/type/login/view/login_create_view.dart';
-import 'package:keyva/feature/type/login/view/login_details_view.dart';
-import 'package:keyva/feature/type/login/view/login_edit_view.dart';
 import 'package:keyva/feature/type/bank_card/bindings/bank_card_bindings.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_create_view.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_details_view.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_edit_view.dart';
+import 'package:keyva/feature/type/login/bindings/login_bindings.dart';
+import 'package:keyva/feature/type/login/view/login_create_view.dart';
+import 'package:keyva/feature/type/login/view/login_details_view.dart';
+import 'package:keyva/feature/type/login/view/login_edit_view.dart';
 import 'package:keyva/feature/type/note/bindings/note_bindings.dart';
 import 'package:keyva/feature/type/note/view/note_create_view.dart';
 import 'package:keyva/feature/type/note/view/note_details_view.dart';
 import 'package:keyva/feature/type/note/view/note_edit_view.dart';
-import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
-import 'package:keyva/feature/password_generator/view/password_history_view.dart';
 import 'package:keyva/feature/widget_builder_test.dart';
+import 'package:keyva/shared/icons/app_icon_test.dart';
 
 class AppRoutes {
   static const String themeDemo = '/theme-demo';
@@ -51,10 +52,12 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String categoryCreate = '/category/create';
   static const String categoryEdit = '/category/edit';
+  static const String appIconTest = '/app-icon-test';
 
   static List<GetPage> routes = [
     GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
     GetPage(name: splash, page: () => const SplashView()),
+    GetPage(name: appIconTest, page: () => const AppIconTestPage()),
     GetPage(
       name: onBoarding,
       page: () => const OnboardingView(),

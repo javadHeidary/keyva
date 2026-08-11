@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
-import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
+import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
+import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 
 class HomeController extends GetxController {
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -105,48 +105,6 @@ class HomeController extends GetxController {
     ),
     const VaultListItem(
       id: '5',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '6',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '7',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '4',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '5',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '6',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '7',
       type: VaultItemType.secureNote,
       title: 'کدهای بازیابی',
       subtitle: 'یادداشت پشتیبان',
@@ -268,7 +226,7 @@ class HomeController extends GetxController {
 
   void onTrashTap() {}
 
-  void onCreateFirstItem() {}
+  void onCreateFirstItem() => onAddItemForType(VaultItemType.login);
 
   void onAddItem() {}
 

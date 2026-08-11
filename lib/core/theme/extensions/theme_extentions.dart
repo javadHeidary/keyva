@@ -100,7 +100,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     secondaryButton: AppColors.secondaryButtonLight,
     info: AppColors.infoLight,
     neutral: AppColors.neutralLight,
-    backgroundInput: AppColors.neutralLight,
+    backgroundInput: AppColors.inputLight,
   );
 
   static const dark = AppColorsExtension(
@@ -129,7 +129,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     secondaryButton: AppColors.secondaryButtonDark,
     info: AppColors.infoDark,
     neutral: AppColors.neutralDark,
-    backgroundInput: AppColors.neutralLight,
+    backgroundInput: AppColors.inputDark,
   );
 
   @override

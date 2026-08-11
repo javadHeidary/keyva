@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/util/category_icons.dart';
 import 'package:keyva/feature/category/viewmodel/category_list_viewmodel.dart';
+import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -20,6 +21,9 @@ class CategoryListView extends GetView<CategoryListViewModel> {
 
     return Scaffold(
       backgroundColor: colors.pageBackground,
+      floatingActionButtonLocation: AppFabScaffoldLocation(
+        bottomInset: MainShellLayout.fabBottomInset(context),
+      ),
       floatingActionButton: AppFloatingActionButton(
         onPressed: controller.openCreate,
         icon: Icons.add_rounded,
@@ -82,9 +86,7 @@ class CategoryListView extends GetView<CategoryListViewModel> {
                         }, childCount: categories.length),
                       ),
               ),
-              SliverToBoxAdapter(
-                child: SizedBox(height: AppSpacing.hugePlus.h),
-              ),
+              SliverToBoxAdapter(child: SizedBox(height: 80.h)),
             ],
           );
         }),
