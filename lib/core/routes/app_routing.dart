@@ -9,6 +9,7 @@ import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/category/view/category_create_view.dart';
 import 'package:keyva/feature/category/view/category_edit_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
+import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
@@ -33,17 +34,9 @@ import 'package:keyva/feature/widget_builder_test.dart';
 import 'package:keyva/shared/icons/app_icon_test.dart';
 
 class AppRoutes {
-  // ---------------------------------------------------------------------------
-  // Transition Configuration
-  // ---------------------------------------------------------------------------
-
   static const Transition _pageTransition = Transition.rightToLeft;
   static const Curve _pageCurve = Curves.easeOutCubic;
   static const Duration _pageTransitionDuration = Duration(milliseconds: 300);
-
-  // ---------------------------------------------------------------------------
-  // Routes
-  // ---------------------------------------------------------------------------
 
   static const String themeDemo = '/theme-demo';
   static const String splash = '/splash';
@@ -51,6 +44,8 @@ class AppRoutes {
   static const String authLogin = '/authLogin';
   static const String authRegister = '/authRegister';
   static const String widgetBuilderTest = '/widgetBuilderTest';
+  static const String shell = '/shell';
+
   static const String home = '/home';
   static const String typeList = '/type-list';
   static const String loginCreate = '/login/create';
@@ -68,10 +63,6 @@ class AppRoutes {
   static const String categoryCreate = '/category/create';
   static const String categoryEdit = '/category/edit';
   static const String appIconTest = '/app-icon-test';
-
-  // ---------------------------------------------------------------------------
-  // GetX Pages
-  // ---------------------------------------------------------------------------
 
   static List<GetPage> routes = [
     GetPage(
@@ -134,14 +125,21 @@ class AppRoutes {
     ),
 
     GetPage(
-      name: home,
+      name: shell,
       page: () => const MainShellView(),
       binding: MainShellBindings(),
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
     ),
-
+    GetPage(
+      name: home,
+      page: () => const HomeView(),
+      binding: HomeBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
     GetPage(
       name: typeList,
       page: () => const TypeListItemView(),

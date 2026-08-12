@@ -1,9 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -32,7 +31,11 @@ class AuthLoginView extends GetView<LoginController> {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: SvgPicture.asset(Assets.icons.trashTest.path),
+                  child: Icon(
+                    AppIcon.info,
+                    size: AppSizes.iconLg.s,
+                    color: context.colors.textPrimary,
+                  ),
                 ),
 
                 const Spacer(flex: 1),

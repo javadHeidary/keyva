@@ -12,10 +12,8 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
-import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
-import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_search_header_widger.dart';
 
@@ -26,30 +24,7 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: controller.scaffoldKey,
-      floatingActionButtonLocation: AppFabScaffoldLocation(
-        bottomInset: MainShellLayout.fabBottomInset(context),
-      ),
-      floatingActionButton: AppFloatingActionButton(
-        actions: [
-          AppFabSpeedDialAction(
-            label: 'ورود جدید',
-            icon: Icon(VaultItemType.login.icon),
-            onPressed: () => controller.onAddItemForType(VaultItemType.login),
-          ),
-          AppFabSpeedDialAction(
-            label: 'کارت بانکی',
-            icon: Icon(VaultItemType.bankCard.icon),
-            onPressed: () =>
-                controller.onAddItemForType(VaultItemType.bankCard),
-          ),
-          AppFabSpeedDialAction(
-            label: 'یادداشت جدید',
-            icon: Icon(VaultItemType.secureNote.icon),
-            onPressed: () =>
-                controller.onAddItemForType(VaultItemType.secureNote),
-          ),
-        ],
-      ),
+
       body: SafeArea(
         child: Obx(() {
           if (controller.vaultItems.isEmpty) {

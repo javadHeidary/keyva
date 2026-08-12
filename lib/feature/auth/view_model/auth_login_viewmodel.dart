@@ -19,7 +19,7 @@ class LoginController extends GetxController {
 
     try {
       await Future.delayed(const Duration(milliseconds: 800));
-      Get.offAllNamed(AppRoutes.home);
+      Get.offAllNamed(AppRoutes.shell);
     } catch (e) {
       errorMessage.value = 'خطا در ورود. لطفاً دوباره تلاش کنید';
     } finally {

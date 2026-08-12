@@ -62,11 +62,8 @@ class MainShellView extends GetView<MainShellController> {
 
               children: const [
                 HomeView(),
-
                 PasswordGeneratorView(embeddedInShell: true),
-
                 CategoryListView(),
-
                 SettingsView(),
               ],
             ),
