@@ -14,7 +14,7 @@ class AppFabSpeedDialAction {
   });
 
   final String label;
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onPressed;
 }
 
@@ -40,7 +40,7 @@ class AppFloatingActionButton extends StatefulWidget {
   AppFloatingActionButton({
     super.key,
     this.onPressed,
-    this.icon = Icons.add_rounded,
+    this.icon,
     this.actions,
   }) : assert(
          onPressed != null || (actions != null && actions.isNotEmpty),
@@ -48,7 +48,7 @@ class AppFloatingActionButton extends StatefulWidget {
        );
 
   final VoidCallback? onPressed;
-  final IconData icon;
+  final Widget? icon;
   final List<AppFabSpeedDialAction>? actions;
 
   bool get _isSpeedDial => actions != null && actions!.isNotEmpty;
@@ -158,14 +158,16 @@ class _AppFloatingActionButtonState extends State<AppFloatingActionButton>
   Widget build(BuildContext context) {
     if (!widget._isSpeedDial) {
       return _FabButton(
-        icon: widget.icon,
+        icon: widget.icon ?? const Icon(Icons.add_rounded),
         onTap: widget.onPressed!,
       );
     }
 
     return _FabButton(
       key: _fabKey,
-      icon: _isOpen ? Icons.close_rounded : Icons.add_rounded,
+      icon: _isOpen
+          ? const Icon(Icons.close_rounded, key: ValueKey('fab_close'))
+          : const Icon(Icons.add_rounded, key: ValueKey('fab_add')),
       onTap: _toggle,
       animatedIcon: true,
     );
@@ -180,13 +182,20 @@ class _FabButton extends StatelessWidget {
     this.animatedIcon = false,
   });
 
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onTap;
   final bool animatedIcon;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final iconChild = IconTheme(
+      data: IconThemeData(
+        size: AppSizes.iconLg.s,
+        color: colors.onPrimary,
+      ),
+      child: icon,
+    );
 
     return GestureDetector(
       onTap: onTap,
@@ -201,18 +210,9 @@ class _FabButton extends StatelessWidget {
           child: animatedIcon
               ? AnimatedSwitcher(
                   duration: _AppFloatingActionButtonState._duration,
-                  child: Icon(
-                    icon,
-                    key: ValueKey(icon),
-                    size: AppSizes.iconLg.s,
-                    color: colors.onPrimary,
-                  ),
+                  child: iconChild,
                 )
-              : Icon(
-                  icon,
-                  size: AppSizes.iconLg.s,
-                  color: colors.onPrimary,
-                ),
+              : iconChild,
         ),
       ),
     );

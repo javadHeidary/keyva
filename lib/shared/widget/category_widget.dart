@@ -67,13 +67,24 @@ class CategoryCardWidget extends StatelessWidget {
             Positioned(
               top: 10.s,
               left: 0,
-              child: _ActionIcon(icon: Icons.edit_rounded, onTap: onEdit),
+              child: _ActionIcon(
+                icon: Icon(
+                  Icons.edit_rounded,
+                  size: AppSizes.iconSm.s,
+                  color: colors.textSecondary,
+                ),
+                onTap: onEdit,
+              ),
             ),
             Positioned(
               top: 10.s,
               left: 25.s,
               child: _ActionIcon(
-                icon: Icons.delete_outline_rounded,
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  size: AppSizes.iconSm.s,
+                  color: colors.textSecondary,
+                ),
                 onTap: onDelete,
               ),
             ),
@@ -87,16 +98,14 @@ class CategoryCardWidget extends StatelessWidget {
 class _ActionIcon extends StatelessWidget {
   const _ActionIcon({required this.icon, this.onTap});
 
-  final IconData icon;
+  final Widget icon;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return GestureDetector(
       onTap: onTap,
-      child: Icon(icon, size: AppSizes.iconSm.s, color: colors.textSecondary),
+      child: icon,
     );
   }
 }

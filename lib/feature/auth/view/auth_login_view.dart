@@ -9,6 +9,7 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
@@ -46,7 +47,7 @@ class AuthLoginView extends GetView<LoginController> {
                         color: context.colors.strengthBarBg,
                         borderRadius: BorderRadius.circular(18.s),
                       ),
-                      child: Icon(Icons.lock),
+                      child: Icon(AppIcon.lock),
                     ),
                     SizedBox(width: AppSpacing.xl.h),
                     Column(
@@ -74,12 +75,12 @@ class AuthLoginView extends GetView<LoginController> {
                       onFieldSubmitted: (_) => controller.login(),
                       labelText: 'رمز عبور',
                       hintText: 'رمز را وارد کنید',
-                      prefixIcon: const Icon(Icons.lock_outline),
+                      prefixIcon: Icon(AppIcon.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordVisible.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                              ? AppIcon.visibilityOff
+                              : AppIcon.visibility,
                         ),
                         onPressed: controller.togglePasswordVisibility,
                       ),

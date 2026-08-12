@@ -20,7 +20,7 @@ class OnboardingController extends GetxController {
       title: 'اطلاعات شما از دستگاه خارج نمی‌شود',
       description:
           'بدون حساب کاربری، بدون سرور و بدون اینترنت.\nتمام داده‌ها به‌صورت محلی رمزنگاری می‌شوند و فقط شما به آن‌ها دسترسی دارید.',
-      imagePath: Assets.images.onboardinTest.path,
+      imagePath: 'assets/images/onboardin_test_1.svg',
     ),
     OnboardingSlide(
       title: 'امنیت قوی، استفاده ساده',

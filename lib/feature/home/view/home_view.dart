@@ -13,6 +13,7 @@ import 'package:keyva/feature/category/controller/category_catalog_controller.da
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
@@ -32,18 +33,18 @@ class HomeView extends GetView<HomeController> {
         actions: [
           AppFabSpeedDialAction(
             label: 'ورود جدید',
-            icon: VaultItemType.login.icon,
+            icon: Icon(VaultItemType.login.icon),
             onPressed: () => controller.onAddItemForType(VaultItemType.login),
           ),
           AppFabSpeedDialAction(
             label: 'کارت بانکی',
-            icon: VaultItemType.bankCard.icon,
+            icon: Icon(VaultItemType.bankCard.icon),
             onPressed: () =>
                 controller.onAddItemForType(VaultItemType.bankCard),
           ),
           AppFabSpeedDialAction(
             label: 'یادداشت جدید',
-            icon: VaultItemType.secureNote.icon,
+            icon: Icon(VaultItemType.secureNote.icon),
             onPressed: () =>
                 controller.onAddItemForType(VaultItemType.secureNote),
           ),
@@ -102,7 +103,7 @@ class _AccountHeader extends GetView<HomeController> {
             width: 40.s,
             height: 40.s,
             child: Icon(
-              Icons.menu_rounded,
+              AppIcon.menu,
               size: AppSizes.iconLg.s,
               color: colors.textPrimary,
             ),
@@ -204,7 +205,7 @@ class _TypeListTile extends GetView<HomeController> {
             color: context.colors.textSecondary,
           ),
         ),
-        leadingIcon: Icon(Icons.chevron_right_rounded, size: AppSizes.iconMd.s),
+        leadingIcon: Icon(AppIcon.chevronLeft, size: AppSizes.iconMd.s),
         onTap: () => Get.toNamed(AppRoutes.typeList, arguments: summary.type),
         onLeadingPressed: () => controller.onTypeMoreActions(summary.type),
       ),
@@ -359,7 +360,7 @@ class _VaultItemTile extends GetView<HomeController> {
         ),
       ),
       leadingIcon: Icon(
-        Icons.more_vert_rounded,
+        AppIcon.ellipsis,
         size: AppSizes.iconMd.s,
         color: colors.textSecondary,
       ),
@@ -444,18 +445,10 @@ class _TrashSection extends GetView<HomeController> {
                   title: 'موارد حذف‌شده',
                   subtitle: '${controller.trashItemCount.value} مورد',
                   trailingIcon: _CircleIcon(
-                    icon: SvgPicture.asset(
-                      Assets.icons.trashTest.path,
-                      width: AppSizes.iconSm.s,
-                      height: AppSizes.iconSm.s,
-                      colorFilter: ColorFilter.mode(
-                        colors.textTertiary,
-                        BlendMode.srcIn,
-                      ),
-                    ),
+                    icon: Icon(AppIcon.delete, size: AppSizes.iconLg.s),
                   ),
                   leadingIcon: Icon(
-                    Icons.chevron_right_rounded,
+                    AppIcon.chevronLeft,
                     size: AppSizes.iconLg.s,
                   ),
                   onTap: controller.onTrashTap,
@@ -563,7 +556,7 @@ class _VaultEmptyState extends StatelessWidget {
           const Spacer(flex: 3),
           AppButtonWidget(
             title: 'ایجاد اولین آیتم',
-            icon: Icon(Icons.add_rounded, size: AppSizes.iconMd.s),
+            icon: Icon(AppIcon.add, size: AppSizes.iconMd.s),
             onPressed: onCreate,
           ),
           SizedBox(height: AppSpacing.xxl.h),

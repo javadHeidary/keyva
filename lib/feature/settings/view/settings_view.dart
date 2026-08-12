@@ -14,6 +14,7 @@ import 'package:keyva/feature/settings/widget/pin_code_dialog.dart';
 import 'package:keyva/feature/settings/widget/settings_group_card.dart';
 import 'package:keyva/feature/settings/widget/settings_row.dart';
 import 'package:keyva/feature/settings/widget/theme_picker_bottom_sheet.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -75,20 +76,20 @@ class SettingsView extends GetView<SettingsViewModel> {
                         children: [
                           SettingsRow.nav(
                             title: 'تغییر رمز اصلی',
-                            icon: Icons.password_rounded,
+                            icon: AppIcon.masterPassword,
                             onTap: () =>
                                 showChangeMasterPasswordDialog(context),
                           ),
                           if (controller.showBiometricSetting.value)
                             SettingsRow.toggle(
                               title: 'احراز هویت بیومتریک',
-                              icon: Icons.fingerprint_rounded,
+                              icon: AppIcon.fingerprint,
                               value: controller.security.value.biometricEnabled,
                               onChanged: controller.setBiometricEnabled,
                             ),
                           SettingsRow.toggle(
                             title: 'کد PIN',
-                            icon: Icons.pin_rounded,
+                            icon: AppIcon.pin,
                             value: controller.security.value.pinEnabled,
                             onChanged: (enabled) {
                               controller.onPinToggle(enabled, context);
@@ -99,13 +100,13 @@ class SettingsView extends GetView<SettingsViewModel> {
                           ),
                           SettingsRow.toggle(
                             title: 'جلوگیری از اسکرین‌شات و ضبط صفحه',
-                            icon: Icons.screenshot_monitor_outlined,
+                            icon: AppIcon.noPhotography,
                             value: controller.security.value.preventScreenshot,
                             onChanged: controller.setPreventScreenshot,
                           ),
                           SettingsRow.toggle(
                             title: 'قفل هنگام خروج از برنامه',
-                            icon: Icons.logout_rounded,
+                            icon: AppIcon.logout,
                             value: controller.security.value.lockOnAppExit,
                             onChanged: controller.setLockOnAppExit,
                           ),
@@ -117,7 +118,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                         children: [
                           SettingsRow.nav(
                             title: 'پوسته',
-                            icon: Icons.palette_outlined,
+                            icon: AppIcon.palette,
                             subtitle: controller.themePreference.value.label,
                             onTap: () => showThemePickerBottomSheet(context),
                           ),
@@ -129,7 +130,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                         children: [
                           SettingsRow.nav(
                             title: 'پشتیبان‌گیری و بازیابی',
-                            icon: Icons.backup_rounded,
+                            icon: AppIcon.backup,
                             onTap: () => showBackupRestoreDialog(context),
                           ),
                         ],
@@ -140,7 +141,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                         children: [
                           SettingsRow.nav(
                             title: 'سیاست حریم خصوصی',
-                            icon: Icons.privacy_tip_outlined,
+                            icon: AppIcon.privacy,
                             onTap: () => _showInfo(
                               context,
                               'سیاست حریم خصوصی',
@@ -151,7 +152,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                           ),
                           SettingsRow.nav(
                             title: 'درباره ما',
-                            icon: Icons.groups_outlined,
+                            icon: AppIcon.users,
                             onTap: () => _showInfo(
                               context,
                               'درباره کیوا',
@@ -161,7 +162,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                           ),
                           SettingsRow.nav(
                             title: 'تماس با ما',
-                            icon: Icons.mail_outline_rounded,
+                            icon: AppIcon.mail,
                             onTap: () => _showInfo(
                               context,
                               'تماس با ما',
@@ -171,17 +172,17 @@ class SettingsView extends GetView<SettingsViewModel> {
                           ),
                           SettingsRow.nav(
                             title: 'سوالات متداول و راهنما',
-                            icon: Icons.help_outline_rounded,
+                            icon: AppIcon.help,
                             onTap: () => showFaqGuideBottomSheet(context),
                           ),
                           SettingsRow.nav(
                             title: 'نقد و پیشنهادات',
-                            icon: Icons.rate_review_outlined,
+                            icon: AppIcon.messageSquare,
                             onTap: () => controller.openFeedback(context),
                           ),
                           SettingsRow.value(
                             title: 'نسخه برنامه',
-                            icon: Icons.verified_outlined,
+                            icon: AppIcon.verifiedUser,
                             trailingValue: AppInfo.displayVersion,
                           ),
                         ],
@@ -192,17 +193,17 @@ class SettingsView extends GetView<SettingsViewModel> {
                         children: [
                           SettingsRow.nav(
                             title: 'اپلیکیشن‌های دیگر ما',
-                            icon: Icons.apps_rounded,
+                            icon: AppIcon.apps,
                             onTap: () => controller.onOpenOtherApps(context),
                           ),
                           SettingsRow.nav(
                             title: 'امتیاز به ما',
-                            icon: Icons.star_outline_rounded,
+                            icon: AppIcon.star,
                             onTap: () => controller.onRateApp(context),
                           ),
                           SettingsRow.nav(
                             title: 'اشتراک‌گذاری با دوستان',
-                            icon: Icons.share_outlined,
+                            icon: AppIcon.share,
                             onTap: () => controller.onShareApp(context),
                           ),
                         ],

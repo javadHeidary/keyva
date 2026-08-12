@@ -10,6 +10,7 @@ import 'package:keyva/feature/type/login/util/login_password_util.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/login/widget/login_favicon_widget.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -47,7 +48,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                   title: controller.headerTitle,
                   titleAlign: TextAlign.center,
                   leading: Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                    AppIcon.arrowBack,
                     size: AppSizes.iconMd.s,
                     color: colors.textPrimary,
                   ),
@@ -67,17 +68,17 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                     children: [
                       const AppTitleItemWidget(title: 'مشخصات ورود'),
                       LoginDetailCredentialCard(
-                        icon: Icons.folder_outlined,
+                        icon: AppIcon.folder,
                         label: 'دسته‌بندی',
                         value: controller.categoryLabel,
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.person_outline_rounded,
+                        icon: AppIcon.accountCircle,
                         label: 'نام کاربری',
                         value: login.username,
                         trailing: LoginDetailActionIcon(
-                          icon: Icons.copy_rounded,
+                          icon: AppIcon.copy,
                           tooltip: 'کپی',
                           onTap: () => controller.copyValue(
                             context,
@@ -88,7 +89,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.lock_outline_rounded,
+                        icon: AppIcon.lock,
                         label: 'رمز عبور',
                         value: controller.isPasswordVisible.value
                             ? login.password
@@ -98,13 +99,13 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                           children: [
                             LoginDetailActionIcon(
                               icon: controller.isPasswordVisible.value
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
+                                  ? AppIcon.visibilityOff
+                                  : AppIcon.visibility,
                               tooltip: 'نمایش رمز',
                               onTap: controller.togglePasswordVisibility,
                             ),
                             LoginDetailActionIcon(
-                              icon: Icons.copy_rounded,
+                              icon: AppIcon.copy,
                               tooltip: 'کپی',
                               onTap: () => controller.copyValue(
                                 context,
@@ -132,7 +133,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               LoginDetailActionIcon(
-                                icon: Icons.copy_rounded,
+                                icon: AppIcon.copy,
                                 tooltip: 'کپی',
                                 onTap: () => controller.copyValue(
                                   context,
@@ -141,7 +142,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                                 ),
                               ),
                               LoginDetailActionIcon(
-                                icon: Icons.open_in_new_rounded,
+                                icon: AppIcon.externalLink,
                                 tooltip: 'باز کردن',
                                 onTap: () => controller.openWebsite(
                                   context,
@@ -171,7 +172,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                                   shape: BoxShape.rectangle,
                                 ),
                                 child: Icon(
-                                  Icons.shield_rounded,
+                                  AppIcon.shield,
                                   size: AppSizes.iconMd.s,
                                   color: colors.success,
                                 ),
@@ -228,12 +229,12 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                         SizedBox(height: AppSpacing.sectionGap.h),
                         const AppTitleItemWidget(title: 'یادداشت'),
                         LoginDetailCredentialCard(
-                          icon: Icons.description_outlined,
+                          icon: AppIcon.note,
                           label: 'یادداشت',
                           value: login.notes!,
                           maxLines: 4,
                           trailing: LoginDetailActionIcon(
-                            icon: Icons.copy_rounded,
+                            icon: AppIcon.copy,
                             tooltip: 'کپی',
                             onTap: () => controller.copyValue(
                               context,
@@ -261,7 +262,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                         child: AppButtonWidget(
                           title: 'ویرایش',
                           icon: Icon(
-                            Icons.edit_rounded,
+                            AppIcon.edit,
                             size: AppSizes.iconMd.s,
                           ),
                           onPressed: controller.navigateToEdit,
@@ -272,7 +273,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                         child: AppButtonWidget(
                           title: 'حذف',
                           icon: Icon(
-                            Icons.delete_outline_rounded,
+                            AppIcon.delete,
                             size: AppSizes.iconMd.s,
                           ),
                           backgroundColor: colors.error.withValues(alpha: 0.3),

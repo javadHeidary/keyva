@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/widget/note_body_text_widget.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
@@ -39,7 +40,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                   title: controller.headerTitle,
                   titleAlign: TextAlign.center,
                   leading: Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                    AppIcon.arrowBack,
                     size: AppSizes.iconMd.s,
                     color: colors.textPrimary,
                   ),
@@ -68,7 +69,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                             ),
                           ),
                           LoginDetailActionIcon(
-                            icon: Icons.copy_rounded,
+                            icon: AppIcon.copy,
                             tooltip: 'کپی',
                             onTap: () => controller.copyValue(
                               context,
@@ -98,17 +99,17 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                       ),
                       SizedBox(height: AppSpacing.sectionGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.folder_outlined,
+                        icon: AppIcon.folder,
                         label: 'دسته‌بندی',
                         value: controller.categoryLabel,
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.title_rounded,
+                        icon: AppIcon.heading,
                         label: 'عنوان',
                         value: note.title,
                         trailing: LoginDetailActionIcon(
-                          icon: Icons.copy_rounded,
+                          icon: AppIcon.copy,
                           tooltip: 'کپی',
                           onTap: () => controller.copyValue(
                             context,
@@ -119,7 +120,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.event_rounded,
+                        icon: AppIcon.calendar,
                         label: 'تاریخ ایجاد',
                         value: controller.createdAtLabel,
                       ),
@@ -141,7 +142,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                         child: AppButtonWidget(
                           title: 'ویرایش',
                           icon: Icon(
-                            Icons.edit_rounded,
+                            AppIcon.edit,
                             size: AppSizes.iconMd.s,
                           ),
                           onPressed: controller.navigateToEdit,
@@ -152,7 +153,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                         child: AppButtonWidget(
                           title: 'حذف',
                           icon: Icon(
-                            Icons.delete_outline_rounded,
+                            AppIcon.delete,
                             size: AppSizes.iconMd.s,
                           ),
                           backgroundColor: colors.error.withValues(alpha: 0.3),

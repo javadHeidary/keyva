@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 
 enum VaultItemType { login, bankCard, secureNote }
 
@@ -17,11 +18,11 @@ extension VaultItemTypeX on VaultItemType {
   IconData get icon {
     switch (this) {
       case VaultItemType.login:
-        return Icons.lock_outline_rounded;
+        return AppIcon.lock;
       case VaultItemType.bankCard:
-        return Icons.credit_card_rounded;
+        return AppIcon.creditCard;
       case VaultItemType.secureNote:
-        return Icons.note_alt_outlined;
+        return AppIcon.stickyNote;
     }
   }
 }

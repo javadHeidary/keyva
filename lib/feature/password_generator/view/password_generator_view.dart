@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/password_generator/model/password_generator_settings.dart';
 import 'package:keyva/feature/password_generator/viewmodel/password_generator_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
@@ -42,7 +43,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                   leading: embeddedInShell
                       ? null
                       : Icon(
-                          Icons.arrow_back_ios_new_rounded,
+                          AppIcon.arrowBack,
                           size: AppSizes.iconMd.s,
                           color: colors.textPrimary,
                         ),
@@ -50,7 +51,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                   trailingActions: [
                     AppHeaderTrailingAction(
                       child: Icon(
-                        Icons.menu_rounded,
+                        AppIcon.history,
                         size: AppSizes.iconLg.s,
                         color: colors.textPrimary,
                       ),
@@ -105,7 +106,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                                 child: AppButtonWidget(
                                   title: 'کپی',
                                   icon: Icon(
-                                    Icons.copy_rounded,
+                                    AppIcon.copy,
                                     size: AppSizes.iconMd.s,
                                   ),
                                   onPressed: () =>
@@ -117,7 +118,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                                 child: AppButtonWidget(
                                   title: 'تولید مجدد',
                                   icon: Icon(
-                                    Icons.refresh_rounded,
+                                    AppIcon.refresh,
                                     size: AppSizes.iconMd.s,
                                   ),
                                   backgroundColor: colors.primary.withValues(
@@ -142,7 +143,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                           ),
                           const Spacer(),
                           Icon(
-                            Icons.shield_rounded,
+                            AppIcon.shield,
                             size: AppSizes.iconMd.s,
                             color: controller.strengthColor(context),
                           ),

@@ -7,6 +7,7 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/util/category_icons.dart';
 import 'package:keyva/feature/category/viewmodel/category_list_viewmodel.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -26,7 +27,7 @@ class CategoryListView extends GetView<CategoryListViewModel> {
       ),
       floatingActionButton: AppFloatingActionButton(
         onPressed: controller.openCreate,
-        icon: Icons.add_rounded,
+        icon: Icon(AppIcon.add),
       ),
       body: SafeArea(
         child: Obx(() {

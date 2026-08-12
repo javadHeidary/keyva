@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
@@ -32,11 +33,7 @@ class AuthRegisterView extends GetView<RegisterController> {
                   width: 72.s,
                   height: 72.s,
                   decoration: const BoxDecoration(shape: BoxShape.circle),
-                  child: Icon(
-                    Icons.lock_outline_rounded,
-                    size: 36.s,
-                    color: colors.primary,
-                  ),
+                  child: Icon(AppIcon.lock, size: 36.s, color: colors.primary),
                 ),
                 SizedBox(height: AppSpacing.lg.h),
                 Text(
@@ -65,7 +62,7 @@ class AuthRegisterView extends GetView<RegisterController> {
                         textInputAction: TextInputAction.next,
                         labelText: 'نام کاربری',
                         hintText: 'یک نام برای حساب خود انتخاب کنید',
-                        prefixIcon: const Icon(Icons.person_add_outlined),
+                        prefixIcon: const Icon(AppIcon.accountCircle),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'نام کاربری الزامی است';
@@ -85,12 +82,12 @@ class AuthRegisterView extends GetView<RegisterController> {
                           textInputAction: TextInputAction.next,
                           labelText: 'Master Password',
                           hintText: 'رمز اصلی را وارد کنید',
-                          prefixIcon: const Icon(Icons.lock_outline),
+                          prefixIcon: Icon(AppIcon.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.isPasswordVisible.value
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+                                  ? AppIcon.visibilityOff
+                                  : AppIcon.visibility,
                             ),
                             onPressed: controller.togglePasswordVisibility,
                           ),
@@ -116,7 +113,7 @@ class AuthRegisterView extends GetView<RegisterController> {
                               _onRegisterPressed(controller),
                           labelText: 'تکرار Master Password',
                           hintText: 'رمز اصلی را دوباره وارد کنید',
-                          prefixIcon: const Icon(Icons.lock_outline),
+                          prefixIcon: const Icon(AppIcon.lock),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'رمز عبور الزامی است';
@@ -129,8 +126,8 @@ class AuthRegisterView extends GetView<RegisterController> {
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.isConfirmPasswordVisible.value
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
+                                  ? AppIcon.visibilityOff
+                                  : AppIcon.visibility,
                             ),
                             onPressed:
                                 controller.toggleConfirmPasswordVisibility,

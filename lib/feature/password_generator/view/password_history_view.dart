@@ -7,6 +7,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/password_generator/viewmodel/password_history_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
@@ -31,7 +32,7 @@ class PasswordHistoryView extends GetView<PasswordHistoryViewModel> {
                   title: 'تاریخچه رمزها',
                   titleAlign: TextAlign.center,
                   leading: Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                    AppIcon.arrowBack,
                     size: AppSizes.iconMd.s,
                     color: colors.textPrimary,
                   ),
@@ -65,12 +66,12 @@ class PasswordHistoryView extends GetView<PasswordHistoryViewModel> {
                         itemBuilder: (context, index) {
                           final entry = entries[index];
                           return LoginDetailCredentialCard(
-                            icon: Icons.lock_outline_rounded,
+                            icon: AppIcon.lock,
                             label: controller.formatCopiedAt(entry.copiedAt),
                             value: entry.password,
                             maxLines: 2,
                             trailing: LoginDetailActionIcon(
-                              icon: Icons.copy_rounded,
+                              icon: AppIcon.copy,
                               tooltip: 'کپی',
                               onTap: () => controller.copyPassword(
                                 context,

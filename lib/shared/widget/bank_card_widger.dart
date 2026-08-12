@@ -89,7 +89,11 @@ class BankCardWidget extends StatelessWidget {
                         logo: leftLogo,
                         width: 36.s,
                         height: 28.s,
-                        icon: Icons.credit_card_rounded,
+                        icon: Icon(
+                          Icons.credit_card_rounded,
+                          size: AppSizes.iconMd.s,
+                          color: txt.withValues(alpha: 0.92),
+                        ),
                         iconColor: txt,
                       ),
                       Expanded(
@@ -119,7 +123,11 @@ class BankCardWidget extends StatelessWidget {
                         logo: rightLogo,
                         width: 36.s,
                         height: 32.s,
-                        icon: Icons.account_balance_rounded,
+                        icon: Icon(
+                          Icons.account_balance_rounded,
+                          size: AppSizes.iconMd.s,
+                          color: txt.withValues(alpha: 0.92),
+                        ),
                         iconColor: txt,
                       ),
                     ],
@@ -169,7 +177,7 @@ class BankCardWidget extends StatelessWidget {
     required Widget? logo,
     required double width,
     required double height,
-    required IconData icon,
+    required Widget icon,
     required Color iconColor,
   }) {
     if (logo != null) {
@@ -183,13 +191,7 @@ class BankCardWidget extends StatelessWidget {
           color: iconColor.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(AppRadius.ssm.s),
         ),
-        child: Center(
-          child: Icon(
-            icon,
-            size: AppSizes.iconMd.s,
-            color: iconColor.withValues(alpha: 0.92),
-          ),
-        ),
+        child: Center(child: icon),
       ),
     );
   }

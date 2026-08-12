@@ -14,7 +14,7 @@ class AppDialogWidget extends StatelessWidget {
   final String description;
   final String buttonText;
   final VoidCallback? onConfirm;
-  final IconData? customIcon;
+  final Widget? customIcon;
 
   const AppDialogWidget({
     super.key,
@@ -33,7 +33,7 @@ class AppDialogWidget extends StatelessWidget {
     required String description,
     String buttonText = 'متوجه شدم',
     VoidCallback? onConfirm,
-    IconData? customIcon,
+    Widget? customIcon,
     bool barrierDismissible = true,
   }) {
     return showDialog(
@@ -81,11 +81,7 @@ class AppDialogWidget extends StatelessWidget {
                 color: visuals.bgColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                customIcon ?? visuals.icon,
-                size: 32.s,
-                color: visuals.iconColor,
-              ),
+              child: Center(child: customIcon ?? visuals.icon),
             ),
 
             SizedBox(height: AppSpacing.xl.s),
@@ -145,32 +141,35 @@ class AppDialogWidget extends StatelessWidget {
     switch (type) {
       case AppDialogType.info:
         return _DialogVisuals(
-          icon: Icons.info_outline_rounded,
-          iconColor: colors.primary,
+          icon: Icon(Icons.info_outline_rounded, size: 32.s, color: colors.primary),
           bgColor: colors.primary.withOpacity(0.12),
         );
       case AppDialogType.success:
         return _DialogVisuals(
-          icon: Icons.check_circle_outline_rounded,
-          iconColor: colors.success,
+          icon: Icon(
+            Icons.check_circle_outline_rounded,
+            size: 32.s,
+            color: colors.success,
+          ),
           bgColor: colors.success.withOpacity(0.12),
         );
       case AppDialogType.warning:
         return _DialogVisuals(
-          icon: Icons.warning_amber_rounded,
-          iconColor: colors.warning,
+          icon: Icon(Icons.warning_amber_rounded, size: 32.s, color: colors.warning),
           bgColor: colors.warning.withOpacity(0.12),
         );
       case AppDialogType.error:
         return _DialogVisuals(
-          icon: Icons.error_outline_rounded,
-          iconColor: colors.error,
+          icon: Icon(Icons.error_outline_rounded, size: 32.s, color: colors.error),
           bgColor: colors.error.withOpacity(0.12),
         );
       case AppDialogType.simple:
         return _DialogVisuals(
-          icon: Icons.info_outline_rounded,
-          iconColor: colors.textSecondary,
+          icon: Icon(
+            Icons.info_outline_rounded,
+            size: 32.s,
+            color: colors.textSecondary,
+          ),
           bgColor: colors.secondaryButton,
         );
     }
@@ -178,13 +177,11 @@ class AppDialogWidget extends StatelessWidget {
 }
 
 class _DialogVisuals {
-  final IconData icon;
-  final Color iconColor;
+  final Widget icon;
   final Color bgColor;
 
   const _DialogVisuals({
     required this.icon,
-    required this.iconColor,
     required this.bgColor,
   });
 }

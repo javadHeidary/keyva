@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
@@ -30,7 +31,7 @@ class TypeListItemView extends GetView<HomeController> {
       backgroundColor: colors.pageBackground,
       floatingActionButton: AppFloatingActionButton(
         onPressed: () => controller.onAddItemForType(vaultType),
-        icon: Icons.add_rounded,
+        icon: Icon(AppIcon.add),
       ),
 
       body: SafeArea(
@@ -41,7 +42,7 @@ class TypeListItemView extends GetView<HomeController> {
                 title: vaultType.label,
                 titleAlign: TextAlign.center,
                 leading: Icon(
-                  Icons.arrow_back_ios_new_rounded,
+                  AppIcon.arrowBack,
                   size: AppSizes.iconMd.s,
                   color: colors.textPrimary,
                 ),
@@ -49,7 +50,7 @@ class TypeListItemView extends GetView<HomeController> {
                 trailingActions: [
                   AppHeaderTrailingAction(
                     child: Icon(
-                      Icons.search_rounded,
+                      AppIcon.search,
                       size: AppSizes.iconLg.s,
                       color: colors.textPrimary,
                     ),
@@ -57,7 +58,7 @@ class TypeListItemView extends GetView<HomeController> {
                   ),
                   AppHeaderTrailingAction(
                     child: Icon(
-                      Icons.menu_rounded,
+                      AppIcon.menu,
                       size: AppSizes.iconLg.s,
                       color: colors.textPrimary,
                     ),
@@ -132,7 +133,7 @@ class _TypeListVaultItemTile extends GetView<HomeController> {
         ),
       ),
       leadingIcon: Icon(
-        Icons.more_vert_rounded,
+        AppIcon.ellipsis,
         size: AppSizes.iconMd.s,
         color: colors.textSecondary,
       ),

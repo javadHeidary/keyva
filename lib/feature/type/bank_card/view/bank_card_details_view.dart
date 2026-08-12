@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -46,7 +47,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                   title: controller.headerTitle,
                   titleAlign: TextAlign.center,
                   leading: Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                    AppIcon.arrowBack,
                     size: AppSizes.iconMd.s,
                     color: colors.textPrimary,
                   ),
@@ -81,17 +82,17 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       SizedBox(height: AppSpacing.sectionGap.h),
                       const AppTitleItemWidget(title: 'مشخصات کارت'),
                       LoginDetailCredentialCard(
-                        icon: Icons.folder_outlined,
+                        icon: AppIcon.folder,
                         label: 'دسته‌بندی',
                         value: controller.categoryLabel,
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.credit_card_rounded,
+                        icon: AppIcon.creditCard,
                         label: 'عنوان',
                         value: card.title,
                         trailing: LoginDetailActionIcon(
-                          icon: Icons.copy_rounded,
+                          icon: AppIcon.copy,
                           tooltip: 'کپی',
                           onTap: () => controller.copyValue(
                             context,
@@ -102,11 +103,11 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.numbers_rounded,
+                        icon: AppIcon.hash,
                         label: 'شماره کارت',
                         value: controller.formattedCardNumber,
                         trailing: LoginDetailActionIcon(
-                          icon: Icons.copy_rounded,
+                          icon: AppIcon.copy,
                           tooltip: 'کپی',
                           onTap: () => controller.copyValue(
                             context,
@@ -130,7 +131,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                                     height: 18.s,
                                   )
                                 : Icon(
-                                    Icons.account_balance_rounded,
+                                    AppIcon.building,
                                     size: AppSizes.iconSm.s,
                                     color: colors.textSecondary,
                                   ),
@@ -149,7 +150,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.lock_outline_rounded,
+                        icon: AppIcon.lock,
                         label: 'CVV2',
                         value: cvvDetail,
                         trailing: Row(
@@ -157,13 +158,13 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                           children: [
                             LoginDetailActionIcon(
                               icon: controller.isCvvVisible.value
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
+                                  ? AppIcon.visibilityOff
+                                  : AppIcon.visibility,
                               tooltip: 'نمایش CVV',
                               onTap: controller.toggleCvvVisibility,
                             ),
                             LoginDetailActionIcon(
-                              icon: Icons.copy_rounded,
+                              icon: AppIcon.copy,
                               tooltip: 'کپی',
                               onTap: () => controller.copyValue(
                                 context,
@@ -176,7 +177,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
-                        icon: Icons.event_rounded,
+                        icon: AppIcon.calendar,
                         label: 'تاریخ ایجاد',
                         value: controller.createdAtLabel,
                       ),
@@ -184,12 +185,12 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         SizedBox(height: AppSpacing.sectionGap.h),
                         const AppTitleItemWidget(title: 'یادداشت'),
                         LoginDetailCredentialCard(
-                          icon: Icons.description_outlined,
+                          icon: AppIcon.note,
                           label: 'یادداشت',
                           value: card.notes!,
                           maxLines: 4,
                           trailing: LoginDetailActionIcon(
-                            icon: Icons.copy_rounded,
+                            icon: AppIcon.copy,
                             tooltip: 'کپی',
                             onTap: () => controller.copyValue(
                               context,
@@ -217,7 +218,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         child: AppButtonWidget(
                           title: 'ویرایش',
                           icon: Icon(
-                            Icons.edit_rounded,
+                            AppIcon.edit,
                             size: AppSizes.iconMd.s,
                           ),
                           onPressed: controller.navigateToEdit,
@@ -228,7 +229,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         child: AppButtonWidget(
                           title: 'حذف',
                           icon: Icon(
-                            Icons.delete_outline_rounded,
+                            AppIcon.delete,
                             size: AppSizes.iconMd.s,
                           ),
                           backgroundColor: colors.error.withValues(alpha: 0.3),

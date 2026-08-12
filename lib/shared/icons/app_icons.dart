@@ -1,95 +1,109 @@
+import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class AppIcon {
   // Vault
-  static final lock = LucideIcons.lock;
-  static final lockOpen = LucideIcons.unlock;
-  static final key = LucideIcons.key;
-  static final shield = LucideIcons.shield;
-  static final shieldCheck = LucideIcons.shieldCheck;
-  static final password = LucideIcons.keyRound;
-  static final passwordCheck = LucideIcons.badgeCheck;
-  static final eye = LucideIcons.eye;
-  static final eyeOff = LucideIcons.eyeOff;
-  static final fingerprint = LucideIcons.fingerprint;
-  static final pin = LucideIcons.pin;
-  static final masterPassword = LucideIcons.keyRound;
+  static const lock = LucideIcons.lock;
+  static const lockOpen = LucideIcons.unlock;
+  static const key = LucideIcons.key;
+  static const shield = LucideIcons.shield;
+  static const shieldCheck = LucideIcons.shieldCheck;
+  static const password = LucideIcons.keyRound;
+  static const passwordCheck = LucideIcons.badgeCheck;
+  static const eye = LucideIcons.eye;
+  static const eyeOff = LucideIcons.eyeOff;
+  static const fingerprint = LucideIcons.fingerprint;
+  static const pin = LucideIcons.pin;
+  static const masterPassword = LucideIcons.keyRound;
 
   // Information Types
-  static final login = LucideIcons.logIn;
-  static final accountCircle = LucideIcons.userCircle;
-  static final creditCard = LucideIcons.creditCard;
-  static final note = LucideIcons.fileText;
-  static final stickyNote = LucideIcons.stickyNote;
-  static final folder = LucideIcons.folder;
-  static final folderPlus = LucideIcons.folderPlus;
-  static final tag = LucideIcons.tag;
+  static const login = LucideIcons.logIn;
+  static const accountCircle = LucideIcons.userCircle;
+  static const creditCard = LucideIcons.creditCard;
+  static const note = LucideIcons.fileText;
+  static const stickyNote = LucideIcons.stickyNote;
+  static const folder = LucideIcons.folder;
+  static const folderPlus = LucideIcons.folderPlus;
+  static const tag = LucideIcons.tag;
 
   // Actions
-  static final add = LucideIcons.plus;
-  static final edit = LucideIcons.pencil;
-  static final delete = LucideIcons.trash2;
-  static final copy = LucideIcons.copy;
-  static final check = LucideIcons.check;
-  static final close = LucideIcons.x;
-  static final save = LucideIcons.save;
-  static final done = LucideIcons.check;
-  static final cancel = LucideIcons.x;
-  static final search = LucideIcons.search;
-  static final filter = LucideIcons.listFilter;
-  static final sort = LucideIcons.arrowUpDown;
-  // static final moreVert = LucideIcons.ellipsisVertical;
-  // static final moreHoriz = LucideIcons.ellipsis;
+  static const add = LucideIcons.plus;
+  static const edit = LucideIcons.pencil;
+  static const delete = LucideIcons.trash2;
+  static const copy = LucideIcons.copy;
+  static const check = LucideIcons.check;
+  static const close = LucideIcons.x;
+  static const save = LucideIcons.save;
+  static const done = LucideIcons.check;
+  static const cancel = LucideIcons.x;
+  static const search = LucideIcons.search;
+  static const filter = LucideIcons.listFilter;
+  static const sort = LucideIcons.arrowUpDown;
+  static const moreVert = LucideIcons.moreVertical;
+  static const moreHoriz = LucideIcons.moreHorizontal;
+  static const externalLink = LucideIcons.externalLink;
+  static const hash = LucideIcons.hash;
+  static const building = LucideIcons.landmark;
+  static const calendar = LucideIcons.calendar;
+  static const heading = LucideIcons.heading;
+  static const users = LucideIcons.users;
+  static const mail = LucideIcons.mail;
+  static const help = LucideIcons.helpCircle;
+  static const messageSquare = LucideIcons.messageSquare;
+  static const apps = LucideIcons.layoutGrid;
+  static const star = LucideIcons.star;
+  static const share = LucideIcons.share2;
+  static const ellipsis = Icons.more_horiz;
 
   // Navigation
-  static final home = LucideIcons.home;
-  static final menu = LucideIcons.menu;
-  static final arrowBack = LucideIcons.arrowLeft;
-  static final arrowForward = LucideIcons.arrowRight;
-  static final chevronRight = LucideIcons.chevronRight;
-  static final chevronLeft = LucideIcons.chevronLeft;
-  static final keyboardArrowDown = LucideIcons.chevronDown;
-  static final keyboardArrowUp = LucideIcons.chevronUp;
+  static const home = LucideIcons.home;
+  static const menu = LucideIcons.menu;
+  static const arrowBack = LucideIcons.arrowLeft;
+  static const arrowForward = LucideIcons.arrowRight;
+  static const chevronRight = LucideIcons.chevronRight;
+  static const chevronLeft = LucideIcons.chevronLeft;
+  static const keyboardArrowDown = LucideIcons.chevronDown;
+  static const keyboardArrowUp = LucideIcons.chevronUp;
 
   // Settings
-  static final settings = LucideIcons.settings;
-  static final security = LucideIcons.shieldCheck;
-  static final notifications = LucideIcons.bell;
-  static final language = LucideIcons.languages;
-  static final palette = LucideIcons.palette;
-  static final darkMode = LucideIcons.moon;
-  static final lightMode = LucideIcons.sun;
-  static final systemTheme = LucideIcons.monitor;
-  static final backup = LucideIcons.archive;
-  static final restore = LucideIcons.archiveRestore;
-  static final privacy = LucideIcons.shield;
-  static final info = LucideIcons.info;
-  // static final help = LucideIcons.circleHelp;
-  static final logout = LucideIcons.logOut;
+  static const settings = LucideIcons.settings;
+  static const security = LucideIcons.shieldCheck;
+  static const notifications = LucideIcons.bell;
+  static const language = LucideIcons.languages;
+  static const palette = LucideIcons.palette;
+  static const darkMode = LucideIcons.moon;
+  static const lightMode = LucideIcons.sun;
+  static const systemTheme = LucideIcons.monitor;
+  static const backup = LucideIcons.archive;
+  static const restore = LucideIcons.archiveRestore;
+  static const privacy = LucideIcons.shield;
+  static const info = LucideIcons.info;
+  static const logout = LucideIcons.logOut;
 
   // Password Generator
-  static final shuffle = LucideIcons.shuffle;
-  static final refresh = LucideIcons.refreshCw;
-  static final tune = LucideIcons.slidersHorizontal;
-  static final visibility = LucideIcons.eye;
-  static final visibilityOff = LucideIcons.eyeOff;
+  static const shuffle = LucideIcons.shuffle;
+  static const refresh = LucideIcons.refreshCw;
+  static const tune = LucideIcons.slidersHorizontal;
+  static const visibility = LucideIcons.eye;
+  static const visibilityOff = LucideIcons.eyeOff;
+  static const history = LucideIcons.history;
 
   // Security
-  static final lockClock = LucideIcons.lock;
-  static final noPhotography = LucideIcons.cameraOff;
-  static final verifiedUser = LucideIcons.badgeCheck;
-  static final warning = LucideIcons.alertCircle;
-  static final error = LucideIcons.xCircle;
-  static final checkCircle = LucideIcons.checkCircle;
+  static const lockClock = LucideIcons.lock;
+  static const noPhotography = LucideIcons.cameraOff;
+  static const verifiedUser = LucideIcons.badgeCheck;
+  static const warning = LucideIcons.alertCircle;
+  static const error = LucideIcons.xCircle;
+  static const checkCircle = LucideIcons.checkCircle;
 
   // Backup & Restore
-  static final cloudUpload = LucideIcons.uploadCloud;
-  static final cloudDownload = LucideIcons.downloadCloud;
-  static final fileUpload = LucideIcons.fileUp;
-  static final fileDownload = LucideIcons.fileDown;
-  static final download = LucideIcons.download;
-  static final upload = LucideIcons.upload;
+  static const cloudUpload = LucideIcons.uploadCloud;
+  static const cloudDownload = LucideIcons.downloadCloud;
+  static const fileUpload = LucideIcons.fileUp;
+  static const fileDownload = LucideIcons.fileDown;
+  static const download = LucideIcons.download;
+  static const upload = LucideIcons.upload;
 
   // Notifications & Status
-  static final notificationsOff = LucideIcons.bellOff;
+  static const notificationsOff = LucideIcons.bellOff;
 }

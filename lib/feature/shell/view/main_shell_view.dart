@@ -6,41 +6,42 @@ import 'package:keyva/feature/password_generator/view/password_generator_view.da
 import 'package:keyva/feature/settings/view/settings_view.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/feature/shell/widget/keyva_bottom_navigation_bar.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 
 class MainShellView extends GetView<MainShellController> {
   const MainShellView({super.key});
 
-  static const _navItems = [
+  static final _navItems = [
     KeyvaBottomNavItem(
       label: 'خانه',
 
-      icon: Icons.home_outlined,
+      icon: AppIcon.home,
 
-      selectedIcon: Icons.home_rounded,
+      selectedIcon: AppIcon.home,
     ),
 
     KeyvaBottomNavItem(
       label: 'تولید رمز',
 
-      icon: Icons.password_outlined,
+      icon: AppIcon.password,
 
-      selectedIcon: Icons.password_rounded,
+      selectedIcon: AppIcon.password,
     ),
 
     KeyvaBottomNavItem(
       label: 'دسته‌بندی‌ها',
 
-      icon: Icons.folder_outlined,
+      icon: AppIcon.folder,
 
-      selectedIcon: Icons.folder_rounded,
+      selectedIcon: AppIcon.folder,
     ),
 
     KeyvaBottomNavItem(
       label: 'تنظیمات',
 
-      icon: Icons.settings_outlined,
+      icon: AppIcon.settings,
 
-      selectedIcon: Icons.settings_rounded,
+      selectedIcon: AppIcon.settings,
     ),
   ];
 
