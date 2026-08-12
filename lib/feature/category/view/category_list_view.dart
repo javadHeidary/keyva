@@ -46,7 +46,7 @@ class CategoryListView extends GetView<CategoryListViewModel> {
                   AppSpacing.pagePadding.s,
                   AppSpacing.md.h,
                   AppSpacing.pagePadding.s,
-                  AppSpacing.sm.h,
+                  AppSpacing.hugePlus.h,
                 ),
                 sliver: categories.isEmpty
                     ? SliverToBoxAdapter(
@@ -64,12 +64,13 @@ class CategoryListView extends GetView<CategoryListViewModel> {
                     : SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
+                          crossAxisSpacing: AppSpacing.md.w,
                           mainAxisSpacing: AppSpacing.md.h,
-                          crossAxisSpacing: AppSpacing.md.s,
-                          childAspectRatio: 1.1,
+                          childAspectRatio: 1.6,
                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final category = categories[index];
+
                           return CategoryCardWidget(
                             title: category.name,
                             itemCount: controller.itemCountFor(category.id),
@@ -77,6 +78,7 @@ class CategoryListView extends GetView<CategoryListViewModel> {
                               category.iconId,
                               color: colors.primary,
                             ),
+                            // onTap: () => controller.openCategory(category.id),
                             onEdit: () => controller.openEdit(category.id),
                             onDelete: () => _confirmDelete(
                               context,

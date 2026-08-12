@@ -148,7 +148,7 @@ class AppToast {
   static void success(
     BuildContext context, {
     required String title,
-    String? message,
+    required String message,
     AppToastPosition position = AppToastPosition.top,
     Duration duration = const Duration(seconds: 4),
   }) {

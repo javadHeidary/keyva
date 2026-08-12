@@ -87,8 +87,8 @@ class BankCardWidget extends StatelessWidget {
                     children: [
                       _buildLogoSlot(
                         logo: leftLogo,
-                        width: 36.s,
-                        height: 28.s,
+                        width: 40.s,
+                        height: 40.s,
                         icon: Icon(
                           Icons.credit_card_rounded,
                           size: AppSizes.iconMd.s,
@@ -121,8 +121,8 @@ class BankCardWidget extends StatelessWidget {
                       ),
                       _buildLogoSlot(
                         logo: rightLogo,
-                        width: 36.s,
-                        height: 32.s,
+                        width: 40.s,
+                        height: 40.s,
                         icon: Icon(
                           Icons.account_balance_rounded,
                           size: AppSizes.iconMd.s,
@@ -181,7 +181,17 @@ class BankCardWidget extends StatelessWidget {
     required Color iconColor,
   }) {
     if (logo != null) {
-      return SizedBox(width: width, height: height, child: logo);
+      return SizedBox(
+        width: width,
+        height: height,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: iconColor,
+            borderRadius: BorderRadius.circular(AppRadius.ssm.s),
+          ),
+          child: Center(child: logo),
+        ),
+      );
     }
     return SizedBox(
       width: width,

@@ -18,7 +18,7 @@ class AppIcon {
 
   // Information Types
   static const login = LucideIcons.logIn;
-  static const accountCircle = LucideIcons.userCircle;
+  static const accountCircle = LucideIcons.user2;
   static const creditCard = LucideIcons.creditCard;
   static const note = LucideIcons.fileText;
   static const stickyNote = LucideIcons.stickyNote;
@@ -58,10 +58,11 @@ class AppIcon {
   // Navigation
   static const home = LucideIcons.home;
   static const menu = LucideIcons.menu;
-  static const arrowBack = LucideIcons.arrowLeft;
-  static const arrowForward = LucideIcons.arrowRight;
-  static const chevronRight = LucideIcons.chevronRight;
-  static const chevronLeft = LucideIcons.chevronLeft;
+  // persion arrow
+  static const arrowBack = LucideIcons.arrowRight;
+  static const arrowForward = LucideIcons.arrowLeft;
+  static const chevronRight = LucideIcons.chevronLeft;
+  static const chevronLeft = LucideIcons.chevronRight;
   static const keyboardArrowDown = LucideIcons.chevronDown;
   static const keyboardArrowUp = LucideIcons.chevronUp;
 

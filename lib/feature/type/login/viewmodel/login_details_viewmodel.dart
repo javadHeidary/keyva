@@ -73,7 +73,7 @@ class LoginDetailsViewModel extends GetxController {
   void copyValue(BuildContext context, String value, String successMessage) {
     if (value.isEmpty) return;
     Clipboard.setData(ClipboardData(text: value));
-    AppToast.success(context, title: successMessage);
+    AppToast.success(context, title: 'کپی', message: successMessage);
   }
 
   Future<void> openWebsite(BuildContext context, String website) async {

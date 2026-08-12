@@ -53,13 +53,22 @@ class NoteDetailsViewModel extends GetxController {
     }
   }
 
-  void copyValue(BuildContext context, String value, String successMessage) {
+  void copyValue(
+    BuildContext context,
+    String value,
+    String title,
+    String successMessage,
+  ) {
     if (value.isEmpty) return;
     Clipboard.setData(ClipboardData(text: value));
-    AppToast.success(context, title: successMessage);
+    AppToast.success(context, title: title, message: successMessage);
   }
 
-  Future<void> openNoteLink(BuildContext context, NoteLinkType type, String raw) async {
+  Future<void> openNoteLink(
+    BuildContext context,
+    NoteLinkType type,
+    String raw,
+  ) async {
     final uriString = uriForNoteLink(type, raw);
     if (uriString == null) {
       AppToast.error(context, title: 'لینک معتبر نیست');

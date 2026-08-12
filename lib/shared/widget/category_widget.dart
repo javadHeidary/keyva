@@ -27,85 +27,94 @@ class CategoryCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final shadows = context.shadows;
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(AppSpacing.md.h),
-        decoration: BoxDecoration(
-          color: colors.card,
-          borderRadius: BorderRadius.circular(AppRadius.medium),
-          boxShadow: shadows.card,
-        ),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: SizedBox(height: 40.s, child: icon),
-                ),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.titleLarge.copyWith(
-                    color: colors.textPrimary,
+      child: Stack(
+        children: [
+          Container(
+            padding: EdgeInsets.all(AppSpacing.md.h),
+            decoration: BoxDecoration(
+              color: colors.card,
+              borderRadius: BorderRadius.circular(AppRadius.medium),
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  SizedBox(height: AppSpacing.xl),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 44.s,
+                        height: 44.s,
+                        decoration: BoxDecoration(
+                          color: colors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.medium),
+                        ),
+                        alignment: Alignment.center,
+                        child: icon,
+                      ),
+
+                      SizedBox(width: AppSpacing.md.w),
+
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 2,
+                            softWrap: true,
+                            overflow: TextOverflow.visible,
+                            textDirection: TextDirection.rtl,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: colors.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: AppSpacing.xs.h),
+                          Text(
+                            '$itemCount مورد',
+                            textDirection: TextDirection.rtl,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: colors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: AppSpacing.sm.h),
-                Text(
-                  '$itemCount مورد',
-                  style: AppTypography.labelLarge.copyWith(
-                    color: colors.textTertiary,
-                  ),
-                ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0.s,
+            left: -8.s,
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  onEdit?.call();
+                } else if (value == 'delete') {
+                  onDelete?.call();
+                }
+              },
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                Icons.more_vert_rounded,
+                size: AppSizes.iconMd.s,
+                color: colors.textSecondary,
+              ),
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'edit', child: Text('ویرایش')),
+                PopupMenuItem(value: 'delete', child: Text('حذف')),
               ],
             ),
-            Positioned(
-              top: 10.s,
-              left: 0,
-              child: _ActionIcon(
-                icon: Icon(
-                  Icons.edit_rounded,
-                  size: AppSizes.iconSm.s,
-                  color: colors.textSecondary,
-                ),
-                onTap: onEdit,
-              ),
-            ),
-            Positioned(
-              top: 10.s,
-              left: 25.s,
-              child: _ActionIcon(
-                icon: Icon(
-                  Icons.delete_outline_rounded,
-                  size: AppSizes.iconSm.s,
-                  color: colors.textSecondary,
-                ),
-                onTap: onDelete,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-class _ActionIcon extends StatelessWidget {
-  const _ActionIcon({required this.icon, this.onTap});
-
-  final Widget icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: icon,
     );
   }
 }

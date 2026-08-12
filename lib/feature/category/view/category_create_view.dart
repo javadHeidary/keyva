@@ -11,12 +11,3 @@ class CategoryCreateView extends GetView<CategoryFormViewModel> {
     return CategoryFormScaffold(controller: controller);
   }
 }
-
-class CategoryEditView extends GetView<CategoryFormViewModel> {
-  const CategoryEditView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return CategoryFormScaffold(controller: controller);
-  }
-}

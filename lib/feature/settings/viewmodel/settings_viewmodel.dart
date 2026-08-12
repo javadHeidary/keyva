@@ -84,12 +84,12 @@ class SettingsViewModel extends GetxController {
       queryParameters: {'subject': 'نقد و پیشنهادات — کیوا'},
     );
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
       if (!launched && context.mounted) {
-        AppToast.info(
-          context,
-          title: 'ایمیل: ${AppInfo.feedbackEmail}',
-        );
+        AppToast.info(context, title: 'ایمیل: ${AppInfo.feedbackEmail}');
       }
     } catch (_) {
       if (!context.mounted) return;
@@ -136,7 +136,7 @@ class SettingsViewModel extends GetxController {
     // TODO: _repository?.changeMasterPassword(...)
     Get.back();
     if (!context.mounted) return;
-    AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
+    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   Future<void> onPinSubmitted({
@@ -156,17 +156,17 @@ class SettingsViewModel extends GetxController {
     // TODO: _repository?.savePin(pin)
     Get.back();
     if (!context.mounted) return;
-    AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
+    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   void onBackupExportTap(BuildContext context) {
     // TODO: _repository?.exportBackup()
-    AppToast.success(context, title: 'پشتیبان‌گیری در فاز بعد فعال می‌شود');
+    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   void onBackupImportTap(BuildContext context) {
     // TODO: _repository?.importBackup()
-    AppToast.success(context, title: 'بازیابی در فاز بعد فعال می‌شود');
+    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   Future<void> onLogoutConfirmed() async {

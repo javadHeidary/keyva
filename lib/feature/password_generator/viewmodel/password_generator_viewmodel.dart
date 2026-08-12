@@ -91,10 +91,7 @@ class PasswordGeneratorViewModel extends GetxController {
   }
 
   bool _hasActiveGroup(PasswordGeneratorSettings value) {
-    return value.uppercase ||
-        value.lowercase ||
-        value.numbers ||
-        value.symbols;
+    return value.uppercase || value.lowercase || value.numbers || value.symbols;
   }
 
   String get strengthLabel => passwordGeneratorStrengthLabel(strength.value);
@@ -111,7 +108,7 @@ class PasswordGeneratorViewModel extends GetxController {
     await Clipboard.setData(ClipboardData(text: password));
     await _historyStore.addFromCopy(password);
     if (!context.mounted) return;
-    AppToast.success(context, title: 'رمز عبور کپی شد');
+    AppToast.success(context, title: 'رمز عبور کپی شد', message: 'کپی');
   }
 
   void openHistoryMenu() {

@@ -41,7 +41,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                   titleAlign: TextAlign.center,
                   leading: Icon(
                     AppIcon.arrowBack,
-                    size: AppSizes.iconMd.s,
+                    size: AppSizes.iconLg.s,
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
@@ -74,6 +74,8 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                             onTap: () => controller.copyValue(
                               context,
                               note.body,
+                              'کپی',
+
                               'متن یادداشت کپی شد',
                             ),
                           ),
@@ -114,6 +116,8 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                           onTap: () => controller.copyValue(
                             context,
                             note.title,
+                            'کپی',
+
                             'عنوان کپی شد',
                           ),
                         ),
@@ -141,10 +145,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                       Expanded(
                         child: AppButtonWidget(
                           title: 'ویرایش',
-                          icon: Icon(
-                            AppIcon.edit,
-                            size: AppSizes.iconMd.s,
-                          ),
+                          icon: Icon(AppIcon.edit, size: AppSizes.iconMd.s),
                           onPressed: controller.navigateToEdit,
                         ),
                       ),
@@ -152,10 +153,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                       Expanded(
                         child: AppButtonWidget(
                           title: 'حذف',
-                          icon: Icon(
-                            AppIcon.delete,
-                            size: AppSizes.iconMd.s,
-                          ),
+                          icon: Icon(AppIcon.delete, size: AppSizes.iconMd.s),
                           backgroundColor: colors.error.withValues(alpha: 0.3),
                           foregroundColor: colors.error,
                           onPressed: () => controller.confirmDelete(context),

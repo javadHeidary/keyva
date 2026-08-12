@@ -43,7 +43,7 @@ class TypeListItemView extends GetView<HomeController> {
                 titleAlign: TextAlign.center,
                 leading: Icon(
                   AppIcon.arrowBack,
-                  size: AppSizes.iconMd.s,
+                  size: AppSizes.iconLg.s,
                   color: colors.textPrimary,
                 ),
                 onLeadingTap: Get.back,
@@ -56,20 +56,12 @@ class TypeListItemView extends GetView<HomeController> {
                     ),
                     onTap: controller.onTypeListSearchTap,
                   ),
-                  AppHeaderTrailingAction(
-                    child: Icon(
-                      AppIcon.menu,
-                      size: AppSizes.iconLg.s,
-                      color: colors.textPrimary,
-                    ),
-                    onTap: controller.onTypeListMenuTap,
-                  ),
                 ],
               ),
             ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
-                AppSpacing.sm.s,
+                AppSpacing.lg.s,
                 AppSpacing.sm.h,
                 AppSpacing.lg.s,
                 80.h,

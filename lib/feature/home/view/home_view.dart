@@ -74,16 +74,19 @@ class _VaultContent extends GetView<HomeController> {
         _homePaddedSliver(child: _TypesSection()),
         _homePaddedSliver(child: _CategoriesSection()),
         _homePaddedSliver(child: _ItemsSection()),
-        _homePaddedSliver(child: _TrashSection()),
-        _homePaddedSliver(child: SizedBox(height: AppSpacing.hugePlus.h)),
+        _homePaddedSliver(child: _TrashSection(), bottom: AppSpacing.hugePlus),
       ],
     );
   }
 }
 
-SliverPadding _homePaddedSliver({required Widget child}) {
+SliverPadding _homePaddedSliver({required Widget child, double bottom = 0}) {
   return SliverPadding(
-    padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.s),
+    padding: EdgeInsets.only(
+      right: AppSpacing.lg.s,
+      left: AppSpacing.lg.s,
+      bottom: bottom,
+    ),
     sliver: SliverToBoxAdapter(child: child),
   );
 }
@@ -205,7 +208,7 @@ class _TypeListTile extends GetView<HomeController> {
             color: context.colors.textSecondary,
           ),
         ),
-        leadingIcon: Icon(AppIcon.chevronLeft, size: AppSizes.iconMd.s),
+        leadingIcon: Icon(AppIcon.chevronRight, size: AppSizes.iconMd.s),
         onTap: () => Get.toNamed(AppRoutes.typeList, arguments: summary.type),
         onLeadingPressed: () => controller.onTypeMoreActions(summary.type),
       ),
@@ -445,11 +448,15 @@ class _TrashSection extends GetView<HomeController> {
                   title: 'موارد حذف‌شده',
                   subtitle: '${controller.trashItemCount.value} مورد',
                   trailingIcon: _CircleIcon(
-                    icon: Icon(AppIcon.delete, size: AppSizes.iconLg.s),
+                    icon: Icon(
+                      AppIcon.delete,
+                      size: AppSizes.iconMd.s,
+                      color: context.colors.textSecondary,
+                    ),
                   ),
                   leadingIcon: Icon(
-                    AppIcon.chevronLeft,
-                    size: AppSizes.iconLg.s,
+                    AppIcon.chevronRight,
+                    size: AppSizes.iconMd.s,
                   ),
                   onTap: controller.onTrashTap,
                 ),

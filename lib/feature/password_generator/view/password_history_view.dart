@@ -33,7 +33,7 @@ class PasswordHistoryView extends GetView<PasswordHistoryViewModel> {
                   titleAlign: TextAlign.center,
                   leading: Icon(
                     AppIcon.arrowBack,
-                    size: AppSizes.iconMd.s,
+                    size: AppSizes.iconLg.s,
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,

@@ -33,6 +33,7 @@ class AppListItemWidget extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: SizedBox(
         height: height ?? AppSizes.itemHeight.h,
         child: Padding(
@@ -48,6 +49,7 @@ class AppListItemWidget extends StatelessWidget {
                 trailingIcon!,
                 SizedBox(width: AppSpacing.md.s),
               ],
+
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -76,6 +78,7 @@ class AppListItemWidget extends StatelessWidget {
                   ],
                 ),
               ),
+
               if (leadingIcon != null) ...[
                 SizedBox(width: AppSpacing.md.s),
                 GestureDetector(

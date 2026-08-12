@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
@@ -36,6 +37,7 @@ class CategoryFormContent extends StatelessWidget {
                 textInputAction: TextInputAction.done,
                 fillColor: fieldFill,
                 validator: controller.validateName,
+                inputFormatters: [LengthLimitingTextInputFormatter(10)],
               ),
               SizedBox(height: AppSpacing.lg.h),
               Text(

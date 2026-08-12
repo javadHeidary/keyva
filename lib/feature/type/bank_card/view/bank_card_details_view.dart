@@ -7,11 +7,11 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
-import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
 import 'package:keyva/shared/widget/bank_card_widger.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/split_date_info.dart';
 
 class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
@@ -48,7 +48,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                   titleAlign: TextAlign.center,
                   leading: Icon(
                     AppIcon.arrowBack,
-                    size: AppSizes.iconMd.s,
+                    size: AppSizes.iconLg.s,
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
@@ -75,8 +75,8 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         textColor: bankInfo?.onPrimaryColor,
                         accentColor: bankInfo?.lighterColor,
                         rightLogo: bankInfo?.logoBuilder(
-                          width: 36.s,
-                          height: 32.s,
+                          width: 40.s,
+                          height: 40.s,
                         ),
                       ),
                       SizedBox(height: AppSpacing.sectionGap.h),
@@ -97,6 +97,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                           onTap: () => controller.copyValue(
                             context,
                             card.title,
+                            'کپی',
                             'عنوان کپی شد',
                           ),
                         ),
@@ -112,6 +113,8 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                           onTap: () => controller.copyValue(
                             context,
                             card.cardNumber,
+                            'کپی',
+
                             'شماره کارت کپی شد',
                           ),
                         ),
@@ -138,11 +141,15 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                             onLeftCopy: () => controller.copyValue(
                               context,
                               controller.displayBankTitle,
+                              'کپی',
+
                               'نام بانک کپی شد',
                             ),
                             onRightCopy: () => controller.copyValue(
                               context,
                               card.expiry,
+                              'کپی',
+
                               'تاریخ انقضا کپی شد',
                             ),
                           ),
@@ -169,6 +176,8 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                               onTap: () => controller.copyValue(
                                 context,
                                 card.cvv,
+                                'کپی',
+
                                 'CVV2 کپی شد',
                               ),
                             ),
@@ -195,6 +204,8 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                             onTap: () => controller.copyValue(
                               context,
                               card.notes!,
+                              'کپی',
+
                               'یادداشت کپی شد',
                             ),
                           ),
@@ -217,10 +228,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       Expanded(
                         child: AppButtonWidget(
                           title: 'ویرایش',
-                          icon: Icon(
-                            AppIcon.edit,
-                            size: AppSizes.iconMd.s,
-                          ),
+                          icon: Icon(AppIcon.edit, size: AppSizes.iconMd.s),
                           onPressed: controller.navigateToEdit,
                         ),
                       ),
@@ -228,10 +236,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       Expanded(
                         child: AppButtonWidget(
                           title: 'حذف',
-                          icon: Icon(
-                            AppIcon.delete,
-                            size: AppSizes.iconMd.s,
-                          ),
+                          icon: Icon(AppIcon.delete, size: AppSizes.iconMd.s),
                           backgroundColor: colors.error.withValues(alpha: 0.3),
                           foregroundColor: colors.error,
                           onPressed: () => controller.confirmDelete(context),

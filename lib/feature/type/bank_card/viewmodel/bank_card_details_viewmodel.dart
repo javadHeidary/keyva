@@ -77,10 +77,15 @@ class BankCardDetailsViewModel extends GetxController {
     isCvvVisible.value = !isCvvVisible.value;
   }
 
-  void copyValue(BuildContext context, String value, String successMessage) {
+  void copyValue(
+    BuildContext context,
+    String value,
+    String successMessage,
+    String title,
+  ) {
     if (value.isEmpty) return;
     Clipboard.setData(ClipboardData(text: value));
-    AppToast.success(context, title: successMessage);
+    AppToast.success(context, title: title, message: successMessage);
   }
 
   void navigateToEdit() {

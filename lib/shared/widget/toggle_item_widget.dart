@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -27,49 +26,46 @@ class ToggleItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return Material(
-      color: colors.card,
-      borderRadius: BorderRadius.circular(AppRadius.medium),
-      child: InkWell(
-        onTap: () => onChanged(!value),
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.md.s,
-            vertical: AppSpacing.sm.s + 4.s,
-          ),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                SizedBox(width: 24.s, height: 24.s, child: icon),
-                SizedBox(width: AppSpacing.md.s),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      behavior: HitTestBehavior.opaque,
+
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.md.s,
+          vertical: AppSpacing.sm.s + 4.s,
+        ),
+        child: Row(
+          children: [
+            if (icon != null) ...[
+              SizedBox(width: 24.s, height: 24.s, child: icon),
+              SizedBox(width: AppSpacing.md.s),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: titleColor ?? colors.textPrimary,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    SizedBox(height: 2.s),
                     Text(
-                      title,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: titleColor ?? colors.textPrimary,
+                      subtitle!,
+                      style: AppTypography.labelSmall.copyWith(
+                        color: colors.textTertiary,
                       ),
                     ),
-                    if (subtitle != null) ...[
-                      SizedBox(height: 2.s),
-                      Text(
-                        subtitle!,
-                        style: AppTypography.labelSmall.copyWith(
-                          color: colors.textTertiary,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              SizedBox(width: AppSpacing.sm.s),
-              Switch(value: value, onChanged: onChanged),
-            ],
-          ),
+            ),
+            SizedBox(width: AppSpacing.sm.s),
+            Switch(value: value, onChanged: onChanged),
+          ],
         ),
       ),
     );

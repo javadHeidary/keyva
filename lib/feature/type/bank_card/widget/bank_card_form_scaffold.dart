@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_form_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/widget/bank_card_form_content.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 
@@ -28,8 +29,8 @@ class BankCardFormScaffold extends StatelessWidget {
                 title: controller.headerTitle,
                 titleAlign: TextAlign.center,
                 leading: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: AppSizes.iconMd.s,
+                  AppIcon.arrowBack,
+                  size: AppSizes.iconLg.s,
                   color: colors.textPrimary,
                 ),
                 onLeadingTap: Get.back,
@@ -37,7 +38,7 @@ class BankCardFormScaffold extends StatelessWidget {
                     ? [
                         AppHeaderTrailingAction(
                           child: Icon(
-                            Icons.delete_outline_rounded,
+                            AppIcon.delete,
                             size: AppSizes.iconLg.s,
                             color: colors.error,
                           ),

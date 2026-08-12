@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
+import 'package:get/get_navigation/src/routes/transitions_type.dart';
 import 'package:keyva/core/theme/design_system_example.dart';
 import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/category/view/category_create_view.dart';
+import 'package:keyva/feature/category/view/category_edit_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
@@ -30,6 +33,18 @@ import 'package:keyva/feature/widget_builder_test.dart';
 import 'package:keyva/shared/icons/app_icon_test.dart';
 
 class AppRoutes {
+  // ---------------------------------------------------------------------------
+  // Transition Configuration
+  // ---------------------------------------------------------------------------
+
+  static const Transition _pageTransition = Transition.rightToLeft;
+  static const Curve _pageCurve = Curves.easeOutCubic;
+  static const Duration _pageTransitionDuration = Duration(milliseconds: 300);
+
+  // ---------------------------------------------------------------------------
+  // Routes
+  // ---------------------------------------------------------------------------
+
   static const String themeDemo = '/theme-demo';
   static const String splash = '/splash';
   static const String onBoarding = '/on-boarding';
@@ -54,95 +69,209 @@ class AppRoutes {
   static const String categoryEdit = '/category/edit';
   static const String appIconTest = '/app-icon-test';
 
+  // ---------------------------------------------------------------------------
+  // GetX Pages
+  // ---------------------------------------------------------------------------
+
   static List<GetPage> routes = [
-    GetPage(name: themeDemo, page: () => const ThemeDemoPage()),
-    GetPage(name: splash, page: () => const SplashView()),
-    GetPage(name: appIconTest, page: () => const AppIconTestPage()),
+    GetPage(
+      name: themeDemo,
+      page: () => const ThemeDemoPage(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: splash,
+      page: () => const SplashView(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: appIconTest,
+      page: () => const AppIconTestPage(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
     GetPage(
       name: onBoarding,
       page: () => const OnboardingView(),
       binding: OnboardingBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: authLogin,
       page: () => const AuthLoginView(),
       binding: AuthBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: authRegister,
       page: () => const AuthRegisterView(),
       binding: AuthBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
-    GetPage(name: widgetBuilderTest, page: () => const WidgetBuilderTest()),
+
+    GetPage(
+      name: widgetBuilderTest,
+      page: () => const WidgetBuilderTest(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
     GetPage(
       name: home,
       page: () => const MainShellView(),
       binding: MainShellBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: typeList,
       page: () => const TypeListItemView(),
       binding: HomeBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
+    // -------------------------------------------------------------------------
+    // Login
+    // -------------------------------------------------------------------------
     GetPage(
       name: loginCreate,
       page: () => const LoginCreateView(),
       binding: LoginCreateBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: loginEdit,
       page: () => const LoginEditView(),
       binding: LoginEditBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: loginDetails,
       page: () => const LoginDetailsView(),
       binding: LoginDetailsBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
+    // -------------------------------------------------------------------------
+    // Bank Card
+    // -------------------------------------------------------------------------
     GetPage(
       name: bankCardCreate,
       page: () => const BankCardCreateView(),
       binding: BankCardCreateBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: bankCardEdit,
       page: () => const BankCardEditView(),
       binding: BankCardEditBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: bankCardDetails,
       page: () => const BankCardDetailsView(),
       binding: BankCardDetailsBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
+    // -------------------------------------------------------------------------
+    // Note
+    // -------------------------------------------------------------------------
     GetPage(
       name: noteCreate,
       page: () => const NoteCreateView(),
       binding: NoteCreateBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: noteEdit,
       page: () => const NoteEditView(),
       binding: NoteEditBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: noteDetails,
       page: () => const NoteDetailsView(),
       binding: NoteDetailsBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
+    // -------------------------------------------------------------------------
+    // Password Generator
+    // -------------------------------------------------------------------------
     GetPage(
       name: passwordGeneratorHistory,
       page: () => const PasswordHistoryView(),
       binding: PasswordHistoryBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
+    // -------------------------------------------------------------------------
+    // Category
+    // -------------------------------------------------------------------------
     GetPage(
       name: categoryCreate,
       page: () => const CategoryCreateView(),
       binding: CategoryCreateBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
+
     GetPage(
       name: categoryEdit,
       page: () => const CategoryEditView(),
       binding: CategoryEditBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
     ),
   ];
 }

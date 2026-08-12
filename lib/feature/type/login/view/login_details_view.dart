@@ -11,10 +11,10 @@ import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart'
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/login/widget/login_favicon_widget.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
-import 'package:keyva/shared/widget/login_section_card_widget.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
+import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
 class LoginDetailsView extends GetView<LoginDetailsViewModel> {
   const LoginDetailsView({super.key});
@@ -49,7 +49,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                   titleAlign: TextAlign.center,
                   leading: Icon(
                     AppIcon.arrowBack,
-                    size: AppSizes.iconMd.s,
+                    size: AppSizes.iconLg.s,
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
@@ -261,10 +261,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                       Expanded(
                         child: AppButtonWidget(
                           title: 'ویرایش',
-                          icon: Icon(
-                            AppIcon.edit,
-                            size: AppSizes.iconMd.s,
-                          ),
+                          icon: Icon(AppIcon.edit, size: AppSizes.iconMd.s),
                           onPressed: controller.navigateToEdit,
                         ),
                       ),
@@ -272,10 +269,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                       Expanded(
                         child: AppButtonWidget(
                           title: 'حذف',
-                          icon: Icon(
-                            AppIcon.delete,
-                            size: AppSizes.iconMd.s,
-                          ),
+                          icon: Icon(AppIcon.delete, size: AppSizes.iconMd.s),
                           backgroundColor: colors.error.withValues(alpha: 0.3),
                           foregroundColor: colors.error,
                           onPressed: () => controller.confirmDelete(context),

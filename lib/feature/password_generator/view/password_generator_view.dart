@@ -65,7 +65,7 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                   AppSpacing.pagePadding.s,
                   AppSpacing.sm.h,
                   AppSpacing.pagePadding.s,
-                  AppSpacing.lg.h,
+                  AppSpacing.hugePlus.h,
                 ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
