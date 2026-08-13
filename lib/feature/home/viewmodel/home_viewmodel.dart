@@ -10,8 +10,6 @@ import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 
 class HomeController extends GetxController {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final searchController = TextEditingController();
-  final searchQuery = ''.obs;
   final selectedType = Rxn<VaultItemType>();
   final selectedCategoryId = Rxn<String>();
   final trashItemCount = 2.obs;
@@ -127,7 +125,6 @@ class HomeController extends GetxController {
   bool get isVaultEmpty => vaultItems.isEmpty;
 
   List<VaultListItem> get visibleItems {
-    final query = searchQuery.value.trim().toLowerCase();
     final categoryId = selectedCategoryId.value;
     final type = selectedType.value;
     final items = vaultItems;
@@ -139,9 +136,7 @@ class HomeController extends GetxController {
           item.categoryId != categoryId) {
         return false;
       }
-      if (query.isEmpty) return true;
-      return item.title.toLowerCase().contains(query) ||
-          item.subtitle.toLowerCase().contains(query);
+      return true;
     }).toList();
   }
 
@@ -168,7 +163,13 @@ class HomeController extends GetxController {
     return vaultItems.where((item) => item.type == type).toList();
   }
 
-  void onTypeListSearchTap() {}
+  void onHomeSearchTap() {
+    Get.toNamed(AppRoutes.search);
+  }
+
+  void onTypeListSearchTap() {
+    Get.toNamed(AppRoutes.search, arguments: Get.arguments);
+  }
 
   void onTypeListMenuTap() {}
 
@@ -176,15 +177,6 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     selectedCategoryId.value = CategoryConstants.filterAllId;
-    searchController.addListener(_onSearchChanged);
-  }
-
-  void _onSearchChanged() {
-    searchQuery.value = searchController.text;
-  }
-
-  void onSearchChanged(String value) {
-    searchQuery.value = value;
   }
 
   void selectType(VaultItemType type) {
@@ -244,9 +236,4 @@ class HomeController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    searchController.dispose();
-    super.onClose();
-  }
 }

@@ -11,6 +11,8 @@ import 'package:keyva/feature/category/view/category_edit_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
+import 'package:keyva/feature/search/bindings/search_bindings.dart';
+import 'package:keyva/shared/widget/app_search_widget.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
 import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
@@ -48,6 +50,7 @@ class AppRoutes {
 
   static const String home = '/home';
   static const String typeList = '/type-list';
+  static const String search = '/search';
   static const String loginCreate = '/login/create';
   static const String loginEdit = '/login/edit';
   static const String loginDetails = '/login/details';
@@ -144,6 +147,14 @@ class AppRoutes {
       name: typeList,
       page: () => const TypeListItemView(),
       binding: HomeBindings(),
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+    GetPage(
+      name: search,
+      page: () => const AppSearchWidget(),
+      binding: SearchBindings(),
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,

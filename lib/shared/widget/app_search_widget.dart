@@ -1,0 +1,192 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:keyva/core/theme/app_radius.dart';
+import 'package:keyva/core/theme/app_sizes.dart';
+import 'package:keyva/core/theme/app_spacing.dart';
+import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
+import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/home/model/vault_models.dart';
+import 'package:keyva/feature/home/util/vault_more_actions.dart';
+import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/widget/app_empty_widget.dart';
+import 'package:keyva/shared/widget/app_list_item_widget.dart';
+import 'package:keyva/shared/widget/app_loading_widger.dart';
+import 'package:keyva/shared/widget/app_more_widget.dart';
+import 'package:keyva/shared/widget/app_search_header_widger.dart';
+
+class AppSearchWidget extends GetView<SearchViewModel> {
+  const AppSearchWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Scaffold(
+      backgroundColor: colors.pageBackground,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg.s,
+                AppSpacing.sm.h,
+                AppSpacing.lg.s,
+                AppSpacing.sm.h,
+              ),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: Get.back,
+                    borderRadius: BorderRadius.circular(AppRadius.extra),
+                    child: SizedBox(
+                      width: 40.s,
+                      height: 40.s,
+                      child: Icon(
+                        AppIcon.arrowBack,
+                        size: AppSizes.iconLg.s,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.sm.s),
+                  Expanded(
+                    child: AppSearchHeaderWidget(
+                      controller: controller.searchController,
+                      focusNode: controller.searchFocusNode,
+                      hintText: controller.hintText,
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(child: Obx(() => _buildBody(context))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    final query = controller.searchQuery.value.trim();
+
+    if (query.isEmpty) {
+      return Center(
+        child: AppEmptyWidget.searchIdle(typeLabel: controller.typeLabel),
+      );
+    }
+
+    if (controller.isSearching.value) {
+      return Center(child: AppLoadingWidget.section());
+    }
+
+    final results = controller.results;
+    if (results.isEmpty) {
+      return Center(child: AppEmptyWidget.searchNoResults());
+    }
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg.s,
+        AppSpacing.sm.h,
+        AppSpacing.lg.s,
+        AppSpacing.hugePlus.h,
+      ),
+      children: [
+        _SearchSectionCard(
+          children: [
+            for (var i = 0; i < results.length; i++) ...[
+              if (i > 0) const _SearchSectionDivider(),
+              _SearchResultTile(item: results[i]),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SearchResultTile extends GetView<SearchViewModel> {
+  const _SearchResultTile({required this.item});
+
+  final VaultListItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return AppListItemWidget(
+      title: item.title,
+      subtitle: item.subtitle,
+      trailingIcon: _SearchCircleIcon(
+        icon: Icon(
+          item.type.icon,
+          size: AppSizes.iconMd.s,
+          color: colors.textSecondary,
+        ),
+      ),
+      leadingIcon: AppMoreWidget(
+        dialogTitle: item.title,
+        actions: vaultMoreActionsForItem(item),
+      ),
+      onTap: () => controller.onItemTap(item),
+    );
+  }
+}
+
+class _SearchSectionCard extends StatelessWidget {
+  const _SearchSectionCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.card,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: context.shadows.card,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Column(mainAxisSize: MainAxisSize.min, children: children),
+      ),
+    );
+  }
+}
+
+class _SearchSectionDivider extends StatelessWidget {
+  const _SearchSectionDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 300.w,
+      child: Divider(height: 1, thickness: 2, color: context.colors.divider),
+    );
+  }
+}
+
+class _SearchCircleIcon extends StatelessWidget {
+  const _SearchCircleIcon({required this.icon});
+
+  final Widget icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Container(
+      width: 40.s,
+      height: 40.s,
+      decoration: BoxDecoration(
+        color: colors.input,
+        borderRadius: BorderRadius.circular(AppRadius.medium),
+      ),
+      child: Center(child: icon),
+    );
+  }
+}

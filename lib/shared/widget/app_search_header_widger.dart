@@ -15,6 +15,7 @@ class AppSearchHeaderWidget extends StatelessWidget {
     this.padding,
     this.readOnly = false,
     this.onTap,
+    this.focusNode,
   });
 
   final TextEditingController? controller;
@@ -29,6 +30,7 @@ class AppSearchHeaderWidget extends StatelessWidget {
 
   final bool readOnly;
   final VoidCallback? onTap;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class AppSearchHeaderWidget extends StatelessWidget {
               onSubmitted: onSubmitted,
               readOnly: readOnly,
               onTap: onTap,
+              focusNode: focusNode,
             ),
           ),
 
@@ -68,6 +71,7 @@ class _SearchField extends StatelessWidget {
     this.onSubmitted,
     this.readOnly = false,
     this.onTap,
+    this.focusNode,
   });
 
   final TextEditingController? controller;
@@ -76,6 +80,7 @@ class _SearchField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final bool readOnly;
   final VoidCallback? onTap;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +90,7 @@ class _SearchField extends StatelessWidget {
       height: 48.s,
       child: TextField(
         controller: controller,
+        focusNode: focusNode,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
         readOnly: readOnly,

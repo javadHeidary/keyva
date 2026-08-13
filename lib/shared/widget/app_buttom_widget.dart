@@ -5,6 +5,7 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/shared/widget/app_loading_widger.dart';
 
 class AppButtonWidget extends StatelessWidget {
   AppButtonWidget({
@@ -62,10 +63,11 @@ class AppButtonWidget extends StatelessWidget {
           child: isLoading
               ? SizedBox(
                   key: const ValueKey('loading'),
-                  width: 22.s,
-                  height: 22.s,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.s,
+                  width: AppSizes.loadingInline.s,
+                  height: AppSizes.loadingInline.s,
+                  child: AppLoadingWidget.indicator(
+                    context: context,
+                    layout: AppLoadingLayout.inline,
                     color: foregroundColor ?? colors.onPrimary,
                   ),
                 )

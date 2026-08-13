@@ -16,4 +16,8 @@ class AppSizes {
 
   static const double fabButtonSize = 45;
   static const double fabChildButtonSize = 40;
+
+  static const double loadingPage = 48;
+  static const double loadingSection = 36;
+  static const double loadingInline = 22;
 }

@@ -17,7 +17,6 @@ import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
-import 'package:keyva/shared/widget/app_search_header_widger.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -141,11 +140,36 @@ class _AccountHeader extends GetView<HomeController> {
         ),
         Expanded(
           flex: 1,
-          child: AppSearchHeaderWidget(
-            controller: controller.searchController,
-            hintText: 'جستجو ...',
-            onChanged: controller.onSearchChanged,
-            padding: EdgeInsets.zero,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: controller.onHomeSearchTap,
+              borderRadius: BorderRadius.circular(12.s),
+              child: Container(
+                height: 48.s,
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.s),
+                decoration: BoxDecoration(
+                  color: colors.input,
+                  borderRadius: BorderRadius.circular(12.s),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      AppIcon.search,
+                      size: 22.s,
+                      color: colors.textSecondary,
+                    ),
+                    SizedBox(width: AppSpacing.sm.s),
+                    Text(
+                      'جستجو ...',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: colors.textTertiary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -315,9 +339,7 @@ class _ItemsSection extends GetView<HomeController> {
       child: Obx(() {
         final items = controller.visibleItems;
         if (items.isEmpty) {
-          return _SectionCard(
-            children: [AppEmptyWidget.filteredResults()],
-          );
+          return _SectionCard(children: [AppEmptyWidget.filteredResults()]);
         }
 
         return _SectionCard(

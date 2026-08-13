@@ -104,6 +104,27 @@ class AppEmptyWidget extends StatelessWidget {
     );
   }
 
+  factory AppEmptyWidget.searchIdle({String? typeLabel}) {
+    final description = typeLabel == null
+        ? 'عنوان یا توضیحات آیتم را جستجو کنید.'
+        : 'عنوان یا توضیحات $typeLabel را جستجو کنید.';
+    return AppEmptyWidget(
+      icon: AppIcon.search,
+      title: 'برای جستجو تایپ کنید',
+      description: description,
+      layout: AppEmptyLayout.content,
+    );
+  }
+
+  factory AppEmptyWidget.searchNoResults() {
+    return const AppEmptyWidget(
+      icon: AppIcon.search,
+      title: 'موردی یافت نشد',
+      description: 'عبارت دیگری را امتحان کنید.',
+      layout: AppEmptyLayout.content,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return switch (layout) {
