@@ -71,14 +71,14 @@ class AppButtonWidget extends StatelessWidget {
                 )
               : Row(
                   key: const ValueKey('content'),
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: icon != null
+                      ? MainAxisAlignment.spaceBetween
+                      : MainAxisAlignment.center,
                   children: [
-                    if (icon != null) ...[
-                      icon!,
-                      SizedBox(width: AppSpacing.sm.s),
-                    ],
                     Text(title, style: textStyle ?? AppTypography.button),
+
+                    if (icon != null) ...[icon!],
                   ],
                 ),
         ),

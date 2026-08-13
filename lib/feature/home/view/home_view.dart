@@ -11,12 +11,14 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
+import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
+import 'package:keyva/shared/widget/app_more_widget.dart';
 import 'package:keyva/shared/widget/app_search_header_widger.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -365,60 +367,12 @@ class _VaultItemTile extends GetView<HomeController> {
           color: colors.textSecondary,
         ),
       ),
-      leadingIcon: Icon(
-        AppIcon.ellipsis,
-        size: AppSizes.iconMd.s,
-        color: colors.textSecondary,
+      leadingIcon: AppMoreWidget(
+        dialogTitle: item.title,
+        actions: vaultMoreActionsForItem(item),
       ),
       onTap: () => controller.onItemTap(item),
-      onLeadingPressed: () => _showItemActions(context, item),
     );
-  }
-
-  void _showItemActions(BuildContext context, VaultListItem item) {
-    final actions = _actionsForType(item.type);
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: context.colors.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.modal),
-        ),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final action in actions)
-                ListTile(
-                  title: Text(
-                    action,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: context.colors.textPrimary,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    controller.onItemMoreAction(item, action);
-                  },
-                ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  List<String> _actionsForType(VaultItemType type) {
-    switch (type) {
-      case VaultItemType.login:
-        return ['کپی نام کاربری', 'کپی رمز عبور'];
-      case VaultItemType.bankCard:
-        return ['کپی شماره کارت', 'کپی CVV2', 'کپی تاریخ انقضا'];
-      case VaultItemType.secureNote:
-        return ['کپی محتوای یادداشت'];
-    }
   }
 }
 

@@ -16,6 +16,6 @@ class PasswordHistoryViewModel extends GetxController {
   void copyPassword(BuildContext context, String password) {
     if (password.isEmpty) return;
     Clipboard.setData(ClipboardData(text: password));
-    AppToast.success(context, title: 'رمز عبور کپی شد', message: 'کپی');
+    AppToast.success(context, message: 'رمز عبور کپی شد', title: 'کپی');
   }
 }
