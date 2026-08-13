@@ -14,19 +14,19 @@ class OnboardingController extends GetxController {
       title: 'گاوصندوق امن شخصی شما',
       description:
           'Keyva یک فضای کاملاً خصوصی برای نگهداری رمزها، کارت‌های بانکی و یادداشت‌های حساس شماست.\nهمه چیز فقط روی گوشی خودتان ذخیره می‌شود.',
-      imagePath: Assets.images.onboardinTest.path,
+      imagePath: Assets.images.aboutOurApp.path,
     ),
     OnboardingSlide(
       title: 'اطلاعات شما از دستگاه خارج نمی‌شود',
       description:
           'بدون حساب کاربری، بدون سرور و بدون اینترنت.\nتمام داده‌ها به‌صورت محلی رمزنگاری می‌شوند و فقط شما به آن‌ها دسترسی دارید.',
-      imagePath: 'assets/images/onboardin_test_1.svg',
+      imagePath: Assets.images.contractOurApp.path,
     ),
     OnboardingSlide(
       title: 'امنیت قوی، استفاده ساده',
       description:
           'با Master Password و اثر انگشت از اطلاعاتتان محافظت کنید.\nرمزهای قوی بسازید، دسته‌بندی کنید و با خیال راحت مدیریت کنید.',
-      imagePath: Assets.images.onboardinTest.path,
+      imagePath: Assets.images.category.path,
     ),
   ];
 

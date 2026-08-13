@@ -30,6 +30,7 @@ class OnboardingView extends GetView<OnboardingController> {
                     child: Directionality(
                       textDirection: TextDirection.rtl,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: AppSpacing.xxl.h),
 
@@ -49,7 +50,7 @@ class OnboardingView extends GetView<OnboardingController> {
                           Text(
                             slide.title,
                             textAlign: TextAlign.right,
-                            style: AppTypography.titleLarge,
+                            style: AppTypography.displaySmall,
                           ),
 
                           SizedBox(height: 16.h),
@@ -57,7 +58,7 @@ class OnboardingView extends GetView<OnboardingController> {
                           Text(
                             slide.description,
                             textAlign: TextAlign.right,
-                            style: AppTypography.bodyMedium,
+                            style: AppTypography.titleMedium,
                           ),
 
                           const Spacer(),

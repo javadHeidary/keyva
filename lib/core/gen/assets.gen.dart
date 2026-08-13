@@ -27,6 +27,17 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/about-our-app.svg
+  SvgGenImage get aboutOurApp =>
+      const SvgGenImage('assets/images/about-our-app.svg');
+
+  /// File path: assets/images/category.svg
+  SvgGenImage get category => const SvgGenImage('assets/images/category.svg');
+
+  /// File path: assets/images/contract-our-app.svg
+  SvgGenImage get contractOurApp =>
+      const SvgGenImage('assets/images/contract-our-app.svg');
+
   /// File path: assets/images/logo_dark_mode.png
   AssetGenImage get logoDarkMode =>
       const AssetGenImage('assets/images/logo_dark_mode.png');
@@ -48,6 +59,9 @@ class $AssetsImagesGen {
 
   /// List of all assets
   List<dynamic> get values => [
+    aboutOurApp,
+    category,
+    contractOurApp,
     logoDarkMode,
     logoLightMode,
     logoTest,
