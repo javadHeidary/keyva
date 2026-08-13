@@ -1,58 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:get/get_navigation/get_navigation.dart';
-import 'package:get/utils.dart';
+import 'package:get/get.dart';
 import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
+import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/shared/widget/app_loading_widger.dart';
 
-class SplashView extends StatelessWidget {
+class SplashView extends StatefulWidget {
   const SplashView({super.key});
 
   @override
+  State<SplashView> createState() => _SplashViewState();
+}
+
+class _SplashViewState extends State<SplashView> {
+  static const _tagline = 'گاوصندوق امن شخصی شما';
+  static const _charDelay = Duration(milliseconds: 80);
+  static const _pauseBeforeNavigate = Duration(milliseconds: 600);
+
+  String _visibleTagline = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _startTypewriter();
+  }
+
+  Future<void> _startTypewriter() async {
+    for (var i = 0; i < _tagline.length; i++) {
+      await Future.delayed(_charDelay);
+      if (!mounted) return;
+      setState(() {
+        _visibleTagline = _tagline.substring(0, i + 1);
+      });
+    }
+
+    await Future.delayed(_pauseBeforeNavigate);
+    if (!mounted) return;
+    Get.offNamed(AppRoutes.onBoarding);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final logo = context.isDark
+        ? Assets.images.logoDarkMode
+        : Assets.images.logoLightMode;
+
     return Scaffold(
+      backgroundColor: context.colors.pageBackground,
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.onBoarding),
-                      child: SvgPicture.asset(
-                        Assets.images.logoTest.path,
-                        width: 100.w,
-                        height: 100.h,
-                      ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  logo.image(width: 150.w, height: 150.h, fit: BoxFit.contain),
+                  SizedBox(height: 24.h),
+                  Text(
+                    'کی وا',
+                    style: AppTypography.displayMedium.copyWith(
+                      color: context.colors.textPrimary,
                     ),
-                    SizedBox(height: 35.h),
-                    Text(
-                      'کیوا مدیرت پسورت , امنیت بی نظیر',
-                      style: AppTypography.titleLarge,
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    _visibleTagline,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.titleLarge.copyWith(
+                      color: context.colors.textSecondary,
                     ),
-                    SizedBox(height: 20.h),
-                    Text('کیوا مدیرت پسورت ,امنیت بی نظیر ,کیوا مدیرت پسورت'),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(
-                width: 220.w,
-                child: LinearProgressIndicator(
-                  value: 0.5,
-                  minHeight: 10.h,
-                  borderRadius: BorderRadius.all(Radius.circular(12.s)),
-                ),
-              ),
-              SizedBox(height: 80.h),
-            ],
-          ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 48.h),
+              child: AppLoadingWidget.section(),
+            ),
+          ],
         ),
       ),
     );
