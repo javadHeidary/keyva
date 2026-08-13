@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
-import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/password_generator/viewmodel/password_history_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
@@ -49,14 +49,7 @@ class PasswordHistoryView extends GetView<PasswordHistoryViewModel> {
                 sliver: entries.isEmpty
                     ? SliverToBoxAdapter(
                         child: AppSectionCardWidget(
-                          children: [
-                            Text(
-                              'هنوز رمزی در تاریخچه نیست. با کپی رمز از تولیدکننده، اینجا ذخیره می‌شود.',
-                              style: AppTypography.bodyMedium.copyWith(
-                                color: colors.textSecondary,
-                              ),
-                            ),
-                          ],
+                          children: [AppEmptyWidget.passwordHistory()],
                         ),
                       )
                     : SliverList.separated(

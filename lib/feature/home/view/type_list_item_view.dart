@@ -3,13 +3,13 @@ import 'package:get/get.dart';
 import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
-import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
@@ -73,18 +73,7 @@ class TypeListItemView extends GetView<HomeController> {
                   final items = controller.itemsForType(vaultType);
                   if (items.isEmpty) {
                     return _TypeListSectionCard(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(AppSpacing.lg.s),
-                          child: Text(
-                            'هنوز آیتمی از این نوع ثبت نشده است.',
-                            textAlign: TextAlign.center,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: colors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ],
+                      children: [AppEmptyWidget.typeList(vaultType)],
                     );
                   }
 

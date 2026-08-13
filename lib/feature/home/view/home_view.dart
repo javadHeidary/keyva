@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
@@ -15,7 +13,7 @@ import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
-import 'package:keyva/shared/widget/app_buttom_widget.dart';
+import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
@@ -58,7 +56,7 @@ class HomeView extends GetView<HomeController> {
       body: SafeArea(
         child: Obx(() {
           if (controller.vaultItems.isEmpty) {
-            return _VaultEmptyState(onCreate: controller.onCreateFirstItem);
+            return AppEmptyWidget.vault(onCreate: controller.onCreateFirstItem);
           }
           return const _VaultContent();
         }),
@@ -312,26 +310,13 @@ class _CategoryChip extends StatelessWidget {
 class _ItemsSection extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSpacing.lg.s),
       child: Obx(() {
         final items = controller.visibleItems;
         if (items.isEmpty) {
           return _SectionCard(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(AppSpacing.lg.s),
-                child: Text(
-                  'موردی با این فیلترها یافت نشد.',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: colors.textSecondary,
-                  ),
-                ),
-              ),
-            ],
+            children: [AppEmptyWidget.filteredResults()],
           );
         }
 
@@ -479,53 +464,6 @@ class _CircleIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.medium),
       ),
       child: Center(child: icon),
-    );
-  }
-}
-
-class _VaultEmptyState extends StatelessWidget {
-  const _VaultEmptyState({required this.onCreate});
-
-  final VoidCallback onCreate;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl.s),
-      child: Column(
-        children: [
-          const Spacer(flex: 2),
-          SvgPicture.asset(
-            Assets.images.onboardinTest.path,
-            width: 220.w,
-            height: 220.h,
-            fit: BoxFit.contain,
-          ),
-          SizedBox(height: AppSpacing.xl.h),
-          Text(
-            'هنوز چیزی ذخیره نکرده‌اید',
-            textAlign: TextAlign.center,
-            style: AppTypography.titleLarge.copyWith(color: colors.textPrimary),
-          ),
-          SizedBox(height: AppSpacing.md.h),
-          Text(
-            'رمزها، کارت‌های بانکی و یادداشت‌های امن خود را در گاوصندوق شخصی نگه دارید.',
-            textAlign: TextAlign.center,
-            style: AppTypography.bodyMedium.copyWith(
-              color: colors.textSecondary,
-            ),
-          ),
-          const Spacer(flex: 3),
-          AppButtonWidget(
-            title: 'ایجاد اولین آیتم',
-            icon: Icon(AppIcon.add, size: AppSizes.iconMd.s),
-            onPressed: onCreate,
-          ),
-          SizedBox(height: AppSpacing.xxl.h),
-        ],
-      ),
     );
   }
 }
