@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/util/category_icons.dart';
 import 'package:keyva/feature/category/viewmodel/category_list_viewmodel.dart';
+import 'package:keyva/feature/shell/util/main_shell_layout.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
+import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/category_widget.dart';
 
@@ -16,19 +20,23 @@ class CategoryListView extends GetView<CategoryListViewModel> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final fabBottomInset = MainShellLayout.fabBottomInset(
+      context,
+      extraPadding: AppSpacing.lg.h,
+    );
 
     return Scaffold(
       backgroundColor: colors.pageBackground,
-      // floatingActionButtonLocation: AppFabScaffoldLocation(
-      //   bottomInset: MainShellLayout.fabBottomInset(context),
-      // ),
-      // floatingActionButtonLocation: AppFabScaffoldLocation(
-      //   bottomInset: MainShellLayout.fabBottomInset(context),
-      // ),
-      // floatingActionButton: AppFloatingActionButton(
-      //   onPressed: controller.openCreate,
-      //   icon: Icon(AppIcon.add),
-      // ),
+      floatingActionButtonLocation: AppFabWidget.scaffoldLocation(
+        bottomInset: fabBottomInset,
+        expandable: false,
+      ),
+      floatingActionButton: AppFabWidget(
+        bottomInset: fabBottomInset,
+        buttonSize: 45.s,
+        icon: const Icon(AppIcon.add),
+        onPressed: () => Get.toNamed(AppRoutes.categoryCreate),
+      ),
       body: SafeArea(
         child: Obx(() {
           final categories = controller.catalog.categories;

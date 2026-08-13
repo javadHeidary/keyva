@@ -24,12 +24,18 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    final fabBottomInset = MainShellLayout.fabBottomInset(context);
+
     return Scaffold(
       key: controller.scaffoldKey,
-      floatingActionButtonLocation: AppFabWidget.expandableLocation,
+      floatingActionButtonLocation: AppFabWidget.scaffoldLocation(
+        bottomInset: fabBottomInset,
+        expandable: true,
+      ),
       floatingActionButton: AppFabWidget(
-        bottomInset: MainShellLayout.fabBottomInset(context),
-        icon: Icon(AppIcon.add, size: AppSizes.iconLg.s),
+        bottomInset: fabBottomInset,
+        buttonSize: 45.s,
+        icon: const Icon(AppIcon.add),
         children: [
           AppFabChildButton(
             icon: Icon(AppIcon.creditCard),

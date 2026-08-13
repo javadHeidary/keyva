@@ -10,18 +10,22 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
 /// Bottom-left FAB placement using page padding and a caller-provided bottom inset.
 class AppFabScaffoldLocation extends FloatingActionButtonLocation {
-  const AppFabScaffoldLocation({required this.bottomInset});
+  const AppFabScaffoldLocation({
+    required this.bottomInset,
+    this.buttonSize = AppSizes.fabButtonSize,
+  });
 
   final double bottomInset;
+  final double buttonSize;
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final fabSize = scaffoldGeometry.floatingActionButtonSize;
     final scaffoldSize = scaffoldGeometry.scaffoldSize;
+    final fabHeight = buttonSize.s;
 
     return Offset(
       AppSpacing.pagePadding.s,
-      scaffoldSize.height - fabSize.height - bottomInset,
+      scaffoldSize.height - fabHeight - bottomInset,
     );
   }
 }
@@ -40,6 +44,8 @@ class AppFabWidget extends StatelessWidget {
     this.distance,
     this.fanAngle = 90,
     this.showOverlay = true,
+    this.buttonSize = AppSizes.fabButtonSize,
+    this.iconSize = AppSizes.iconLg,
   }) : assert(
          onPressed != null || children.isNotEmpty,
          'Provide onPressed or non-empty children',
@@ -52,25 +58,41 @@ class AppFabWidget extends StatelessWidget {
   final double? distance;
   final double fanAngle;
   final bool showOverlay;
+  final double buttonSize;
+  final double iconSize;
 
-  static const double _fabSize = 45;
+  bool get isExpandable => children.isNotEmpty;
 
-  bool get _isExpandable => children.isNotEmpty;
+  /// Use with [AppFabWidget] — pass [expandable] when [children] is non-empty.
+  static FloatingActionButtonLocation scaffoldLocation({
+    required double bottomInset,
+    required bool expandable,
+    double buttonSize = AppSizes.fabButtonSize,
+  }) {
+    if (expandable) return ExpandableFab.location;
+    return AppFabScaffoldLocation(
+      bottomInset: bottomInset,
+      buttonSize: buttonSize,
+    );
+  }
 
+  @Deprecated('Use scaffoldLocation(expandable: true) instead')
   static FloatingActionButtonLocation get expandableLocation =>
       ExpandableFab.location;
 
   @override
   Widget build(BuildContext context) {
-    if (!_isExpandable) {
+    if (!isExpandable) {
       return _AppFabButton(
         icon: icon ?? const Icon(Icons.add_rounded),
         onTap: onPressed!,
+        size: buttonSize,
+        iconSize: iconSize,
       );
     }
 
     final colors = context.colors;
-    final fabSize = _fabSize.s;
+    final fabSize = buttonSize.s;
 
     FloatingActionButtonBuilder fabBuilder({
       required Widget child,
@@ -87,6 +109,8 @@ class AppFabWidget extends StatelessWidget {
                 child: _AppFabButton(
                   icon: child,
                   onTap: onPressed ?? () {},
+                  size: buttonSize,
+                  iconSize: iconSize,
                 ),
               );
             },
@@ -107,7 +131,9 @@ class AppFabWidget extends StatelessWidget {
         bottom: bottomInset,
       ),
       overlayStyle: showOverlay
-          ? ExpandableFabOverlayStyle(color: colors.overlay.withValues(alpha: 0.45))
+          ? ExpandableFabOverlayStyle(
+              color: colors.overlay.withValues(alpha: 0.45),
+            )
           : null,
       openButtonBuilder: fabBuilder(
         angle: math.pi / 4,
@@ -128,12 +154,16 @@ class AppFabChildButton extends StatelessWidget {
     super.key,
     required this.icon,
     required this.onPressed,
+    this.buttonSize = AppSizes.fabChildButtonSize,
+    this.iconSize = AppSizes.iconLg,
     this.backgroundColor,
     this.foregroundColor,
   });
 
   final Widget icon;
   final VoidCallback onPressed;
+  final double buttonSize;
+  final double iconSize;
   final Color? backgroundColor;
   final Color? foregroundColor;
 
@@ -144,7 +174,8 @@ class AppFabChildButton extends StatelessWidget {
     return _AppFabButton(
       icon: icon,
       onTap: onPressed,
-      size: 40,
+      size: buttonSize,
+      iconSize: iconSize,
       backgroundColor: backgroundColor ?? colors.card,
       foregroundColor: foregroundColor ?? colors.primary,
     );
@@ -155,7 +186,8 @@ class _AppFabButton extends StatelessWidget {
   const _AppFabButton({
     required this.icon,
     required this.onTap,
-    this.size = AppFabWidget._fabSize,
+    required this.size,
+    required this.iconSize,
     this.backgroundColor,
     this.foregroundColor,
   });
@@ -163,6 +195,7 @@ class _AppFabButton extends StatelessWidget {
   final Widget icon;
   final VoidCallback onTap;
   final double size;
+  final double iconSize;
   final Color? backgroundColor;
   final Color? foregroundColor;
 
@@ -186,7 +219,7 @@ class _AppFabButton extends StatelessWidget {
           child: Center(
             child: IconTheme(
               data: IconThemeData(
-                size: AppSizes.iconLg.s,
+                size: iconSize.s,
                 color: foregroundColor ?? colors.onPrimary,
               ),
               child: icon,

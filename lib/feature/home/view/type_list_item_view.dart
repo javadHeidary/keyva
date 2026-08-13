@@ -9,6 +9,7 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 
@@ -25,10 +26,14 @@ class TypeListItemView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final vaultType = _vaultType;
-
     return Scaffold(
       backgroundColor: colors.pageBackground,
 
+      floatingActionButton: AppFabWidget(
+        buttonSize: 50.s,
+        icon: const Icon(AppIcon.add),
+        onPressed: () => controller.onAddItemForType(vaultType),
+      ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [

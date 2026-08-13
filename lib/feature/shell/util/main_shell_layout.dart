@@ -16,8 +16,11 @@ abstract final class MainShellLayout {
   }
 
   /// FAB sits just above the nav with a tight [AppSpacing.xs] gap.
-  static double fabBottomInset(BuildContext context) {
-    return navOverlayExtent(context) + AppSpacing.xs.h;
+  static double fabBottomInset(
+    BuildContext context, {
+    double extraPadding = 0,
+  }) {
+    return navOverlayExtent(context) + AppSpacing.xs.h + extraPadding;
   }
 
   /// Scroll/content inset so lists clear FAB + nav.
