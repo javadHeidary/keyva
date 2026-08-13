@@ -12,8 +12,10 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
+import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_search_header_widger.dart';
 
@@ -24,7 +26,27 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: controller.scaffoldKey,
-
+      floatingActionButtonLocation: AppFabWidget.expandableLocation,
+      floatingActionButton: AppFabWidget(
+        bottomInset: MainShellLayout.fabBottomInset(context),
+        icon: Icon(AppIcon.add, size: AppSizes.iconLg.s),
+        children: [
+          AppFabChildButton(
+            icon: Icon(AppIcon.creditCard),
+            onPressed: () =>
+                controller.onAddItemForType(VaultItemType.bankCard),
+          ),
+          AppFabChildButton(
+            icon: Icon(AppIcon.stickyNote),
+            onPressed: () =>
+                controller.onAddItemForType(VaultItemType.secureNote),
+          ),
+          AppFabChildButton(
+            icon: Icon(AppIcon.lock),
+            onPressed: () => controller.onAddItemForType(VaultItemType.login),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Obx(() {
           if (controller.vaultItems.isEmpty) {

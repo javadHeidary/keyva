@@ -20,6 +20,7 @@ dependencies:
   persian_number_utility: ^1.1.6
   flutter_expandable_fab: ^2.5.2
   lucide_icons: ^0.257.0
+  fan_floating_menu: ^0.0.3
 
 dev_dependencies:
   flutter_test:

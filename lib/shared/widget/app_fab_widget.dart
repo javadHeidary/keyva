@@ -1,362 +1,199 @@
-// import 'package:flutter/material.dart';
-// import 'package:keyva/core/theme/app_radius.dart';
-// import 'package:keyva/core/theme/app_sizes.dart';
-// import 'package:keyva/core/theme/app_spacing.dart';
-// import 'package:keyva/core/theme/app_typography.dart';
-// import 'package:keyva/core/theme/app_spacing.dart';
-// import 'package:keyva/core/theme/app_typography.dart';
-// import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
-// import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-// import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'dart:math' as math;
 
-// class AppFabSpeedDialAction {
-//   const AppFabSpeedDialAction({
-//     required this.label,
-//     required this.icon,
-// class AppFabSpeedDialAction {
-//   const AppFabSpeedDialAction({
-//     required this.label,
-//     required this.icon,
-//     required this.onPressed,
-//   });
+import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:keyva/core/theme/app_radius.dart';
+import 'package:keyva/core/theme/app_sizes.dart';
+import 'package:keyva/core/theme/app_spacing.dart';
+import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
+import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
-//   final String label;
-//   final Widget icon;
-//   final VoidCallback onPressed;
-// }
+/// Bottom-left FAB placement using page padding and a caller-provided bottom inset.
+class AppFabScaffoldLocation extends FloatingActionButtonLocation {
+  const AppFabScaffoldLocation({required this.bottomInset});
 
-// /// Bottom-left FAB placement using page padding and a caller-provided bottom inset.
-// class AppFabScaffoldLocation extends FloatingActionButtonLocation {
-//   const AppFabScaffoldLocation({required this.bottomInset});
+  final double bottomInset;
 
-//   final double bottomInset;
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final fabSize = scaffoldGeometry.floatingActionButtonSize;
+    final scaffoldSize = scaffoldGeometry.scaffoldSize;
 
-//   @override
-//   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-//     final fabSize = scaffoldGeometry.floatingActionButtonSize;
-//     final scaffoldSize = scaffoldGeometry.scaffoldSize;
+    return Offset(
+      AppSpacing.pagePadding.s,
+      scaffoldSize.height - fabSize.height - bottomInset,
+    );
+  }
+}
 
-//     return Offset(
-//       AppSpacing.pagePadding.s,
-//       scaffoldSize.height - fabSize.height - bottomInset,
-//     );
-//   }
-// }
+/// Reusable fan-style expandable FAB.
+///
+/// Pass [children] for a speed-dial menu; each child can be any [Widget].
+/// When [children] is empty, a single FAB is shown and [onPressed] is required.
+class AppFabWidget extends StatelessWidget {
+  AppFabWidget({
+    super.key,
+    this.icon,
+    this.onPressed,
+    this.children = const [],
+    this.bottomInset = 0,
+    this.distance,
+    this.fanAngle = 90,
+    this.showOverlay = true,
+  }) : assert(
+         onPressed != null || children.isNotEmpty,
+         'Provide onPressed or non-empty children',
+       );
 
-// class AppFloatingActionButton extends StatefulWidget {
-//   AppFloatingActionButton({
-//     super.key,
-//     this.onPressed,
-//     this.icon,
-//     this.actions,
-//   }) : assert(
-//          onPressed != null || (actions != null && actions.isNotEmpty),
-//          'Provide onPressed or non-empty actions',
-//        );
+  final Widget? icon;
+  final VoidCallback? onPressed;
+  final List<Widget> children;
+  final double bottomInset;
+  final double? distance;
+  final double fanAngle;
+  final bool showOverlay;
 
-//   final VoidCallback? onPressed;
-//   final Widget? icon;
-//   final List<AppFabSpeedDialAction>? actions;
+  static const double _fabSize = 45;
 
-//   bool get _isSpeedDial => actions != null && actions!.isNotEmpty;
+  bool get _isExpandable => children.isNotEmpty;
 
-//   @override
-//   State<AppFloatingActionButton> createState() =>
-//       _AppFloatingActionButtonState();
-// }
+  static FloatingActionButtonLocation get expandableLocation =>
+      ExpandableFab.location;
 
-// class _AppFloatingActionButtonState extends State<AppFloatingActionButton>
-//     with SingleTickerProviderStateMixin {
-//   static const _duration = Duration(milliseconds: 220);
-//   static const _staggerFraction = 0.1;
+  @override
+  Widget build(BuildContext context) {
+    if (!_isExpandable) {
+      return _AppFabButton(
+        icon: icon ?? const Icon(Icons.add_rounded),
+        onTap: onPressed!,
+      );
+    }
 
-//   final _fabKey = GlobalKey();
-//   late final AnimationController _controller;
-//   OverlayEntry? _overlayEntry;
-//   bool _isOpen = false;
+    final colors = context.colors;
+    final fabSize = _fabSize.s;
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _controller = AnimationController(vsync: this, duration: _duration);
-//     _controller.addListener(_markOverlayNeedsBuild);
-//   }
+    FloatingActionButtonBuilder fabBuilder({
+      required Widget child,
+      required double angle,
+    }) {
+      return FloatingActionButtonBuilder(
+        size: fabSize,
+        builder: (context, onPressed, progress) {
+          return AnimatedBuilder(
+            animation: progress,
+            builder: (context, _) {
+              return Transform.rotate(
+                angle: progress.value * angle,
+                child: _AppFabButton(
+                  icon: child,
+                  onTap: onPressed ?? () {},
+                ),
+              );
+            },
+          );
+        },
+      );
+    }
 
-//   @override
-//   void dispose() {
-//     _controller.removeListener(_markOverlayNeedsBuild);
-//     _removeOverlay();
-//     _controller.dispose();
-//     super.dispose();
-//   }
+    return ExpandableFab(
+      type: ExpandableFabType.fan,
+      pos: ExpandableFabPos.left,
+      fanAngle: fanAngle,
+      distance: distance ?? 64.s,
+      duration: const Duration(milliseconds: 220),
+      childrenAnimation: ExpandableFabAnimation.rotate,
+      margin: EdgeInsets.only(
+        left: AppSpacing.pagePadding.s - kFloatingActionButtonMargin,
+        bottom: bottomInset,
+      ),
+      overlayStyle: showOverlay
+          ? ExpandableFabOverlayStyle(color: colors.overlay.withValues(alpha: 0.45))
+          : null,
+      openButtonBuilder: fabBuilder(
+        angle: math.pi / 4,
+        child: icon ?? const Icon(Icons.add_rounded),
+      ),
+      closeButtonBuilder: fabBuilder(
+        angle: 0,
+        child: const Icon(Icons.close_rounded),
+      ),
+      children: children,
+    );
+  }
+}
 
-//   void _markOverlayNeedsBuild() {
-//     final entry = _overlayEntry;
-//     if (entry == null) return;
-//     entry.markNeedsBuild();
-//   }
+/// Styled child button for [AppFabWidget] menus.
+class AppFabChildButton extends StatelessWidget {
+  const AppFabChildButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.backgroundColor,
+    this.foregroundColor,
+  });
 
-//   void _toggle() {
-//     if (_isOpen) {
-//       _close();
-//     } else {
-//       _open();
-//     }
-//   }
+  final Widget icon;
+  final VoidCallback onPressed;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
-//   void _open() {
-//     setState(() => _isOpen = true);
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       if (!mounted || !_isOpen) return;
-//       _insertOverlay();
-//       _controller.forward(from: 0);
-//     });
-//   }
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
 
-//   void _close() {
-//     if (!_isOpen) return;
-//     setState(() => _isOpen = false);
-//     _controller.reverse().whenComplete(() {
-//       if (!mounted) return;
-//       _removeOverlay();
-//     });
-//   }
+    return _AppFabButton(
+      icon: icon,
+      onTap: onPressed,
+      size: 40,
+      backgroundColor: backgroundColor ?? colors.card,
+      foregroundColor: foregroundColor ?? colors.primary,
+    );
+  }
+}
 
-//   void _closeAndRun(VoidCallback action) {
-//     if (!_isOpen) {
-//       action();
-//       return;
-//     }
-//     setState(() => _isOpen = false);
-//     _controller.stop();
-//     _controller.value = 0;
-//     _removeOverlay();
-//     // Defer navigation so Overlay teardown does not conflict with route build.
-//     WidgetsBinding.instance.addPostFrameCallback((_) {
-//       action();
-//     });
-//   }
+class _AppFabButton extends StatelessWidget {
+  const _AppFabButton({
+    required this.icon,
+    required this.onTap,
+    this.size = AppFabWidget._fabSize,
+    this.backgroundColor,
+    this.foregroundColor,
+  });
 
-//   void _insertOverlay() {
-//     if (_overlayEntry != null) return;
-//     final overlay = Overlay.of(context);
-//     _overlayEntry = OverlayEntry(
-//       builder: (context) => _SpeedDialOverlay(
-//         fabKey: _fabKey,
-//         actions: widget.actions!,
-//         animation: _controller,
-//         onActionTap: _onActionTap,
-//         onDismiss: _close,
-//       ),
-//     );
-//     overlay.insert(_overlayEntry!);
-//   }
+  final Widget icon;
+  final VoidCallback onTap;
+  final double size;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
-//   void _removeOverlay() {
-//     _overlayEntry?.remove();
-//     _overlayEntry = null;
-//   }
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
 
-//   void _onActionTap(AppFabSpeedDialAction action) {
-//     _closeAndRun(action.onPressed);
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     if (!widget._isSpeedDial) {
-//       return _FabButton(
-//         icon: widget.icon ?? const Icon(Icons.add_rounded),
-//         onTap: widget.onPressed!,
-//       );
-//     }
-
-//     return _FabButton(
-//       key: _fabKey,
-//       icon: _isOpen
-//           ? const Icon(Icons.close_rounded, key: ValueKey('fab_close'))
-//           : const Icon(Icons.add_rounded, key: ValueKey('fab_add')),
-//       onTap: _toggle,
-//       animatedIcon: true,
-//     );
-//   }
-// }
-
-// class _FabButton extends StatelessWidget {
-//   const _FabButton({
-//     super.key,
-//     required this.icon,
-//     required this.onTap,
-//     this.animatedIcon = false,
-//   });
-
-//   final Widget icon;
-//   final VoidCallback onTap;
-//   final bool animatedIcon;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final colors = Theme.of(context).colorScheme;
-//     final iconChild = IconTheme(
-//       data: IconThemeData(
-//         size: AppSizes.iconLg.s,
-//         color: colors.onPrimary,
-//       ),
-//       child: icon,
-//     );
-
-//     return GestureDetector(
-//       onTap: onTap,
-//       onTap: onTap,
-//       child: Container(
-//         width: 45.s,
-//         height: 45.s,
-//         decoration: BoxDecoration(
-//           color: colors.primary,
-//           borderRadius: BorderRadius.circular(AppRadius.medium),
-//         ),
-//         child: Center(
-//           child: animatedIcon
-//               ? AnimatedSwitcher(
-//                   duration: _AppFloatingActionButtonState._duration,
-//                   child: iconChild,
-//                 )
-//               : iconChild,
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class _SpeedDialOverlay extends StatelessWidget {
-//   const _SpeedDialOverlay({
-//     required this.fabKey,
-//     required this.actions,
-//     required this.animation,
-//     required this.onActionTap,
-//     required this.onDismiss,
-//   });
-
-//   final GlobalKey fabKey;
-//   final List<AppFabSpeedDialAction> actions;
-//   final Animation<double> animation;
-//   final ValueChanged<AppFabSpeedDialAction> onActionTap;
-//   final VoidCallback onDismiss;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final renderBox = fabKey.currentContext?.findRenderObject() as RenderBox?;
-//     if (renderBox == null || !renderBox.hasSize) {
-//       return const SizedBox.shrink();
-//     }
-
-//     final fabOffset = renderBox.localToGlobal(Offset.zero);
-//     final screenSize = MediaQuery.sizeOf(context);
-//     // Column sits just above the FAB with AppSpacing.md gap.
-//     final actionsBottom =
-//         screenSize.height - fabOffset.dy + AppSpacing.md.h;
-
-//     return Stack(
-//       children: [
-//         Positioned.fill(
-//           child: GestureDetector(
-//             onTap: onDismiss,
-//             behavior: HitTestBehavior.translucent,
-//           ),
-//         ),
-//         Positioned(
-//           left: fabOffset.dx,
-//           bottom: actionsBottom,
-//           child: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               for (var i = actions.length - 1; i >= 0; i--) ...[
-//                 _SpeedDialAction(
-//                   action: actions[i],
-//                   animation: animation,
-//                   staggerIndex: actions.length - 1 - i,
-//                   onTap: () => onActionTap(actions[i]),
-//                 ),
-//                 if (i > 0) SizedBox(height: AppSpacing.md.h),
-//               ],
-//             ],
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
-// class _SpeedDialAction extends StatelessWidget {
-//   const _SpeedDialAction({
-//     required this.action,
-//     required this.animation,
-//     required this.staggerIndex,
-//     required this.onTap,
-//   });
-
-//   final AppFabSpeedDialAction action;
-//   final Animation<double> animation;
-//   final int staggerIndex;
-//   final VoidCallback onTap;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final colors = context.colors;
-//     final shadows = context.shadows;
-//     final start = staggerIndex * _AppFloatingActionButtonState._staggerFraction;
-//     final end = (start + 0.75).clamp(0.0, 1.0);
-
-//     return AnimatedBuilder(
-//       animation: animation,
-//       builder: (context, child) {
-//         final t = Interval(start, end, curve: Curves.easeOutCubic).transform(
-//           animation.value,
-//         );
-//         return Transform.translate(
-//           offset: Offset(0, (1 - t) * AppSpacing.md.h),
-//           child: Opacity(opacity: t, child: child),
-//         );
-//       },
-//       // LTR + fixed icon column so all three icons stack exactly above the FAB.
-//       child: Directionality(
-//         textDirection: TextDirection.ltr,
-//         child: Row(
-//           mainAxisSize: MainAxisSize.min,
-//           crossAxisAlignment: CrossAxisAlignment.center,
-//           children: [
-//             SizedBox(
-//               width: 45.s,
-//               height: 45.s,
-//               child: _FabButton(icon: action.icon, onTap: onTap),
-//             ),
-//             SizedBox(width: AppSpacing.sm.s),
-//             DecoratedBox(
-//               decoration: BoxDecoration(
-//                 color: colors.card,
-//                 borderRadius: BorderRadius.circular(AppRadius.medium),
-//                 border: Border.all(
-//                   color: colors.border,
-//                   width: AppSizes.inputBorderWidth,
-//                 ),
-//                 boxShadow: shadows.card,
-//               ),
-//               child: Padding(
-//                 padding: EdgeInsets.symmetric(
-//                   horizontal: AppSpacing.md.s,
-//                   vertical: AppSpacing.sm.s,
-//                 ),
-//                 child: Text(
-//                   action.label,
-//                   style: AppTypography.labelLarge.copyWith(
-//                     color: colors.textPrimary,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+    return Material(
+      color: backgroundColor ?? colors.primary,
+      elevation: 2,
+      shadowColor: Colors.black26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.medium.s),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          width: size.s,
+          height: size.s,
+          child: Center(
+            child: IconTheme(
+              data: IconThemeData(
+                size: AppSizes.iconLg.s,
+                color: foregroundColor ?? colors.onPrimary,
+              ),
+              child: icon,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
