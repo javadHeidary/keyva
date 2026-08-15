@@ -5,6 +5,7 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/onboarding/util/onboarding_precache.dart';
 import 'package:keyva/shared/widget/app_loading_widger.dart';
 
 class SplashView extends StatefulWidget {
@@ -24,10 +25,13 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-    _startTypewriter();
+    final typewriter = _runTypewriter();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prepareOnboardingThenGo(typewriter);
+    });
   }
 
-  Future<void> _startTypewriter() async {
+  Future<void> _runTypewriter() async {
     for (var i = 0; i < _tagline.length; i++) {
       await Future.delayed(_charDelay);
       if (!mounted) return;
@@ -35,7 +39,14 @@ class _SplashViewState extends State<SplashView> {
         _visibleTagline = _tagline.substring(0, i + 1);
       });
     }
+  }
 
+  Future<void> _prepareOnboardingThenGo(Future<void> typewriter) async {
+    await Future.wait([
+      typewriter,
+      precacheOnboardingAssets(context),
+    ]);
+    if (!mounted) return;
     await Future.delayed(_pauseBeforeNavigate);
     if (!mounted) return;
     Get.offNamed(AppRoutes.onBoarding);
