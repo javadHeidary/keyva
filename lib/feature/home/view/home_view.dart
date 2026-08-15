@@ -101,23 +101,21 @@ class _AccountHeader extends GetView<HomeController> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Obx(
-          () => Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {},
-              borderRadius: BorderRadius.circular(AppRadius.extra),
-              child: Container(
-                width: 40.s,
-                height: 40.s,
-                decoration: BoxDecoration(
-                  color: colors.textTertiary,
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.circular(AppRadius.medium),
-                ),
-                alignment: Alignment.center,
-                child: Icon(AppIcon.accountCircle),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {},
+            borderRadius: BorderRadius.circular(AppRadius.extra),
+            child: Container(
+              width: 40.s,
+              height: 40.s,
+              decoration: BoxDecoration(
+                color: colors.textTertiary,
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(AppRadius.medium),
               ),
+              alignment: Alignment.center,
+              child: Icon(AppIcon.accountCircle),
             ),
           ),
         ),

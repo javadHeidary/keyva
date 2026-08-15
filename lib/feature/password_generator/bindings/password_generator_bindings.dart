@@ -8,13 +8,14 @@ class PasswordGeneratorBindings extends Bindings {
   @override
   void dependencies() {
     if (!Get.isRegistered<PasswordGeneratorSettingsStore>()) {
-      Get.putAsync(
-        () => PasswordGeneratorSettingsStore().init(),
-        permanent: true,
-      );
+      final store = PasswordGeneratorSettingsStore();
+      Get.put(store, permanent: true);
+      store.init();
     }
     if (!Get.isRegistered<PasswordHistoryStore>()) {
-      Get.putAsync(() => PasswordHistoryStore().init(), permanent: true);
+      final store = PasswordHistoryStore();
+      Get.put(store, permanent: true);
+      store.init();
     }
     Get.lazyPut(() => PasswordGeneratorViewModel());
   }
@@ -24,7 +25,9 @@ class PasswordHistoryBindings extends Bindings {
   @override
   void dependencies() {
     if (!Get.isRegistered<PasswordHistoryStore>()) {
-      Get.putAsync(() => PasswordHistoryStore().init(), permanent: true);
+      final store = PasswordHistoryStore();
+      Get.put(store, permanent: true);
+      store.init();
     }
     Get.lazyPut(() => PasswordHistoryViewModel());
   }
