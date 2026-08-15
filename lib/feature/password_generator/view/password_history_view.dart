@@ -62,6 +62,7 @@ class PasswordHistoryView extends GetView<PasswordHistoryViewModel> {
                             icon: AppIcon.lock,
                             label: controller.formatCopiedAt(entry.copiedAt),
                             value: entry.password,
+                            useFaNumLabel: true,
                             maxLines: 2,
                             trailing: LoginDetailActionIcon(
                               icon: AppIcon.copy,

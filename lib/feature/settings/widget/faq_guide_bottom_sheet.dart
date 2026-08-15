@@ -102,7 +102,9 @@ class _FaqExpansionTile extends StatelessWidget {
         ),
         title: Text(
           '$number. ${item.question}',
-          style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+          style: AppTypography.withFaNum(
+            AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
+          ),
         ),
         iconColor: colors.textSecondary,
         collapsedIconColor: colors.textSecondary,

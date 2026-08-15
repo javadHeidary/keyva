@@ -189,9 +189,11 @@ class PasswordGeneratorView extends GetView<PasswordGeneratorViewModel> {
                                 ),
                                 child: Text(
                                   '${settings.length}',
-                                  style: AppTypography.labelMedium.copyWith(
-                                    color: colors.primary,
-                                    fontWeight: FontWeight.w700,
+                                  style: AppTypography.withFaNum(
+                                    AppTypography.labelMedium.copyWith(
+                                      color: colors.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                               ),

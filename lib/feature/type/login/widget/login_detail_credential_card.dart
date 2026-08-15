@@ -17,6 +17,8 @@ class LoginDetailCredentialCard extends StatelessWidget {
     this.iconColor,
     this.maxLines = 1,
     this.trailing,
+    this.useFaNumLabel = false,
+    this.useFaNumValue = false,
   }) : assert(icon != null || leading != null, 'icon or leading is required');
 
   final IconData? icon;
@@ -27,6 +29,8 @@ class LoginDetailCredentialCard extends StatelessWidget {
   final Color? iconColor;
   final int maxLines;
   final Widget? trailing;
+  final bool useFaNumLabel;
+  final bool useFaNumValue;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +38,13 @@ class LoginDetailCredentialCard extends StatelessWidget {
     final badgeBg =
         iconBackgroundColor ?? colors.primary.withValues(alpha: 0.12);
     final badgeIconColor = iconColor ?? colors.primary;
+    final labelStyle = AppTypography.labelMedium.copyWith(
+      color: colors.textSecondary,
+    );
+    final valueStyle = AppTypography.titleMedium.copyWith(
+      color: colors.textPrimary,
+      fontWeight: FontWeight.w600,
+    );
 
     final Widget leadingBadge = leading != null
         ? SizedBox(width: 44.s, height: 44.s, child: leading)
@@ -67,17 +78,16 @@ class LoginDetailCredentialCard extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: AppTypography.labelMedium.copyWith(
-                      color: colors.textSecondary,
-                    ),
+                    style: useFaNumLabel
+                        ? AppTypography.withFaNum(labelStyle)
+                        : labelStyle,
                   ),
                   SizedBox(height: AppSpacing.xxs.s),
                   Text(
                     value.isEmpty ? '—' : value,
-                    style: AppTypography.titleMedium.copyWith(
-                      color: colors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: useFaNumValue
+                        ? AppTypography.withFaNum(valueStyle)
+                        : valueStyle,
                     maxLines: maxLines,
                     overflow: TextOverflow.ellipsis,
                   ),

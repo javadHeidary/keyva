@@ -212,9 +212,11 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                                     SizedBox(height: AppSpacing.xxs.s),
                                     Text(
                                       controller.createdAtLabel,
-                                      style: AppTypography.titleMedium.copyWith(
-                                        color: colors.textPrimary,
-                                        fontWeight: FontWeight.w600,
+                                      style: AppTypography.withFaNum(
+                                        AppTypography.titleMedium.copyWith(
+                                          color: colors.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                       textAlign: TextAlign.end,
                                     ),

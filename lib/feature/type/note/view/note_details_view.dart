@@ -127,6 +127,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                         icon: AppIcon.calendar,
                         label: 'تاریخ ایجاد',
                         value: controller.createdAtLabel,
+                        useFaNumValue: true,
                       ),
                     ],
                   ),

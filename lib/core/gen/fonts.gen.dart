@@ -11,4 +11,7 @@
 abstract final class FontFamily {
   /// Font family: Kalameh
   static const String kalameh = 'Kalameh';
+
+  /// Font family: KalamehFaNum
+  static const String kalamehFaNum = 'KalamehFaNum';
 }

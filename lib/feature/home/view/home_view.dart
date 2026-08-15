@@ -233,6 +233,7 @@ class _TypeListTile extends GetView<HomeController> {
       child: AppListItemWidget(
         title: summary.type.label,
         subtitle: '${summary.itemCount} مورد',
+        useFaNumSubtitle: true,
         trailingIcon: _CircleIcon(
           icon: Icon(
             summary.type.icon,
@@ -416,6 +417,7 @@ class _TrashSection extends GetView<HomeController> {
                 AppListItemWidget(
                   title: 'موارد حذف‌شده',
                   subtitle: '${controller.trashItemCount.value} مورد',
+                  useFaNumSubtitle: true,
                   trailingIcon: _CircleIcon(
                     icon: Icon(
                       AppIcon.delete,

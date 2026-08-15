@@ -189,6 +189,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         icon: AppIcon.calendar,
                         label: 'تاریخ ایجاد',
                         value: controller.createdAtLabel,
+                        useFaNumValue: true,
                       ),
                       if (card.notes != null && card.notes!.isNotEmpty) ...[
                         SizedBox(height: AppSpacing.sectionGap.h),

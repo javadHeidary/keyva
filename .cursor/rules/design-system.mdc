@@ -47,13 +47,18 @@ DON'T
 DO
 - Use AppTypography
 - Reuse predefined text styles
+- Use Kalameh for regular text (ThemeData.fontFamily / AppTypography.fontFamily)
+- Use AppTypography.withFaNum(...) for UI numbers: counts, display dates, FAQ numbers, generator length
 
 DON'T
 - Never create TextStyle inline
 - Never hardcode font size
 - Never hardcode font weight
+- Never apply KalamehFaNum to passwords, bank card numbers, CVV, expiry, PIN, usernames/emails, or any copyable value that must stay Latin
+- Never convert digits with toPersianDigit() just to show Persian numerals; the FaNum font is enough (existing FAQ conversion may stay)
 
-AppTypography.bodyMedium ✔ 
+AppTypography.bodyMedium ✔
+AppTypography.withFaNum(AppTypography.labelMedium.copyWith(color: colors.primary)) ✔
 
 TextStyle(
   fontSize: 15,

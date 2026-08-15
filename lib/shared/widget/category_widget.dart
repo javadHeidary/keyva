@@ -78,8 +78,10 @@ class CategoryCardWidget extends StatelessWidget {
                           Text(
                             '$itemCount مورد',
                             textDirection: TextDirection.rtl,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: colors.textTertiary,
+                            style: AppTypography.withFaNum(
+                              AppTypography.bodyMedium.copyWith(
+                                color: colors.textTertiary,
+                              ),
                             ),
                           ),
                         ],

@@ -62,6 +62,26 @@ flutter:
           weight: 800
         - asset: assets/fonts/kalameh/Kalameh-Black.ttf
           weight: 900
+    - family: "Kalameh(FaNum)"
+      fonts:
+        - asset: assets/fonts/kalameh/KalamehFaNum-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/kalameh/KalamehFaNum-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/kalameh/KalamehFaNum-Light.ttf
+          weight: 300
+        - asset: assets/fonts/kalameh/KalamehFaNum-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/kalameh/KalamehFaNum-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/kalameh/KalamehFaNum-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/kalameh/KalamehFaNum-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/kalameh/KalamehFaNum-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/kalameh/KalamehFaNum-Black.ttf
+          weight: 900
 
 flutter_gen:
   output: lib/core/gen/

@@ -14,6 +14,7 @@ class AppListItemWidget extends StatelessWidget {
     this.trailingIcon,
     this.title,
     this.subtitle,
+    this.useFaNumSubtitle = false,
     this.onTap,
     this.height,
     this.padding,
@@ -24,6 +25,7 @@ class AppListItemWidget extends StatelessWidget {
   final Widget? trailingIcon;
   final String? title;
   final String? subtitle;
+  final bool useFaNumSubtitle;
   final VoidCallback? onTap;
   final double? height;
   final EdgeInsetsGeometry? padding;
@@ -31,6 +33,9 @@ class AppListItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final subtitleStyle = AppTypography.bodySmall.copyWith(
+      color: colors.textSecondary,
+    );
 
     return Material(
       borderRadius: BorderRadius.circular(AppRadius.medium),
@@ -71,9 +76,9 @@ class AppListItemWidget extends StatelessWidget {
                       if (subtitle != null)
                         Text(
                           subtitle!,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: colors.textSecondary,
-                          ),
+                          style: useFaNumSubtitle
+                              ? AppTypography.withFaNum(subtitleStyle)
+                              : subtitleStyle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

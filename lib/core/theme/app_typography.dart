@@ -6,6 +6,11 @@ class AppTypography {
   AppTypography._();
 
   static const String fontFamily = 'Kalameh';
+  static const String fontFamilyFaNum = 'Kalameh(FaNum)';
+
+  static TextStyle withFaNum(TextStyle style) {
+    return style.copyWith(fontFamily: fontFamilyFaNum);
+  }
 
   static TextStyle _base({
     required double fontSize,
