@@ -10,6 +10,18 @@ final class DatabaseFailure extends AppFailure {
   });
 }
 
+final class CryptoFailure extends AppFailure {
+  const CryptoFailure({
+    super.message = 'Cryptographic operation failed',
+  });
+}
+
+final class VaultDecryptionFailure extends AppFailure {
+  const VaultDecryptionFailure({
+    super.message = 'Unable to decrypt vault data',
+  });
+}
+
 final class UnknownFailure extends AppFailure {
   const UnknownFailure({
     super.message = 'An unexpected error occurred',

@@ -25,6 +25,7 @@ dependencies:
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
   get_it: ^9.2.1
+  cryptography: ^2.9.0
 
 dev_dependencies:
   flutter_test:
