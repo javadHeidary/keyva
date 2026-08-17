@@ -1,0 +1,36 @@
+---
+alwaysApply: true
+---
+# Keyva Project Rules
+
+You are implementing **Keyva**, an offline-first, local-only, privacy-first secure vault for Android/iOS.
+
+## Core Architecture (Mandatory)
+
+- Architecture: **MVVM**
+- State management: **GetX**
+- Dependency Injection: **GetIt** (one central file only)
+- Local database: **Hive CE**
+- Pattern: View → ViewModel → Repository → DataSource → Hive
+
+### Forbidden
+- Clean Architecture
+- Domain / UseCase / Interactor layers
+- Entity-DTO-Mapper architecture
+- Direct Hive access from View or ViewModel
+- Instantiating repositories/services inside ViewModels
+- Navigation inside Repositories or Services
+
+## Security Rules (Non-Negotiable)
+
+1. Master Password must **never** be stored (plain or encrypted).
+2. Vault Key must **never** be stored in plaintext.
+3. PIN must **never** be stored in plaintext.
+4. All sensitive vault data must be encrypted with **AES-256-GCM**.
+5. Use **Argon2id** for key derivation from Master Password.
+6. Use Key Wrapping: Master Password → Derived Key → Wrap/Unwrap Vault Key.
+7. Sensitive data must **never** appear in logs, exceptions, or crash reports.
+8. Security failures must **fail closed**.
+9. Do not implement cryptography from scratch. Use a well-maintained library.
+
+## Key Hierarchy

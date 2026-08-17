@@ -11,12 +11,11 @@ import 'package:keyva/feature/category/view/category_edit_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
-import 'package:keyva/feature/search/bindings/search_bindings.dart';
-import 'package:keyva/shared/widget/app_search_widget.dart';
 import 'package:keyva/feature/onboarding/bindings/onboarding_bindings.dart';
 import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
 import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
 import 'package:keyva/feature/password_generator/view/password_history_view.dart';
+import 'package:keyva/feature/search/bindings/search_bindings.dart';
 import 'package:keyva/feature/shell/bindings/main_shell_bindings.dart';
 import 'package:keyva/feature/shell/view/main_shell_view.dart';
 import 'package:keyva/feature/splash/view/splash_view.dart';
@@ -32,8 +31,8 @@ import 'package:keyva/feature/type/note/bindings/note_bindings.dart';
 import 'package:keyva/feature/type/note/view/note_create_view.dart';
 import 'package:keyva/feature/type/note/view/note_details_view.dart';
 import 'package:keyva/feature/type/note/view/note_edit_view.dart';
-import 'package:keyva/feature/widget_builder_test.dart';
 import 'package:keyva/shared/icons/app_icon_test.dart';
+import 'package:keyva/shared/widget/app_search_widget.dart';
 
 class AppRoutes {
   static const Transition _pageTransition = Transition.rightToLeft;
@@ -114,14 +113,6 @@ class AppRoutes {
       name: authRegister,
       page: () => const AuthRegisterView(),
       binding: AuthBindings(),
-      transition: _pageTransition,
-      curve: _pageCurve,
-      transitionDuration: _pageTransitionDuration,
-    ),
-
-    GetPage(
-      name: widgetBuilderTest,
-      page: () => const WidgetBuilderTest(),
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
