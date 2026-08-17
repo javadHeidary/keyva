@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/route_manager.dart';
+import 'package:keyva/core/database/hive_database.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
 
-void main() {
-  runApp(KeyvaApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final database = await HiveDatabase.initialize();
+  initDependencies(database);
+  runApp(const KeyvaApp());
 }
 
 class KeyvaApp extends StatelessWidget {
@@ -30,7 +35,6 @@ class KeyvaApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
-
       builder: (context, child) {
         AppResponsive.init(context);
         return child!;
