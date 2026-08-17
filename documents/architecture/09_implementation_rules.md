@@ -972,6 +972,55 @@ Avoid generic names: `Helper`, `Manager`, `Utils`, `AppManager`, `DataManager`.
 ---
 
   
+# Implementation Documentation Rule
+
+After completing every implementation task, create an implementation
+note for that task.
+
+The implementation note must be based on the final code and tests,
+not the original plan.
+
+Store implementation notes under:
+
+documents/implementation/
+
+Naming:
+
+01_core_infrastructure.md
+02_cryptography.md
+03_account_authentication.md
+04_...
+...
+
+Each implementation note must explain:
+
+- Purpose of the feature
+- Architecture and layer responsibilities
+- Actual execution flow
+- Important classes/interfaces
+- Database interaction
+- Security considerations
+- Error/Result handling
+- Dependency injection
+- Persisted vs in-memory data
+- Important implementation decisions
+- Tests and their purpose
+- Explicitly unimplemented functionality
+
+Documentation must explain the implementation in a way that helps a
+developer understand the system, not merely list files.
+
+Use the final implementation and tests as the source of truth.
+
+Do not modify production code while creating documentation.
+
+Do not document planned behavior as implemented behavior.
+
+Every implementation task is considered incomplete until:
+1. Implementation is complete.
+2. Tests are complete.
+3. Implementation documentation is created.
+4. The documentation matches the final code.
 
 # 20. Final Principle
 
