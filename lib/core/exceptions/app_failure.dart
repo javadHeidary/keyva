@@ -22,6 +22,12 @@ final class VaultDecryptionFailure extends AppFailure {
   });
 }
 
+final class AuthenticationFailure extends AppFailure {
+  const AuthenticationFailure({
+    super.message = 'Unable to unlock your vault.',
+  });
+}
+
 final class UnknownFailure extends AppFailure {
   const UnknownFailure({
     super.message = 'An unexpected error occurred',
