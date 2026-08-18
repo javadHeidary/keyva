@@ -14,6 +14,8 @@ import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
+import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
+import 'package:keyva/feature/vault/serialization/vault_serializer_impl.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -30,6 +32,7 @@ void initDependencies(HiveDatabase database) {
     () => KeyManagementServiceImpl(getIt<CryptoService>()),
   );
   getIt.registerLazySingleton<SessionService>(SessionServiceImpl.new);
+  getIt.registerLazySingleton<VaultSerializer>(VaultSerializerImpl.new);
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       users: getIt<UserDataSource>(),

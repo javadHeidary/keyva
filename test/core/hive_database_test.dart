@@ -12,6 +12,7 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
+import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 
 void main() {
   late Directory tempDir;
@@ -72,6 +73,7 @@ void main() {
       expect(getIt.isRegistered<CryptoService>(), isTrue);
       expect(getIt.isRegistered<KeyManagementService>(), isTrue);
       expect(getIt.isRegistered<SessionService>(), isTrue);
+      expect(getIt.isRegistered<VaultSerializer>(), isTrue);
       expect(getIt.isRegistered<AuthRepository>(), isTrue);
       expect(getIt.isRegistered<VaultRepository>(), isTrue);
       await getIt.reset();

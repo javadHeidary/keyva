@@ -28,6 +28,12 @@ final class AuthenticationFailure extends AppFailure {
   });
 }
 
+final class ValidationFailure extends AppFailure {
+  const ValidationFailure({
+    super.message = 'Vault data is invalid',
+  });
+}
+
 final class UnknownFailure extends AppFailure {
   const UnknownFailure({
     super.message = 'An unexpected error occurred',
