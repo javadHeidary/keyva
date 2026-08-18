@@ -6,10 +6,12 @@ import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/user_data_source.dart';
+import 'package:keyva/core/database/vault_data_source.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/vault/repository/vault_repository.dart';
 
 void main() {
   late Directory tempDir;
@@ -58,7 +60,7 @@ void main() {
   );
 
   test(
-    'initDependencies registers HiveDatabase, crypto, session, and auth',
+    'initDependencies registers HiveDatabase, crypto, session, auth, and vault',
     () async {
       database = await HiveDatabase.initialize(testDatabasePath: tempDir.path);
       await getIt.reset();
@@ -66,10 +68,12 @@ void main() {
 
       expect(getIt<HiveDatabase>(), same(database));
       expect(getIt.isRegistered<UserDataSource>(), isTrue);
+      expect(getIt.isRegistered<VaultDataSource>(), isTrue);
       expect(getIt.isRegistered<CryptoService>(), isTrue);
       expect(getIt.isRegistered<KeyManagementService>(), isTrue);
       expect(getIt.isRegistered<SessionService>(), isTrue);
       expect(getIt.isRegistered<AuthRepository>(), isTrue);
+      expect(getIt.isRegistered<VaultRepository>(), isTrue);
       await getIt.reset();
     },
   );
