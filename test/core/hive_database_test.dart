@@ -14,8 +14,11 @@ import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 import 'package:keyva/feature/vault/service/vault_data_service.dart';
+import 'package:keyva/feature/vault/service/vault_operation_service.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 void main() {
   late Directory tempDir;
@@ -82,6 +85,9 @@ void main() {
       expect(getIt.isRegistered<VaultSession>(), isTrue);
       expect(getIt.isRegistered<VaultUnlockService>(), isTrue);
       expect(getIt.isRegistered<VaultDataService>(), isTrue);
+      expect(getIt.isRegistered<VaultOperationService>(), isTrue);
+      expect(getIt.isRegistered<VaultHomeViewModel>(), isTrue);
+      expect(getIt.isRegistered<VaultItemViewModel>(), isTrue);
       await getIt.reset();
     },
   );

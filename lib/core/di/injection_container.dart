@@ -18,10 +18,14 @@ import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer_impl.dart';
 import 'package:keyva/feature/vault/service/vault_data_service.dart';
 import 'package:keyva/feature/vault/service/vault_data_service_impl.dart';
+import 'package:keyva/feature/vault/service/vault_operation_service.dart';
+import 'package:keyva/feature/vault/service/vault_operation_service_impl.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service_impl.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/session/vault_session_impl.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -69,5 +73,17 @@ void initDependencies(HiveDatabase database) {
       vaults: getIt<VaultRepository>(),
       vaultSession: getIt<VaultSession>(),
     ),
+  );
+  getIt.registerLazySingleton<VaultOperationService>(
+    () => VaultOperationServiceImpl(
+      vaultData: getIt<VaultDataService>(),
+      vaultSession: getIt<VaultSession>(),
+    ),
+  );
+  getIt.registerFactory<VaultHomeViewModel>(
+    () => VaultHomeViewModel(operations: getIt<VaultOperationService>()),
+  );
+  getIt.registerFactory<VaultItemViewModel>(
+    () => VaultItemViewModel(operations: getIt<VaultOperationService>()),
   );
 }
