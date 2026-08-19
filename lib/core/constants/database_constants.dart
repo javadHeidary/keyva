@@ -7,6 +7,9 @@ abstract final class HiveBoxNames {
 abstract final class HiveSettingsKeys {
   static const databaseVersion = 'databaseVersion';
   static const activeUserId = 'activeUserId';
+
+  static String pinFailedAttempts(String userId) =>
+      'pinFailedAttempts:$userId';
 }
 
 abstract final class DatabaseConfig {

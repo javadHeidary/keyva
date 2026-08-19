@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/security/biometric_service.dart';
+import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
@@ -16,15 +18,23 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
     required VaultRepository vaults,
     required VaultSerializer serializer,
     required VaultSession vaultSession,
+    PinService? pin,
+    BiometricService? biometric,
   }) : _auth = auth,
        _vaults = vaults,
        _serializer = serializer,
-       _vaultSession = vaultSession;
+       _vaultSession = vaultSession,
+       _pin = pin,
+       _biometric = biometric;
 
   final AuthRepository _auth;
   final VaultRepository _vaults;
   final VaultSerializer _serializer;
   final VaultSession _vaultSession;
+  final PinService? _pin;
+  final BiometricService? _biometric;
+
+  static const _biometricUnlockReason = 'برای باز کردن گاوصندوق';
 
   @override
   Future<Result<void>> unlock({
@@ -39,7 +49,69 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
       await _vaultSession.lock();
       return FailureResult(authenticated.failure);
     }
+    await _pin?.resetFailedAttempts(userId);
+    return _openVault();
+  }
 
+  @override
+  Future<Result<void>> unlockWithPin({
+    required String userId,
+    required String pin,
+  }) async {
+    final pinService = _pin;
+    if (pinService == null) {
+      return _failClosed(const AuthenticationFailure());
+    }
+    final unwrapped = await pinService.unwrapVaultKey(userId: userId, pin: pin);
+    if (unwrapped is FailureResult<Uint8List>) {
+      return _failClosed(unwrapped.failure);
+    }
+    return _openSessionAndVault(
+      userId: userId,
+      vaultKey: (unwrapped as Success<Uint8List>).data,
+    );
+  }
+
+  @override
+  Future<Result<void>> unlockWithBiometric({required String userId}) async {
+    final biometric = _biometric;
+    if (biometric == null) {
+      return _failClosed(const AuthenticationFailure());
+    }
+    final unwrapped = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: _biometricUnlockReason,
+    );
+    if (unwrapped is FailureResult<Uint8List>) {
+      if (unwrapped.failure is BiometricCancelledFailure) {
+        return FailureResult(unwrapped.failure);
+      }
+      return _failClosed(unwrapped.failure);
+    }
+    return _openSessionAndVault(
+      userId: userId,
+      vaultKey: (unwrapped as Success<Uint8List>).data,
+    );
+  }
+
+  @override
+  Future<Result<void>> lock() async {
+    await _vaultSession.lock();
+    return _auth.logout();
+  }
+
+  Future<Result<void>> _openSessionAndVault({
+    required String userId,
+    required Uint8List vaultKey,
+  }) async {
+    final opened = await _auth.openSession(userId: userId, vaultKey: vaultKey);
+    if (opened is FailureResult<UserRecord>) {
+      return _failClosed(opened.failure);
+    }
+    return _openVault();
+  }
+
+  Future<Result<void>> _openVault() async {
     final loaded = await _vaults.loadVaultData();
     if (loaded is FailureResult<Uint8List?>) {
       return _failClosed(loaded.failure);
@@ -68,12 +140,6 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
       return _failClosed(unlocked.failure);
     }
     return unlocked;
-  }
-
-  @override
-  Future<Result<void>> lock() async {
-    await _vaultSession.lock();
-    return _auth.logout();
   }
 
   Future<Result<void>> _failClosed(AppFailure failure) async {

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/exceptions/result.dart';
 
@@ -10,6 +12,11 @@ abstract interface class AuthRepository {
   Future<Result<UserRecord>> authenticate({
     required String userId,
     required String masterPassword,
+  });
+
+  Future<Result<UserRecord>> openSession({
+    required String userId,
+    required Uint8List vaultKey,
   });
 
   Future<Result<bool>> hasAnyAccount();

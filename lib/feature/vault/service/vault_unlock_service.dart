@@ -6,5 +6,12 @@ abstract interface class VaultUnlockService {
     required String masterPassword,
   });
 
+  Future<Result<void>> unlockWithPin({
+    required String userId,
+    required String pin,
+  });
+
+  Future<Result<void>> unlockWithBiometric({required String userId});
+
   Future<Result<void>> lock();
 }

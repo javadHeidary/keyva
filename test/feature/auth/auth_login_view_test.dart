@@ -14,6 +14,7 @@ import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 import 'support/auth_widget_harness.dart';
 import 'support/fake_auth_repository.dart';
+import 'support/fake_pin_service.dart';
 import 'support/fake_vault_unlock_service.dart';
 
 void main() {
@@ -167,5 +168,75 @@ void main() {
     expect(find.textContaining('Hive'), findsNothing);
     expect(login.passwordController.text, isEmpty);
     expect(login.isLoading.value, isFalse);
+  });
+
+  testWidgets('PIN field is shown when PIN is enabled', (tester) async {
+    final pin = FakePinService()..enabled = true;
+    login = LoginController(unlock: unlock, auth: auth, pin: pin);
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-login-pin')), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-password')), findsNothing);
+    expect(find.byKey(const Key('auth-login-use-master-password')), findsOneWidget);
+  });
+
+  testWidgets('wrong PIN shows a generic Persian error', (tester) async {
+    final pin = FakePinService()..enabled = true;
+    unlock.unlockFailure = const AuthenticationFailure();
+    login = LoginController(unlock: unlock, auth: auth, pin: pin);
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.enterText(find.byKey(const Key('auth-login-pin')), '1234');
+    await tester.tap(find.byKey(const Key('auth-login-pin-submit')));
+    await pumpAuthSettle(tester);
+
+    expect(unlock.pinUnlockCount, 1);
+    expect(unlock.lastPin, '1234');
+    expect(session.isAuthenticated, isFalse);
+    expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
+    expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(login.pinController.text, isEmpty);
+  });
+
+  testWidgets('Master Password fallback is available from PIN unlock', (
+    tester,
+  ) async {
+    final pin = FakePinService()..enabled = true;
+    login = LoginController(unlock: unlock, auth: auth, pin: pin);
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-login-use-master-password')));
+    await pumpAuthFrame(tester);
+
+    expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-pin')), findsNothing);
+  });
+
+  testWidgets('PIN lockout shows Master Password instead of PIN', (tester) async {
+    final pin = FakePinService()
+      ..enabled = true
+      ..lockedOut = true;
+    login = LoginController(unlock: unlock, auth: auth, pin: pin);
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-pin')), findsNothing);
+    expect(find.byKey(const Key('auth-login-use-pin')), findsNothing);
   });
 }

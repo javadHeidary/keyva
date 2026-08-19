@@ -119,10 +119,32 @@ class AuthRepositoryImpl implements AuthRepository {
       return _authenticationFailed();
     }
 
+    return openSession(
+      userId: user.id,
+      vaultKey: (unwrapped as Success<Uint8List>).data,
+    );
+  }
+
+  @override
+  Future<Result<UserRecord>> openSession({
+    required String userId,
+    required Uint8List vaultKey,
+  }) async {
+    final loaded = await _users.findById(userId);
+    if (loaded is FailureResult<UserRecord?>) {
+      vaultKey.fillRange(0, vaultKey.length, 0);
+      return _authenticationFailed();
+    }
+    final user = (loaded as Success<UserRecord?>).data;
+    if (user == null) {
+      vaultKey.fillRange(0, vaultKey.length, 0);
+      return _authenticationFailed();
+    }
+
     _session.setAuthenticated(
       userId: user.id,
       username: user.username,
-      vaultKey: (unwrapped as Success<Uint8List>).data,
+      vaultKey: vaultKey,
     );
     await _rememberActiveUserId(user.id);
     return Success(user);

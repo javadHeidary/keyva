@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/di/injection_container.dart';
+import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/security/biometric_service.dart';
+import 'package:keyva/core/security/pin_policy.dart';
+import 'package:keyva/core/security/pin_service.dart';
+import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
 import 'package:keyva/feature/settings/model/security_settings_ui_state.dart';
@@ -9,6 +15,7 @@ import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/settings/model/theme_preference.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,28 +23,97 @@ class SettingsViewModel extends GetxController {
   SettingsViewModel({
     SettingsRepository? repository,
     VaultUnlockService? unlock,
+    PinService? pin,
+    BiometricService? biometric,
+    SessionService? session,
   }) : _repository = repository,
-       _unlockOverride = unlock;
+       _unlockOverride = unlock,
+       _pinOverride = pin,
+       _biometricOverride = biometric,
+       _sessionOverride = session;
 
   final SettingsRepository? _repository;
   final VaultUnlockService? _unlockOverride;
+  final PinService? _pinOverride;
+  final BiometricService? _biometricOverride;
+  final SessionService? _sessionOverride;
 
   SettingsRepository? get repository => _repository;
 
   VaultUnlockService get _unlock =>
       _unlockOverride ?? getIt<VaultUnlockService>();
 
+  PinService? get _pin {
+    if (_pinOverride != null) {
+      return _pinOverride;
+    }
+    if (getIt.isRegistered<PinService>()) {
+      return getIt<PinService>();
+    }
+    return null;
+  }
+
+  BiometricService? get _biometric {
+    if (_biometricOverride != null) {
+      return _biometricOverride;
+    }
+    if (getIt.isRegistered<BiometricService>()) {
+      return getIt<BiometricService>();
+    }
+    return null;
+  }
+
+  SessionService? get _session {
+    if (_sessionOverride != null) {
+      return _sessionOverride;
+    }
+    if (getIt.isRegistered<SessionService>()) {
+      return getIt<SessionService>();
+    }
+    return null;
+  }
+
   final profile = const UserProfile(name: UserProfile.defaultName).obs;
   final themePreference = ThemePreference.system.obs;
   final security = const SecuritySettingsUiState().obs;
+  final showBiometricSetting = false.obs;
+  final isSecurityBusy = false.obs;
 
-  /// Phase 1: mock device support until repository is wired.
-  final showBiometricSetting = true.obs;
+  static const _biometricEnableReason = 'برای فعال‌سازی باز کردن با اثر انگشت یا چهره';
 
   @override
   void onInit() {
     super.onInit();
     _syncProfileFromHome();
+    loadSecuritySettings();
+  }
+
+  Future<void> loadSecuritySettings() async {
+    final session = _session;
+    final userId = session?.current?.userId;
+    if (userId == null) {
+      showBiometricSetting.value = false;
+      return;
+    }
+
+    final pin = _pin;
+    if (pin != null) {
+      final enabled = await pin.isEnabled(userId);
+      security.value = security.value.copyWith(
+        pinEnabled: enabled is Success<bool> && enabled.data,
+      );
+    }
+
+    final biometric = _biometric;
+    if (biometric != null) {
+      showBiometricSetting.value = await biometric.isAvailable();
+      final enabled = await biometric.isEnabled(userId);
+      security.value = security.value.copyWith(
+        biometricEnabled: enabled is Success<bool> && enabled.data,
+      );
+    } else {
+      showBiometricSetting.value = false;
+    }
   }
 
   void _syncProfileFromHome() {
@@ -68,22 +144,90 @@ class SettingsViewModel extends GetxController {
     // TODO: delegate to _repository?.saveThemePreference(value)
   }
 
-  void setBiometricEnabled(bool value) {
-    security.value = security.value.copyWith(biometricEnabled: value);
-    // TODO: authenticate + _repository?.saveSecuritySettings
-  }
-
-  void setPinEnabled(bool value) {
-    security.value = security.value.copyWith(pinEnabled: value);
-    // TODO: delegate to repository when PIN is saved
-  }
-
-  void onPinToggle(bool enabled, BuildContext context) {
-    if (!enabled) {
-      setPinEnabled(false);
+  Future<void> onBiometricToggle(bool enabled, BuildContext context) async {
+    if (isSecurityBusy.value) {
       return;
     }
-    // Dialog flow sets pinEnabled on successful submit.
+    if (!enabled) {
+      return;
+    }
+    await enableBiometric(context);
+  }
+
+  Future<void> enableBiometric(BuildContext context) async {
+    final biometric = _biometric;
+    if (biometric == null || isSecurityBusy.value) {
+      return;
+    }
+    isSecurityBusy.value = true;
+    try {
+      final result = await biometric.enable(
+        localizedReason: _biometricEnableReason,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<void>) {
+        if (result.failure is! BiometricCancelledFailure) {
+          AppToast.error(
+            context,
+            title: vaultUserMessage(result.failure.message),
+          );
+        }
+        return;
+      }
+      security.value = security.value.copyWith(biometricEnabled: true);
+    } finally {
+      isSecurityBusy.value = false;
+    }
+  }
+
+  Future<void> disableBiometric(BuildContext context) async {
+    final biometric = _biometric;
+    if (biometric == null || isSecurityBusy.value) {
+      return;
+    }
+    isSecurityBusy.value = true;
+    try {
+      final result = await biometric.disable();
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<void>) {
+        AppToast.error(
+          context,
+          title: vaultUserMessage(result.failure.message),
+        );
+        return;
+      }
+      security.value = security.value.copyWith(biometricEnabled: false);
+    } finally {
+      isSecurityBusy.value = false;
+    }
+  }
+
+  Future<void> disablePin(BuildContext context) async {
+    final pin = _pin;
+    if (pin == null || isSecurityBusy.value) {
+      return;
+    }
+    isSecurityBusy.value = true;
+    try {
+      final result = await pin.disable();
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<void>) {
+        AppToast.error(
+          context,
+          title: vaultUserMessage(result.failure.message),
+        );
+        return;
+      }
+      security.value = security.value.copyWith(pinEnabled: false);
+    } finally {
+      isSecurityBusy.value = false;
+    }
   }
 
   Future<void> openFeedback(BuildContext context) async {
@@ -145,7 +289,6 @@ class SettingsViewModel extends GetxController {
     // TODO: _repository?.changeMasterPassword(...)
     Get.back();
     if (!context.mounted) return;
-    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   Future<void> onPinSubmitted({
@@ -153,29 +296,86 @@ class SettingsViewModel extends GetxController {
     required String confirmPin,
     required BuildContext context,
   }) async {
-    if (pin.length < 4) {
-      AppToast.error(context, title: 'کد PIN باید حداقل ۴ رقم باشد');
+    if (!PinPolicy.isValid(pin)) {
+      AppToast.error(context, title: 'کد PIN باید ۴ تا ۶ رقم باشد');
       return;
     }
     if (pin != confirmPin) {
       AppToast.error(context, title: 'تکرار PIN یکسان نیست');
       return;
     }
-    setPinEnabled(true);
-    // TODO: _repository?.savePin(pin)
-    Get.back();
-    if (!context.mounted) return;
-    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
+    final pinService = _pin;
+    if (pinService == null || isSecurityBusy.value) {
+      AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
+      return;
+    }
+    isSecurityBusy.value = true;
+    try {
+      final result = await pinService.enable(pin);
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<void>) {
+        AppToast.error(
+          context,
+          title: vaultUserMessage(result.failure.message),
+        );
+        return;
+      }
+      security.value = security.value.copyWith(pinEnabled: true);
+      Get.back();
+    } finally {
+      isSecurityBusy.value = false;
+    }
+  }
+
+  Future<void> onPinChanged({
+    required String currentPin,
+    required String pin,
+    required String confirmPin,
+    required BuildContext context,
+  }) async {
+    if (!PinPolicy.isValid(pin)) {
+      AppToast.error(context, title: 'کد PIN باید ۴ تا ۶ رقم باشد');
+      return;
+    }
+    if (pin != confirmPin) {
+      AppToast.error(context, title: 'تکرار PIN یکسان نیست');
+      return;
+    }
+    final pinService = _pin;
+    if (pinService == null || isSecurityBusy.value) {
+      AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
+      return;
+    }
+    isSecurityBusy.value = true;
+    try {
+      final result = await pinService.change(
+        currentPin: currentPin,
+        newPin: pin,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<void>) {
+        AppToast.error(
+          context,
+          title: vaultUserMessage(result.failure.message),
+        );
+        return;
+      }
+      Get.back();
+    } finally {
+      isSecurityBusy.value = false;
+    }
   }
 
   void onBackupExportTap(BuildContext context) {
     // TODO: _repository?.exportBackup()
-    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   void onBackupImportTap(BuildContext context) {
     // TODO: _repository?.importBackup()
-    // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
   Future<void> lock() async {

@@ -46,6 +46,14 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<Result<UserRecord>> openSession({
+    required String userId,
+    required Uint8List vaultKey,
+  }) async {
+    return Success(_fakeUser(username: 'test'));
+  }
+
+  @override
   Future<Result<bool>> hasAnyAccount() async {
     return Success(anyAccount);
   }

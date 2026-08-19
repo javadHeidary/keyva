@@ -10,4 +10,7 @@ abstract final class SecurityConstants {
   static const authenticationTagLength = 16;
   static const wrappedKeyVersion = 1;
   static const vaultEncryptionVersion = 1;
+  static const pinMinLength = 4;
+  static const pinMaxLength = 6;
+  static const pinMaxFailedAttempts = 5;
 }

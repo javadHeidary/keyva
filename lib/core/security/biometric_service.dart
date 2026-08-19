@@ -1,0 +1,18 @@
+import 'dart:typed_data';
+
+import 'package:keyva/core/exceptions/result.dart';
+
+abstract interface class BiometricService {
+  Future<bool> isAvailable();
+
+  Future<Result<bool>> isEnabled(String userId);
+
+  Future<Result<void>> enable({required String localizedReason});
+
+  Future<Result<void>> disable();
+
+  Future<Result<Uint8List>> unwrapVaultKey({
+    required String userId,
+    required String localizedReason,
+  });
+}

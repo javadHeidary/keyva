@@ -13,9 +13,12 @@ class FakeVaultUnlockService implements VaultUnlockService {
   Completer<void>? unlockGate;
   AppFailure? unlockFailure;
   int unlockCount = 0;
+  int pinUnlockCount = 0;
+  int biometricUnlockCount = 0;
   int lockCount = 0;
   String? lastUserId;
   String? lastPassword;
+  String? lastPin;
 
   @override
   Future<Result<void>> unlock({
@@ -29,6 +32,44 @@ class FakeVaultUnlockService implements VaultUnlockService {
     if (gate != null) {
       await gate.future;
     }
+    final failure = unlockFailure;
+    if (failure != null) {
+      session.clear();
+      return FailureResult(failure);
+    }
+    session.setAuthenticated(
+      userId: userId,
+      username: 'test',
+      vaultKey: Uint8List(32),
+    );
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void>> unlockWithPin({
+    required String userId,
+    required String pin,
+  }) async {
+    pinUnlockCount++;
+    lastUserId = userId;
+    lastPin = pin;
+    final failure = unlockFailure;
+    if (failure != null) {
+      session.clear();
+      return FailureResult(failure);
+    }
+    session.setAuthenticated(
+      userId: userId,
+      username: 'test',
+      vaultKey: Uint8List(32),
+    );
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void>> unlockWithBiometric({required String userId}) async {
+    biometricUnlockCount++;
+    lastUserId = userId;
     final failure = unlockFailure;
     if (failure != null) {
       session.clear();

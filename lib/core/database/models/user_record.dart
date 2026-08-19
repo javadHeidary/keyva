@@ -24,4 +24,26 @@ class UserRecord {
   final KdfParameters kdfParameters;
   final WrappedVaultKey wrappedVaultKey;
   final SecuritySettings securitySettings;
+
+  UserRecord copyWith({
+    String? id,
+    String? username,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Uint8List? kdfSalt,
+    KdfParameters? kdfParameters,
+    WrappedVaultKey? wrappedVaultKey,
+    SecuritySettings? securitySettings,
+  }) {
+    return UserRecord(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      kdfSalt: kdfSalt ?? this.kdfSalt,
+      kdfParameters: kdfParameters ?? this.kdfParameters,
+      wrappedVaultKey: wrappedVaultKey ?? this.wrappedVaultKey,
+      securitySettings: securitySettings ?? this.securitySettings,
+    );
+  }
 }

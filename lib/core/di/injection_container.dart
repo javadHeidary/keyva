@@ -8,6 +8,14 @@ import 'package:keyva/core/database/hive_user_data_source.dart';
 import 'package:keyva/core/database/hive_vault_data_source.dart';
 import 'package:keyva/core/database/user_data_source.dart';
 import 'package:keyva/core/database/vault_data_source.dart';
+import 'package:keyva/core/security/biometric_gateway.dart';
+import 'package:keyva/core/security/biometric_service.dart';
+import 'package:keyva/core/security/biometric_service_impl.dart';
+import 'package:keyva/core/security/local_auth_biometric_gateway.dart';
+import 'package:keyva/core/security/pin_service.dart';
+import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/secure_storage_service.dart';
+import 'package:keyva/core/security/secure_storage_service_impl.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
@@ -42,6 +50,31 @@ void initDependencies(HiveDatabase database) {
     () => KeyManagementServiceImpl(getIt<CryptoService>()),
   );
   getIt.registerLazySingleton<SessionService>(SessionServiceImpl.new);
+  getIt.registerLazySingleton<SecureStorageService>(
+    SecureStorageServiceImpl.new,
+  );
+  getIt.registerLazySingleton<BiometricGateway>(
+    LocalAuthBiometricGateway.new,
+  );
+  getIt.registerLazySingleton<PinService>(
+    () => PinServiceImpl(
+      crypto: getIt<CryptoService>(),
+      keys: getIt<KeyManagementService>(),
+      storage: getIt<SecureStorageService>(),
+      users: getIt<UserDataSource>(),
+      session: getIt<SessionService>(),
+      database: getIt<HiveDatabase>(),
+    ),
+  );
+  getIt.registerLazySingleton<BiometricService>(
+    () => BiometricServiceImpl(
+      gateway: getIt<BiometricGateway>(),
+      keys: getIt<KeyManagementService>(),
+      storage: getIt<SecureStorageService>(),
+      users: getIt<UserDataSource>(),
+      session: getIt<SessionService>(),
+    ),
+  );
   getIt.registerLazySingleton<VaultSerializer>(VaultSerializerImpl.new);
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
@@ -66,6 +99,8 @@ void initDependencies(HiveDatabase database) {
       vaults: getIt<VaultRepository>(),
       serializer: getIt<VaultSerializer>(),
       vaultSession: getIt<VaultSession>(),
+      pin: getIt<PinService>(),
+      biometric: getIt<BiometricService>(),
     ),
   );
   getIt.registerLazySingleton<VaultDataService>(

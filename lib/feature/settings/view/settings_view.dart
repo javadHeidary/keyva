@@ -89,23 +89,52 @@ class SettingsView extends GetView<SettingsViewModel> {
                                 showChangeMasterPasswordDialog(context),
                           ),
                           if (controller.showBiometricSetting.value)
-                            SettingsRow.toggle(
-                              title: 'احراز هویت بیومتریک',
-                              icon: AppIcon.fingerprint,
-                              value: controller.security.value.biometricEnabled,
-                              onChanged: controller.setBiometricEnabled,
+                            KeyedSubtree(
+                              key: const Key('settings-biometric-toggle'),
+                              child: SettingsRow.toggle(
+                                title: 'احراز هویت بیومتریک',
+                                icon: AppIcon.fingerprint,
+                                value:
+                                    controller.security.value.biometricEnabled,
+                                onChanged: (enabled) {
+                                  if (enabled) {
+                                    controller.onBiometricToggle(
+                                      true,
+                                      context,
+                                    );
+                                    return;
+                                  }
+                                  _confirmDisableBiometric(context);
+                                },
+                              ),
                             ),
-                          SettingsRow.toggle(
-                            title: 'کد PIN',
-                            icon: AppIcon.pin,
-                            value: controller.security.value.pinEnabled,
-                            onChanged: (enabled) {
-                              controller.onPinToggle(enabled, context);
-                              if (enabled) {
-                                showPinCodeDialog(context);
-                              }
-                            },
+                          KeyedSubtree(
+                            key: const Key('settings-pin-toggle'),
+                            child: SettingsRow.toggle(
+                              title: 'کد PIN',
+                              icon: AppIcon.pin,
+                              value: controller.security.value.pinEnabled,
+                              onChanged: (enabled) {
+                                if (enabled) {
+                                  showPinCodeDialog(context);
+                                  return;
+                                }
+                                _confirmDisablePin(context);
+                              },
+                            ),
                           ),
+                          if (controller.security.value.pinEnabled)
+                            KeyedSubtree(
+                              key: const Key('settings-change-pin'),
+                              child: SettingsRow.nav(
+                                title: 'تغییر PIN',
+                                icon: AppIcon.pin,
+                                onTap: () => showPinCodeDialog(
+                                  context,
+                                  mode: PinCodeDialogMode.change,
+                                ),
+                              ),
+                            ),
                           SettingsRow.toggle(
                             title: 'جلوگیری از اسکرین‌شات و ضبط صفحه',
                             icon: AppIcon.noPhotography,
@@ -237,6 +266,28 @@ class SettingsView extends GetView<SettingsViewModel> {
 
   void _showInfo(BuildContext context, String title, String description) {
     AppDialogWidget.show(context, title: title, description: description);
+  }
+
+  void _confirmDisablePin(BuildContext context) {
+    AppDialogWidget.show(
+      context,
+      type: AppDialogType.warning,
+      title: 'غیرفعال کردن PIN',
+      description: 'ورود با کد PIN روی این دستگاه غیرفعال می‌شود.',
+      buttonText: 'غیرفعال کردن',
+      onConfirm: () => controller.disablePin(context),
+    );
+  }
+
+  void _confirmDisableBiometric(BuildContext context) {
+    AppDialogWidget.show(
+      context,
+      type: AppDialogType.warning,
+      title: 'غیرفعال کردن بیومتریک',
+      description: 'ورود با اثر انگشت یا چهره روی این دستگاه غیرفعال می‌شود.',
+      buttonText: 'غیرفعال کردن',
+      onConfirm: () => controller.disableBiometric(context),
+    );
   }
 
   void _confirmLogout(BuildContext context) {

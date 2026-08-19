@@ -28,6 +28,12 @@ final class AuthenticationFailure extends AppFailure {
   });
 }
 
+final class BiometricCancelledFailure extends AppFailure {
+  const BiometricCancelledFailure({
+    super.message = 'Biometric authentication cancelled',
+  });
+}
+
 final class ValidationFailure extends AppFailure {
   const ValidationFailure({
     super.message = 'Vault data is invalid',

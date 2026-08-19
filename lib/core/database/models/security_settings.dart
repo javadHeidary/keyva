@@ -19,4 +19,18 @@ class SecuritySettings {
   final bool pinEnabled;
   final Duration autoLockTimeout;
   final bool preventScreenshots;
+
+  SecuritySettings copyWith({
+    bool? biometricEnabled,
+    bool? pinEnabled,
+    Duration? autoLockTimeout,
+    bool? preventScreenshots,
+  }) {
+    return SecuritySettings(
+      biometricEnabled: biometricEnabled ?? this.biometricEnabled,
+      pinEnabled: pinEnabled ?? this.pinEnabled,
+      autoLockTimeout: autoLockTimeout ?? this.autoLockTimeout,
+      preventScreenshots: preventScreenshots ?? this.preventScreenshots,
+    );
+  }
 }
