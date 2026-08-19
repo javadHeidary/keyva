@@ -3,6 +3,7 @@ import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
+import 'package:keyva/feature/vault/model/vault_data.dart';
 
 abstract interface class VaultDataService {
   Future<Result<void>> addLogin(LoginItem item);
@@ -28,4 +29,6 @@ abstract interface class VaultDataService {
   Future<Result<void>> updateCategory(CategoryItem item);
 
   Future<Result<void>> deleteCategory(String id);
+
+  Future<Result<void>> replaceVault(VaultData restoredVault);
 }

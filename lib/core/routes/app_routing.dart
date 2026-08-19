@@ -7,6 +7,8 @@ import 'package:keyva/core/theme/design_system_example.dart';
 import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
+import 'package:keyva/feature/backup/bindings/backup_bindings.dart';
+import 'package:keyva/feature/backup/view/backup_restore_view.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/category/view/category_create_view.dart';
 import 'package:keyva/feature/category/view/category_edit_view.dart';
@@ -65,6 +67,7 @@ class AppRoutes {
   static const String passwordGenerator = '/password-generator';
   static const String passwordGeneratorHistory = '/password-generator/history';
   static const String settings = '/settings';
+  static const String backupRestore = '/settings/backup';
   static const String categoryCreate = '/category/create';
   static const String categoryEdit = '/category/edit';
   static const String appIconTest = '/app-icon-test';
@@ -295,6 +298,16 @@ class AppRoutes {
       name: categoryEdit,
       page: () => const CategoryEditView(),
       binding: CategoryEditBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: backupRestore,
+      page: () => const BackupRestoreView(),
+      binding: BackupBindings(),
       middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,

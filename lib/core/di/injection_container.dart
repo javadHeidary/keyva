@@ -34,6 +34,12 @@ import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/session/vault_session_impl.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
+import 'package:keyva/feature/backup/service/backup_file_service.dart';
+import 'package:keyva/feature/backup/service/backup_file_service_impl.dart';
+import 'package:keyva/feature/backup/service/backup_service.dart';
+import 'package:keyva/feature/backup/service/backup_service_impl.dart';
+import 'package:keyva/feature/backup/viewmodel/backup_viewmodel.dart';
+import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -116,10 +122,34 @@ void initDependencies(HiveDatabase database) {
       vaultSession: getIt<VaultSession>(),
     ),
   );
+  getIt.registerLazySingleton<BackupFileService>(BackupFileServiceImpl.new);
+  getIt.registerLazySingleton<BackupService>(
+    () => BackupServiceImpl(
+      operations: getIt<VaultOperationService>(),
+      vaultData: getIt<VaultDataService>(),
+      serializer: getIt<VaultSerializer>(),
+      crypto: getIt<CryptoService>(),
+      keys: getIt<KeyManagementService>(),
+    ),
+  );
   getIt.registerFactory<VaultHomeViewModel>(
     () => VaultHomeViewModel(operations: getIt<VaultOperationService>()),
   );
   getIt.registerFactory<VaultItemViewModel>(
     () => VaultItemViewModel(operations: getIt<VaultOperationService>()),
+  );
+  getIt.registerFactory<BackupViewModel>(
+    () => BackupViewModel(
+      backup: getIt<BackupService>(),
+      files: getIt<BackupFileService>(),
+      session: getIt<SessionService>(),
+    ),
+  );
+  getIt.registerFactory<RestoreViewModel>(
+    () => RestoreViewModel(
+      backup: getIt<BackupService>(),
+      files: getIt<BackupFileService>(),
+      session: getIt<SessionService>(),
+    ),
   );
 }

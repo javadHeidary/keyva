@@ -84,6 +84,16 @@ class SearchViewModel extends GetxController {
     results.assignAll(mapped.where((item) => item.type == type));
   }
 
+  void reloadFromVault() {
+    searchController.clear();
+    searchQuery.value = '';
+    if (Get.isRegistered<VaultHomeViewModel>()) {
+      _vault.searchItems('');
+    }
+    _applyResults();
+    isSearching.value = false;
+  }
+
   void onItemTap(VaultListItem item) => _homeController.onItemTap(item);
 
   void confirmDelete(BuildContext context, VaultListItem item) {

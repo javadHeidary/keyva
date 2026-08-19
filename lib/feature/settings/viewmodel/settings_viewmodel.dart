@@ -439,14 +439,6 @@ class SettingsViewModel extends GetxController {
     }
   }
 
-  void onBackupExportTap(BuildContext context) {
-    // TODO: _repository?.exportBackup()
-  }
-
-  void onBackupImportTap(BuildContext context) {
-    // TODO: _repository?.importBackup()
-  }
-
   Future<void> lock() async {
     await _unlock.lock();
     Get.offAllNamed(AppRoutes.authLogin);

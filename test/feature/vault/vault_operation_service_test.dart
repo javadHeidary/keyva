@@ -556,6 +556,11 @@ class _FakeVaultDataService implements VaultDataService {
     );
   }
 
+  @override
+  Future<Result<void>> replaceVault(VaultData restoredVault) {
+    return _mutate(restoredVault, (_) => Success(restoredVault));
+  }
+
   Future<Result<void>> _mutate(
     Object mutation,
     Result<VaultData> Function(VaultData current) build,

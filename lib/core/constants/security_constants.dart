@@ -14,4 +14,5 @@ abstract final class SecurityConstants {
   static const pinMaxLength = 6;
   static const pinMaxFailedAttempts = 5;
   static const masterPasswordMinLength = 8;
+  static const backupFormatVersion = 1;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/auto_lock_policy.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -9,7 +10,6 @@ import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
-import 'package:keyva/feature/settings/widget/backup_restore_dialog.dart';
 import 'package:keyva/feature/settings/widget/change_master_password_dialog.dart';
 import 'package:keyva/feature/settings/widget/faq_guide_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/pin_code_dialog.dart';
@@ -176,10 +176,13 @@ class SettingsView extends GetView<SettingsViewModel> {
                       const AppTitleItemWidget(title: 'پشتیبان‌گیری'),
                       SettingsGroupCard(
                         children: [
-                          SettingsRow.nav(
-                            title: 'پشتیبان‌گیری و بازیابی',
-                            icon: AppIcon.backup,
-                            onTap: () => showBackupRestoreDialog(context),
+                          KeyedSubtree(
+                            key: const Key('settings-backup-restore'),
+                            child: SettingsRow.nav(
+                              title: 'پشتیبان‌گیری و بازیابی',
+                              icon: AppIcon.backup,
+                              onTap: () => Get.toNamed(AppRoutes.backupRestore),
+                            ),
                           ),
                         ],
                       ),

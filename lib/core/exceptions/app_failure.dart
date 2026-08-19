@@ -45,3 +45,45 @@ final class UnknownFailure extends AppFailure {
     super.message = 'An unexpected error occurred',
   });
 }
+
+final class InvalidBackupFormatFailure extends AppFailure {
+  const InvalidBackupFormatFailure({
+    super.message = 'Backup file format is invalid',
+  });
+}
+
+final class UnsupportedBackupVersionFailure extends AppFailure {
+  const UnsupportedBackupVersionFailure({
+    super.message = 'Backup version is not supported',
+  });
+}
+
+final class WrongBackupPasswordFailure extends AppFailure {
+  const WrongBackupPasswordFailure({
+    super.message = 'Backup password is incorrect',
+  });
+}
+
+final class BackupIntegrityFailure extends AppFailure {
+  const BackupIntegrityFailure({
+    super.message = 'Backup file is invalid or corrupted',
+  });
+}
+
+final class BackupPayloadValidationFailure extends AppFailure {
+  const BackupPayloadValidationFailure({
+    super.message = 'Backup file is invalid or corrupted',
+  });
+}
+
+final class BackupExportFailure extends AppFailure {
+  const BackupExportFailure({
+    super.message = 'Unable to save backup file',
+  });
+}
+
+final class BackupRestorePersistenceFailure extends AppFailure {
+  const BackupRestorePersistenceFailure({
+    super.message = 'Unable to restore vault data',
+  });
+}

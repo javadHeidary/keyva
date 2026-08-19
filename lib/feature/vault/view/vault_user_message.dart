@@ -16,6 +16,18 @@ String vaultUserMessage(String? errorMessage) {
       return 'خواندن اطلاعات گاوصندوق ممکن نشد.';
     case 'An unexpected error occurred':
       return 'خطای غیرمنتظره‌ای رخ داد.';
+    case 'Backup password is incorrect':
+      return 'رمز عبور فایل پشتیبان صحیح نیست.';
+    case 'Backup file is invalid or corrupted':
+      return 'فایل پشتیبان معتبر نیست یا آسیب دیده است.';
+    case 'Backup version is not supported':
+      return 'نسخه فایل پشتیبان پشتیبانی نمی‌شود.';
+    case 'Backup file format is invalid':
+      return 'ساختار فایل پشتیبان معتبر نیست.';
+    case 'Unable to restore vault data':
+      return 'بازیابی اطلاعات انجام نشد.';
+    case 'Unable to save backup file':
+      return 'ذخیره فایل پشتیبان انجام نشد.';
   }
 
   if (errorMessage.contains('Exception') ||

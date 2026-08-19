@@ -171,6 +171,38 @@ class VaultDataServiceImpl implements VaultDataService {
     );
   }
 
+  @override
+  Future<Result<void>> replaceVault(VaultData restoredVault) {
+    return _enqueue(() => _replaceVault(restoredVault));
+  }
+
+  Future<Result<void>> _replaceVault(VaultData restoredVault) async {
+    if (!_vaultSession.isUnlocked) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    if (_vaultSession.vaultData == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+
+    final serialized = await _serializer.serialize(restoredVault);
+    if (serialized is FailureResult<Uint8List>) {
+      return FailureResult(serialized.failure);
+    }
+
+    final saved = await _vaults.saveVaultData(
+      (serialized as Success<Uint8List>).data,
+    );
+    if (saved is FailureResult<void>) {
+      return FailureResult(saved.failure);
+    }
+
+    if (!_vaultSession.isUnlocked) {
+      return const FailureResult(AuthenticationFailure());
+    }
+
+    return _vaultSession.unlock(restoredVault);
+  }
+
   Future<Result<void>> _enqueue(Future<Result<void>> Function() action) {
     final previous = _tail;
     final operation = previous.then((_) => action());

@@ -25,8 +25,4 @@ abstract class SettingsRepository {
   Future<void> savePin(String pin);
 
   Future<void> logout();
-
-  Future<void> exportBackup();
-
-  Future<void> importBackup();
 }
