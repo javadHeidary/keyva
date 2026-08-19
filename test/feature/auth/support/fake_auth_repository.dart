@@ -17,8 +17,16 @@ class FakeAuthRepository implements AuthRepository {
   int createCount = 0;
   int logoutCount = 0;
   int resolveCount = 0;
+  int changeMasterPasswordCount = 0;
+  int setAutoLockTimeoutCount = 0;
   String? lastCreatedUsername;
   String? lastCreatedPassword;
+  String? lastCurrentPassword;
+  String? lastNewPassword;
+  Duration autoLockTimeout = const Duration(minutes: 1);
+  Duration? lastAutoLockTimeout;
+  AppFailure? changeMasterPasswordFailure;
+  AppFailure? setAutoLockTimeoutFailure;
   bool userRecordDeleted = false;
   bool vaultRecordDeleted = false;
 
@@ -51,6 +59,40 @@ class FakeAuthRepository implements AuthRepository {
     required Uint8List vaultKey,
   }) async {
     return Success(_fakeUser(username: 'test'));
+  }
+
+  @override
+  Future<Result<void>> changeMasterPassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    changeMasterPasswordCount++;
+    lastCurrentPassword = currentPassword;
+    lastNewPassword = newPassword;
+    final failure = changeMasterPasswordFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<SecuritySettings>> currentSecuritySettings() async {
+    return Success(
+      SecuritySettings.initial().copyWith(autoLockTimeout: autoLockTimeout),
+    );
+  }
+
+  @override
+  Future<Result<void>> setAutoLockTimeout(Duration timeout) async {
+    setAutoLockTimeoutCount++;
+    lastAutoLockTimeout = timeout;
+    final failure = setAutoLockTimeoutFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    autoLockTimeout = timeout;
+    return const Success(null);
   }
 
   @override

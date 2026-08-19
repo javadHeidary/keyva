@@ -14,6 +14,7 @@ import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import '../auth/support/auth_widget_harness.dart';
+import '../auth/support/fake_auth_repository.dart';
 import '../auth/support/fake_biometric_service.dart';
 import '../auth/support/fake_pin_service.dart';
 import '../auth/support/fake_vault_unlock_service.dart';
@@ -25,6 +26,7 @@ void main() {
   late FakeVaultUnlockService unlock;
   late FakePinService pin;
   late FakeBiometricService biometric;
+  late FakeAuthRepository auth;
   late SettingsViewModel settings;
 
   setUp(() async {
@@ -39,11 +41,13 @@ void main() {
     unlock = FakeVaultUnlockService(session: session);
     pin = FakePinService();
     biometric = FakeBiometricService();
+    auth = FakeAuthRepository();
     settings = SettingsViewModel(
       unlock: unlock,
       pin: pin,
       biometric: biometric,
       session: session,
+      auth: auth,
     );
     getIt.registerSingleton<SessionService>(session);
     getIt.registerSingleton<VaultUnlockService>(unlock);
@@ -148,5 +152,81 @@ void main() {
     await pumpSettings(tester);
 
     expect(find.byKey(const Key('settings-biometric-toggle')), findsNothing);
+  });
+
+  testWidgets('change Master Password validates length before calling auth', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+
+    await tester.tap(find.byKey(const Key('settings-change-master-password')));
+    await pumpAuthSettle(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('settings-change-mp-current')),
+      'old-password',
+    );
+    await tester.enterText(
+      find.byKey(const Key('settings-change-mp-new')),
+      'short',
+    );
+    await tester.enterText(
+      find.byKey(const Key('settings-change-mp-confirm')),
+      'short',
+    );
+    await tester.tap(find.byKey(const Key('settings-change-mp-submit')));
+    await pumpAuthSettle(tester);
+    AppToast.dismiss();
+
+    expect(auth.changeMasterPasswordCount, 0);
+    expect(find.text('تغییر رمز اصلی'), findsWidgets);
+  });
+
+  testWidgets('change Master Password submits matching valid values', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+
+    await tester.tap(find.byKey(const Key('settings-change-master-password')));
+    await pumpAuthSettle(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('settings-change-mp-current')),
+      'old-password',
+    );
+    await tester.enterText(
+      find.byKey(const Key('settings-change-mp-new')),
+      'new-password',
+    );
+    await tester.enterText(
+      find.byKey(const Key('settings-change-mp-confirm')),
+      'new-password',
+    );
+    await tester.tap(find.byKey(const Key('settings-change-mp-submit')));
+    await pumpAuthSettle(tester);
+    AppToast.dismiss();
+
+    expect(auth.changeMasterPasswordCount, 1);
+    expect(auth.lastCurrentPassword, 'old-password');
+    expect(auth.lastNewPassword, 'new-password');
+  });
+
+  testWidgets('auto-lock picker persists the selected timeout', (tester) async {
+    await pumpSettings(tester);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings-auto-lock')),
+      200,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.tap(find.byKey(const Key('settings-auto-lock')));
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('settings-auto-lock-option-30')));
+    await pumpAuthSettle(tester);
+
+    expect(auth.setAutoLockTimeoutCount, 1);
+    expect(auth.lastAutoLockTimeout, const Duration(seconds: 30));
+    expect(settings.security.value.autoLockTimeout, const Duration(seconds: 30));
   });
 }

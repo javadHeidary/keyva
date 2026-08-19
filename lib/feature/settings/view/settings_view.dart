@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/security/auto_lock_policy.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
@@ -7,6 +8,7 @@ import 'package:keyva/feature/settings/model/app_info.dart';
 import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
+import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/backup_restore_dialog.dart';
 import 'package:keyva/feature/settings/widget/change_master_password_dialog.dart';
 import 'package:keyva/feature/settings/widget/faq_guide_bottom_sheet.dart';
@@ -82,11 +84,14 @@ class SettingsView extends GetView<SettingsViewModel> {
                               onTap: controller.lock,
                             ),
                           ),
-                          SettingsRow.nav(
-                            title: 'تغییر رمز اصلی',
-                            icon: AppIcon.masterPassword,
-                            onTap: () =>
-                                showChangeMasterPasswordDialog(context),
+                          KeyedSubtree(
+                            key: const Key('settings-change-master-password'),
+                            child: SettingsRow.nav(
+                              title: 'تغییر رمز اصلی',
+                              icon: AppIcon.masterPassword,
+                              onTap: () =>
+                                  showChangeMasterPasswordDialog(context),
+                            ),
                           ),
                           if (controller.showBiometricSetting.value)
                             KeyedSubtree(
@@ -141,11 +146,17 @@ class SettingsView extends GetView<SettingsViewModel> {
                             value: controller.security.value.preventScreenshot,
                             onChanged: controller.setPreventScreenshot,
                           ),
-                          SettingsRow.toggle(
-                            title: 'قفل هنگام خروج از برنامه',
-                            icon: AppIcon.logout,
-                            value: controller.security.value.lockOnAppExit,
-                            onChanged: controller.setLockOnAppExit,
+                          KeyedSubtree(
+                            key: const Key('settings-auto-lock'),
+                            child: SettingsRow.nav(
+                              title: 'قفل خودکار',
+                              icon: AppIcon.lockClock,
+                              subtitle: AutoLockPolicy.label(
+                                controller.security.value.autoLockTimeout,
+                              ),
+                              onTap: () =>
+                                  showAutoLockTimeoutBottomSheet(context),
+                            ),
                           ),
                         ],
                       ),

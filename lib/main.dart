@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/session/app_lock_controller.dart';
+import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = await HiveDatabase.initialize();
   initDependencies(database);
+  Get.put(
+    AppLockController(
+      session: getIt<SessionService>(),
+      unlock: getIt<VaultUnlockService>(),
+      auth: getIt<AuthRepository>(),
+    ),
+    permanent: true,
+  );
   runApp(const KeyvaApp());
 }
 

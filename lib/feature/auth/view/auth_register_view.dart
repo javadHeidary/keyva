@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -92,15 +93,7 @@ class AuthRegisterView extends GetView<RegisterController> {
                             ),
                             onPressed: controller.togglePasswordVisibility,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'رمز عبور الزامی است';
-                            }
-                            if (value.length < 8) {
-                              return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
-                            }
-                            return null;
-                          },
+                          validator: MasterPasswordPolicy.fieldError,
                         );
                       }),
                       SizedBox(height: AppSpacing.lg.h),
@@ -115,15 +108,7 @@ class AuthRegisterView extends GetView<RegisterController> {
                           labelText: 'تکرار Master Password',
                           hintText: 'رمز اصلی را دوباره وارد کنید',
                           prefixIcon: const Icon(AppIcon.lock),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'رمز عبور الزامی است';
-                            }
-                            if (value.length < 8) {
-                              return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
-                            }
-                            return null;
-                          },
+                          validator: MasterPasswordPolicy.fieldError,
                           suffixIcon: IconButton(
                             icon: Icon(
                               controller.isConfirmPasswordVisible.value

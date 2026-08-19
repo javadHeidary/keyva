@@ -10,6 +10,7 @@ import 'package:keyva/core/database/models/wrapped_vault_key.dart';
 import 'package:keyva/core/database/user_data_source.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 
@@ -126,6 +127,127 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<void>> changeMasterPassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final sessionVaultKey = _sessionVaultKey();
+    final userId = _session.current?.userId;
+    if (sessionVaultKey == null || userId == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    if (!MasterPasswordPolicy.isValid(newPassword)) {
+      return const FailureResult(ValidationFailure());
+    }
+
+    final loaded = await _loadCurrentUser();
+    if (loaded is FailureResult<UserRecord>) {
+      return FailureResult(loaded.failure);
+    }
+    final user = (loaded as Success<UserRecord>).data;
+
+    final oldDerived = await _crypto.deriveKey(
+      masterPassword: currentPassword,
+      salt: user.kdfSalt,
+      parameters: user.kdfParameters,
+    );
+    if (oldDerived is FailureResult<Uint8List>) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final oldDerivedKey = (oldDerived as Success<Uint8List>).data;
+
+    final unwrapped = await _keys.unwrapVaultKey(
+      wrappedVaultKey: user.wrappedVaultKey,
+      derivedKey: oldDerivedKey,
+    );
+    oldDerivedKey.fillRange(0, oldDerivedKey.length, 0);
+    if (unwrapped is FailureResult<Uint8List>) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final recoveredKey = (unwrapped as Success<Uint8List>).data;
+    final matchesCurrent = _sameKey(recoveredKey, sessionVaultKey);
+    recoveredKey.fillRange(0, recoveredKey.length, 0);
+    if (!matchesCurrent) {
+      return const FailureResult(AuthenticationFailure());
+    }
+
+    final newSalt = _keys.generateSalt();
+    final newParameters = _keys.defaultKdfParameters();
+    final newDerived = await _crypto.deriveKey(
+      masterPassword: newPassword,
+      salt: newSalt,
+      parameters: newParameters,
+    );
+    if (newDerived is FailureResult<Uint8List>) {
+      return const FailureResult(CryptoFailure());
+    }
+    final newDerivedKey = (newDerived as Success<Uint8List>).data;
+
+    final wrapped = await _keys.wrapVaultKey(
+      vaultKey: sessionVaultKey,
+      derivedKey: newDerivedKey,
+    );
+    if (wrapped is FailureResult<WrappedVaultKey>) {
+      newDerivedKey.fillRange(0, newDerivedKey.length, 0);
+      return const FailureResult(CryptoFailure());
+    }
+    final newWrap = (wrapped as Success<WrappedVaultKey>).data;
+
+    final verified = await _keys.unwrapVaultKey(
+      wrappedVaultKey: newWrap,
+      derivedKey: newDerivedKey,
+    );
+    newDerivedKey.fillRange(0, newDerivedKey.length, 0);
+    if (verified is FailureResult<Uint8List>) {
+      return const FailureResult(CryptoFailure());
+    }
+    final verifiedKey = (verified as Success<Uint8List>).data;
+    final verifiedMatches = _sameKey(verifiedKey, sessionVaultKey);
+    verifiedKey.fillRange(0, verifiedKey.length, 0);
+    if (!verifiedMatches) {
+      return const FailureResult(CryptoFailure());
+    }
+
+    return _users.update(
+      user.copyWith(
+        updatedAt: DateTime.now(),
+        kdfSalt: newSalt,
+        kdfParameters: newParameters,
+        wrappedVaultKey: newWrap,
+      ),
+    );
+  }
+
+  @override
+  Future<Result<SecuritySettings>> currentSecuritySettings() async {
+    final loaded = await _loadCurrentUser();
+    if (loaded is FailureResult<UserRecord>) {
+      return FailureResult(loaded.failure);
+    }
+    return Success((loaded as Success<UserRecord>).data.securitySettings);
+  }
+
+  @override
+  Future<Result<void>> setAutoLockTimeout(Duration timeout) async {
+    if (timeout.isNegative) {
+      return const FailureResult(ValidationFailure());
+    }
+    final loaded = await _loadCurrentUser();
+    if (loaded is FailureResult<UserRecord>) {
+      return FailureResult(loaded.failure);
+    }
+    final user = (loaded as Success<UserRecord>).data;
+    return _users.update(
+      user.copyWith(
+        updatedAt: DateTime.now(),
+        securitySettings: user.securitySettings.copyWith(
+          autoLockTimeout: timeout,
+        ),
+      ),
+    );
+  }
+
+  @override
   Future<Result<UserRecord>> openSession({
     required String userId,
     required Uint8List vaultKey,
@@ -231,5 +353,39 @@ class AuthRepositoryImpl implements AuthRepository {
   Result<UserRecord> _authenticationFailed() {
     _session.clear();
     return const FailureResult(AuthenticationFailure());
+  }
+
+  Future<Result<UserRecord>> _loadCurrentUser() async {
+    final userId = _session.current?.userId;
+    if (!_session.isAuthenticated || userId == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final loaded = await _users.findById(userId);
+    if (loaded is FailureResult<UserRecord?>) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final user = (loaded as Success<UserRecord?>).data;
+    if (user == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    return Success(user);
+  }
+
+  Uint8List? _sessionVaultKey() {
+    if (!_session.isAuthenticated || _session.current == null) {
+      return null;
+    }
+    return _session.vaultKey;
+  }
+
+  static bool _sameKey(Uint8List left, Uint8List right) {
+    if (left.length != right.length) {
+      return false;
+    }
+    var diff = 0;
+    for (var i = 0; i < left.length; i++) {
+      diff |= left[i] ^ right[i];
+    }
+    return diff == 0;
   }
 }

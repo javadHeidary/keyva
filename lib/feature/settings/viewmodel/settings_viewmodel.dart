@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/database/models/security_settings.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/biometric_service.dart';
+import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/session/session_service.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
 import 'package:keyva/feature/settings/model/security_settings_ui_state.dart';
@@ -26,17 +29,20 @@ class SettingsViewModel extends GetxController {
     PinService? pin,
     BiometricService? biometric,
     SessionService? session,
+    AuthRepository? auth,
   }) : _repository = repository,
        _unlockOverride = unlock,
        _pinOverride = pin,
        _biometricOverride = biometric,
-       _sessionOverride = session;
+       _sessionOverride = session,
+       _authOverride = auth;
 
   final SettingsRepository? _repository;
   final VaultUnlockService? _unlockOverride;
   final PinService? _pinOverride;
   final BiometricService? _biometricOverride;
   final SessionService? _sessionOverride;
+  final AuthRepository? _authOverride;
 
   SettingsRepository? get repository => _repository;
 
@@ -73,6 +79,16 @@ class SettingsViewModel extends GetxController {
     return null;
   }
 
+  AuthRepository? get _auth {
+    if (_authOverride != null) {
+      return _authOverride;
+    }
+    if (getIt.isRegistered<AuthRepository>()) {
+      return getIt<AuthRepository>();
+    }
+    return null;
+  }
+
   final profile = const UserProfile(name: UserProfile.defaultName).obs;
   final themePreference = ThemePreference.system.obs;
   final security = const SecuritySettingsUiState().obs;
@@ -94,6 +110,16 @@ class SettingsViewModel extends GetxController {
     if (userId == null) {
       showBiometricSetting.value = false;
       return;
+    }
+
+    final auth = _auth;
+    if (auth != null) {
+      final loaded = await auth.currentSecuritySettings();
+      if (loaded is Success<SecuritySettings>) {
+        security.value = security.value.copyWith(
+          autoLockTimeout: loaded.data.autoLockTimeout,
+        );
+      }
     }
 
     final pin = _pin;
@@ -267,9 +293,21 @@ class SettingsViewModel extends GetxController {
     // TODO: ScreenshotGuardService via repository
   }
 
-  void setLockOnAppExit(bool value) {
-    security.value = security.value.copyWith(lockOnAppExit: value);
-    // TODO: AppLockService via repository
+  Future<void> setAutoLockTimeout(Duration timeout) async {
+    final auth = _auth;
+    if (auth == null || isSecurityBusy.value) {
+      return;
+    }
+    isSecurityBusy.value = true;
+    try {
+      final result = await auth.setAutoLockTimeout(timeout);
+      if (result is FailureResult<void>) {
+        return;
+      }
+      security.value = security.value.copyWith(autoLockTimeout: timeout);
+    } finally {
+      isSecurityBusy.value = false;
+    }
   }
 
   Future<void> onChangeMasterPasswordSubmitted({
@@ -278,17 +316,48 @@ class SettingsViewModel extends GetxController {
     required String confirmPassword,
     required BuildContext context,
   }) async {
+    if (isSecurityBusy.value) {
+      return;
+    }
+    final policyError = MasterPasswordPolicy.fieldError(newPassword);
+    if (policyError != null) {
+      AppToast.error(context, title: policyError);
+      return;
+    }
     if (newPassword != confirmPassword) {
       AppToast.error(context, title: 'تکرار رمز با رمز جدید یکسان نیست');
       return;
     }
-    if (newPassword.length < 8) {
-      AppToast.error(context, title: 'رمز جدید باید حداقل ۸ کاراکتر باشد');
+    final auth = _auth;
+    if (auth == null) {
+      AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
       return;
     }
-    // TODO: _repository?.changeMasterPassword(...)
-    Get.back();
-    if (!context.mounted) return;
+    isSecurityBusy.value = true;
+    try {
+      final result = await auth.changeMasterPassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<void>) {
+        AppToast.error(
+          context,
+          title: vaultUserMessage(result.failure.message),
+        );
+        return;
+      }
+      AppToast.success(
+        context,
+        title: 'رمز اصلی',
+        message: 'رمز اصلی به‌روزرسانی شد',
+      );
+      Get.back();
+    } finally {
+      isSecurityBusy.value = false;
+    }
   }
 
   Future<void> onPinSubmitted({
