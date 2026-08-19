@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
+import 'package:get/get_navigation/src/routes/route_middleware.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
+import 'package:keyva/core/routes/session_guard.dart';
 import 'package:keyva/core/theme/design_system_example.dart';
 import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
@@ -18,6 +20,7 @@ import 'package:keyva/feature/password_generator/view/password_history_view.dart
 import 'package:keyva/feature/search/bindings/search_bindings.dart';
 import 'package:keyva/feature/shell/bindings/main_shell_bindings.dart';
 import 'package:keyva/feature/shell/view/main_shell_view.dart';
+import 'package:keyva/feature/splash/bindings/splash_bindings.dart';
 import 'package:keyva/feature/splash/view/splash_view.dart';
 import 'package:keyva/feature/type/bank_card/bindings/bank_card_bindings.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_create_view.dart';
@@ -66,6 +69,11 @@ class AppRoutes {
   static const String categoryEdit = '/category/edit';
   static const String appIconTest = '/app-icon-test';
 
+  static final _sessionGuard = <GetMiddleware>[SessionGuard()];
+  static final _unlockedRedirect = <GetMiddleware>[
+    UnlockedRedirectMiddleware(),
+  ];
+
   static List<GetPage> routes = [
     GetPage(
       name: themeDemo,
@@ -78,6 +86,7 @@ class AppRoutes {
     GetPage(
       name: splash,
       page: () => const SplashView(),
+      binding: SplashBindings(),
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -104,6 +113,7 @@ class AppRoutes {
       name: authLogin,
       page: () => const AuthLoginView(),
       binding: AuthBindings(),
+      middlewares: _unlockedRedirect,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -113,6 +123,7 @@ class AppRoutes {
       name: authRegister,
       page: () => const AuthRegisterView(),
       binding: AuthBindings(),
+      middlewares: _unlockedRedirect,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -122,6 +133,7 @@ class AppRoutes {
       name: shell,
       page: () => const MainShellView(),
       binding: MainShellBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -130,6 +142,7 @@ class AppRoutes {
       name: home,
       page: () => const HomeView(),
       binding: HomeBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -138,6 +151,7 @@ class AppRoutes {
       name: typeList,
       page: () => const TypeListItemView(),
       binding: HomeBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -146,6 +160,7 @@ class AppRoutes {
       name: search,
       page: () => const AppSearchWidget(),
       binding: SearchBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -158,6 +173,7 @@ class AppRoutes {
       name: loginCreate,
       page: () => const LoginCreateView(),
       binding: LoginCreateBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -167,6 +183,7 @@ class AppRoutes {
       name: loginEdit,
       page: () => const LoginEditView(),
       binding: LoginEditBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -176,6 +193,7 @@ class AppRoutes {
       name: loginDetails,
       page: () => const LoginDetailsView(),
       binding: LoginDetailsBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -188,6 +206,7 @@ class AppRoutes {
       name: bankCardCreate,
       page: () => const BankCardCreateView(),
       binding: BankCardCreateBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -197,6 +216,7 @@ class AppRoutes {
       name: bankCardEdit,
       page: () => const BankCardEditView(),
       binding: BankCardEditBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -206,6 +226,7 @@ class AppRoutes {
       name: bankCardDetails,
       page: () => const BankCardDetailsView(),
       binding: BankCardDetailsBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -218,6 +239,7 @@ class AppRoutes {
       name: noteCreate,
       page: () => const NoteCreateView(),
       binding: NoteCreateBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -227,6 +249,7 @@ class AppRoutes {
       name: noteEdit,
       page: () => const NoteEditView(),
       binding: NoteEditBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -236,6 +259,7 @@ class AppRoutes {
       name: noteDetails,
       page: () => const NoteDetailsView(),
       binding: NoteDetailsBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -248,6 +272,7 @@ class AppRoutes {
       name: passwordGeneratorHistory,
       page: () => const PasswordHistoryView(),
       binding: PasswordHistoryBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -260,6 +285,7 @@ class AppRoutes {
       name: categoryCreate,
       page: () => const CategoryCreateView(),
       binding: CategoryCreateBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
@@ -269,6 +295,7 @@ class AppRoutes {
       name: categoryEdit,
       page: () => const CategoryEditView(),
       binding: CategoryEditBindings(),
+      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,

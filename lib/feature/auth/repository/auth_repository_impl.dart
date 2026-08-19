@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:keyva/core/constants/database_constants.dart';
 import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
+import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/models/security_settings.dart';
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
@@ -17,15 +19,18 @@ class AuthRepositoryImpl implements AuthRepository {
     required CryptoService crypto,
     required KeyManagementService keys,
     required SessionService session,
+    required HiveDatabase database,
   }) : _users = users,
        _crypto = crypto,
        _keys = keys,
-       _session = session;
+       _session = session,
+       _database = database;
 
   final UserDataSource _users;
   final CryptoService _crypto;
   final KeyManagementService _keys;
   final SessionService _session;
+  final HiveDatabase _database;
 
   @override
   Future<Result<UserRecord>> createAccount({
@@ -119,13 +124,57 @@ class AuthRepositoryImpl implements AuthRepository {
       username: user.username,
       vaultKey: (unwrapped as Success<Uint8List>).data,
     );
+    await _rememberActiveUserId(user.id);
     return Success(user);
+  }
+
+  @override
+  Future<Result<bool>> hasAnyAccount() async {
+    final ids = await _users.listIds();
+    if (ids is FailureResult<List<String>>) {
+      return FailureResult(ids.failure);
+    }
+    return Success((ids as Success<List<String>>).data.isNotEmpty);
+  }
+
+  @override
+  Future<Result<String>> resolveUnlockUserId() async {
+    try {
+      final stored = _database.appSettings.get(HiveSettingsKeys.activeUserId);
+      if (stored is String && stored.isNotEmpty) {
+        final exists = await _users.exists(stored);
+        if (exists is FailureResult<bool>) {
+          return const FailureResult(AuthenticationFailure());
+        }
+        if ((exists as Success<bool>).data) {
+          return Success(stored);
+        }
+      }
+    } catch (_) {
+      return const FailureResult(AuthenticationFailure());
+    }
+
+    final ids = await _users.listIds();
+    if (ids is FailureResult<List<String>>) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final list = (ids as Success<List<String>>).data;
+    if (list.length == 1) {
+      return Success(list.first);
+    }
+    return const FailureResult(AuthenticationFailure());
   }
 
   @override
   Future<Result<void>> logout() async {
     _session.clear();
     return const Success<void>(null);
+  }
+
+  Future<void> _rememberActiveUserId(String userId) async {
+    try {
+      await _database.appSettings.put(HiveSettingsKeys.activeUserId, userId);
+    } catch (_) {}
   }
 
   Future<Result<String>> _uniqueUserId() async {

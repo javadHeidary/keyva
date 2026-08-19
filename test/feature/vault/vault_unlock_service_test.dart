@@ -62,6 +62,7 @@ void main() {
       crypto: crypto,
       keys: KeyManagementServiceImpl(crypto),
       session: session,
+      database: database!,
     );
     repository = VaultRepositoryImpl(
       vaults: vaults,

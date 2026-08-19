@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -140,7 +141,23 @@ class AuthRegisterView extends GetView<RegisterController> {
 
                 SizedBox(height: AppSpacing.xxl.h),
                 Obx(() {
+                  if (controller.errorMessage.value.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: AppSpacing.lg.h),
+                    child: Text(
+                      controller.errorMessage.value,
+                      key: const Key('auth-register-error'),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: colors.error,
+                      ),
+                    ),
+                  );
+                }),
+                Obx(() {
                   return AppButtonWidget(
+                    key: const Key('auth-register-submit'),
                     title: 'ثبت‌نام',
                     isLoading: controller.isLoading.value,
                     onPressed: () => _onRegisterPressed(controller),
@@ -214,7 +231,8 @@ class _LoginTextState extends State<_LoginText> {
   @override
   void initState() {
     super.initState();
-    _recognizer = TapGestureRecognizer()..onTap = Get.back;
+    _recognizer = TapGestureRecognizer()
+      ..onTap = () => Get.offNamed(AppRoutes.authLogin);
   }
 
   @override

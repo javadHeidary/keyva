@@ -2,12 +2,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keyva/core/constants/database_constants.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service_impl.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/hive_user_data_source.dart';
+import 'package:keyva/core/database/models/kdf_parameters.dart';
+import 'package:keyva/core/database/models/security_settings.dart';
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
 import 'package:keyva/core/database/user_data_source.dart';
@@ -39,6 +42,7 @@ void main() {
       crypto: crypto,
       keys: KeyManagementServiceImpl(crypto),
       session: session,
+      database: database!,
     );
   });
 
@@ -126,6 +130,10 @@ void main() {
     expect(session.vaultKey, isNotNull);
     expect(session.vaultKey!.length, SecurityConstants.vaultKeyLength);
     expect(session.vaultKey, isNot(created.wrappedVaultKey.ciphertext));
+    expect(
+      database!.appSettings.get(HiveSettingsKeys.activeUserId),
+      created.id,
+    );
   }, timeout: kdfTimeout);
 
   test('incorrect master password fails closed without a session', () async {
@@ -235,6 +243,55 @@ void main() {
     final stillThere = _expectSuccess(await users.findById(created.id));
     expect(stillThere, isNotNull);
   }, timeout: kdfTimeout);
+
+  test('hasAnyAccount is false until a user exists', () async {
+    expect(_expectSuccess(await auth.hasAnyAccount()), isFalse);
+    await users.create(_storedUser(id: 'user-1'));
+    expect(_expectSuccess(await auth.hasAnyAccount()), isTrue);
+  });
+
+  test('resolveUnlockUserId uses the only stored account', () async {
+    _expectAuthenticationFailure(await auth.resolveUnlockUserId());
+    await users.create(_storedUser(id: 'user-1'));
+    expect(_expectSuccess(await auth.resolveUnlockUserId()), 'user-1');
+  });
+
+  test('resolveUnlockUserId prefers the remembered active user', () async {
+    await users.create(_storedUser(id: 'user-1'));
+    await users.create(_storedUser(id: 'user-2'));
+    await database!.appSettings.put(HiveSettingsKeys.activeUserId, 'user-2');
+    expect(_expectSuccess(await auth.resolveUnlockUserId()), 'user-2');
+  });
+
+  test('resolveUnlockUserId fails closed when multiple accounts have no active id', () async {
+    await users.create(_storedUser(id: 'user-1'));
+    await users.create(_storedUser(id: 'user-2'));
+    _expectAuthenticationFailure(await auth.resolveUnlockUserId());
+  });
+}
+
+UserRecord _storedUser({required String id}) {
+  return UserRecord(
+    id: id,
+    username: 'علی',
+    createdAt: DateTime.utc(2026, 1, 1),
+    updatedAt: DateTime.utc(2026, 1, 2),
+    kdfSalt: Uint8List.fromList(List<int>.filled(16, 1)),
+    kdfParameters: const KdfParameters(
+      algorithm: SecurityConstants.kdfAlgorithm,
+      memoryCost: SecurityConstants.kdfMemoryCost,
+      timeCost: SecurityConstants.kdfTimeCost,
+      parallelism: SecurityConstants.kdfParallelism,
+      outputLength: SecurityConstants.kdfOutputLength,
+    ),
+    wrappedVaultKey: WrappedVaultKey(
+      version: SecurityConstants.wrappedKeyVersion,
+      nonce: Uint8List.fromList(List<int>.filled(12, 2)),
+      ciphertext: Uint8List.fromList(List<int>.filled(48, 3)),
+      authenticationTag: Uint8List.fromList(List<int>.filled(16, 4)),
+    ),
+    securitySettings: SecuritySettings.initial(),
+  );
 }
 
 T _expectSuccess<T>(Result<T> result) {

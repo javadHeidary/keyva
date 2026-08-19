@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/view/vault_user_message.dart';
 
 class LoginController extends GetxController {
+  LoginController({
+    required VaultUnlockService unlock,
+    required AuthRepository auth,
+  }) : _unlock = unlock,
+       _auth = auth;
+
+  final VaultUnlockService _unlock;
+  final AuthRepository _auth;
+
   final passwordController = TextEditingController();
   final isPasswordVisible = false.obs;
   final isLoading = false.obs;
@@ -14,15 +27,33 @@ class LoginController extends GetxController {
   }
 
   Future<void> login() async {
-    isLoading.value = true;
+    if (isLoading.value) {
+      return;
+    }
     errorMessage.value = '';
+    if (!(loginFormKey.currentState?.validate() ?? false)) {
+      return;
+    }
 
+    isLoading.value = true;
     try {
-      await Future.delayed(const Duration(milliseconds: 800));
+      final resolved = await _auth.resolveUnlockUserId();
+      if (resolved is FailureResult<String>) {
+        errorMessage.value = vaultUserMessage(resolved.failure.message);
+        return;
+      }
+      final userId = (resolved as Success<String>).data;
+      final unlocked = await _unlock.unlock(
+        userId: userId,
+        masterPassword: passwordController.text,
+      );
+      if (unlocked is FailureResult<void>) {
+        errorMessage.value = vaultUserMessage(unlocked.failure.message);
+        return;
+      }
       Get.offAllNamed(AppRoutes.shell);
-    } catch (e) {
-      errorMessage.value = 'خطا در ورود. لطفاً دوباره تلاش کنید';
     } finally {
+      passwordController.clear();
       isLoading.value = false;
     }
   }

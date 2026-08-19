@@ -49,6 +49,7 @@ void initDependencies(HiveDatabase database) {
       crypto: getIt<CryptoService>(),
       keys: getIt<KeyManagementService>(),
       session: getIt<SessionService>(),
+      database: getIt<HiveDatabase>(),
     ),
   );
   getIt.registerLazySingleton<VaultRepository>(

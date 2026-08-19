@@ -12,5 +12,9 @@ abstract interface class AuthRepository {
     required String masterPassword,
   });
 
+  Future<Result<bool>> hasAnyAccount();
+
+  Future<Result<String>> resolveUnlockUserId();
+
   Future<Result<void>> logout();
 }

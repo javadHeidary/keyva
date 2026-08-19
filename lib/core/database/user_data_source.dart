@@ -8,5 +8,7 @@ abstract interface class UserDataSource {
 
   Future<Result<bool>> exists(String id);
 
+  Future<Result<List<String>>> listIds();
+
   Future<Result<void>> update(UserRecord user);
 }

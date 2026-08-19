@@ -38,7 +38,7 @@ class OnboardingController extends GetxController {
     if (currentPage.value < slides.length - 1) {
       pageController.nextPage(duration: durationValue, curve: Curves.easeInOut);
     } else {
-      Get.offNamed(AppRoutes.authLogin);
+      Get.offNamed(AppRoutes.authRegister);
     }
   }
 

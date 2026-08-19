@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/database/models/user_record.dart';
+import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/view/vault_user_message.dart';
 
 class RegisterController extends GetxController {
+  RegisterController({
+    required AuthRepository auth,
+    required VaultUnlockService unlock,
+  }) : _auth = auth,
+       _unlock = unlock;
+
+  final AuthRepository _auth;
+  final VaultUnlockService _unlock;
+
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
@@ -40,14 +54,41 @@ class RegisterController extends GetxController {
   }
 
   Future<void> createAccount() async {
-    isLoading.value = true;
+    if (isLoading.value) {
+      return;
+    }
+    errorMessage.value = '';
+    if (!(registerFormKey.currentState?.validate() ?? false)) {
+      return;
+    }
+    if (passwordController.text != confirmPasswordController.text) {
+      errorMessage.value = 'تکرار رمز عبور یکسان نیست';
+      return;
+    }
 
+    isLoading.value = true;
     try {
-      await Future.delayed(const Duration(milliseconds: 900));
-      Get.offAllNamed(AppRoutes.home);
-    } catch (e) {
-      errorMessage.value = 'خطا در ایجاد حساب. لطفاً دوباره تلاش کنید';
+      final created = await _auth.createAccount(
+        username: usernameController.text.trim(),
+        masterPassword: passwordController.text,
+      );
+      if (created is FailureResult<UserRecord>) {
+        errorMessage.value = vaultUserMessage(created.failure.message);
+        return;
+      }
+      final user = (created as Success<UserRecord>).data;
+      final unlocked = await _unlock.unlock(
+        userId: user.id,
+        masterPassword: passwordController.text,
+      );
+      if (unlocked is FailureResult<void>) {
+        errorMessage.value = vaultUserMessage(unlocked.failure.message);
+        return;
+      }
+      Get.offAllNamed(AppRoutes.shell);
     } finally {
+      passwordController.clear();
+      confirmPasswordController.clear();
       isLoading.value = false;
     }
   }

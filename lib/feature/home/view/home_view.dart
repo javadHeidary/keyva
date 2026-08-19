@@ -219,6 +219,18 @@ class _AccountHeader extends GetView<HomeController> {
             ),
           ),
         ),
+        SizedBox(width: AppSpacing.sm.s),
+        IconButton(
+          key: const Key('home-lock'),
+          onPressed: controller.lock,
+          visualDensity: VisualDensity.compact,
+          icon: Icon(
+            AppIcon.lock,
+            size: 22.s,
+            color: colors.textPrimary,
+          ),
+          tooltip: 'قفل کردن',
+        ),
       ],
     );
   }

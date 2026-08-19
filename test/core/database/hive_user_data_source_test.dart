@@ -94,6 +94,17 @@ void main() {
     final loaded = _expectSuccess(await users.findById('missing'));
     expect(loaded, isNull);
   });
+
+  test('listIds returns persisted user ids', () async {
+    expect(_expectSuccess(await users.listIds()), isEmpty);
+
+    await users.create(_user(id: 'user-1'));
+    await users.create(_user(id: 'user-2'));
+
+    final ids = _expectSuccess(await users.listIds());
+    expect(ids, containsAll(<String>['user-1', 'user-2']));
+    expect(ids, hasLength(2));
+  });
 }
 
 UserRecord _user({required String id, String username = 'علی'}) {

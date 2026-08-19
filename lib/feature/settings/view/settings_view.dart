@@ -74,6 +74,14 @@ class SettingsView extends GetView<SettingsViewModel> {
                       const AppTitleItemWidget(title: 'امنیت'),
                       SettingsGroupCard(
                         children: [
+                          KeyedSubtree(
+                            key: const Key('settings-lock'),
+                            child: SettingsRow.nav(
+                              title: 'قفل کردن',
+                              icon: AppIcon.lock,
+                              onTap: controller.lock,
+                            ),
+                          ),
                           SettingsRow.nav(
                             title: 'تغییر رمز اصلی',
                             icon: AppIcon.masterPassword,
@@ -210,6 +218,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                       ),
                       SizedBox(height: AppSpacing.sectionGap.h),
                       AppButtonWidget(
+                        key: const Key('settings-logout'),
                         title: 'خروج از حساب',
                         backgroundColor: colors.error.withValues(alpha: 0.12),
                         foregroundColor: colors.error,

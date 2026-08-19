@@ -5,6 +5,7 @@ import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
 import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/note/data/note_vault_store.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 
 class HomeBindings extends Bindings {
@@ -26,7 +27,9 @@ class HomeBindings extends Bindings {
       Get.lazyPut(() => getIt<VaultHomeViewModel>());
     }
     if (!Get.isRegistered<HomeController>()) {
-      Get.lazyPut(() => HomeController());
+      Get.lazyPut(
+        () => HomeController(unlock: getIt<VaultUnlockService>()),
+      );
     }
   }
 }

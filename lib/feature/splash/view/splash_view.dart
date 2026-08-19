@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/gen/assets.gen.dart';
-import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/auth/view_model/auth_startup_viewmodel.dart';
 import 'package:keyva/feature/onboarding/util/onboarding_precache.dart';
 import 'package:keyva/shared/widget/app_loading_widger.dart';
 
@@ -27,7 +27,7 @@ class _SplashViewState extends State<SplashView> {
     super.initState();
     final typewriter = _runTypewriter();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _prepareOnboardingThenGo(typewriter);
+      _prepareThenGo(typewriter);
     });
   }
 
@@ -41,7 +41,7 @@ class _SplashViewState extends State<SplashView> {
     }
   }
 
-  Future<void> _prepareOnboardingThenGo(Future<void> typewriter) async {
+  Future<void> _prepareThenGo(Future<void> typewriter) async {
     await Future.wait([
       typewriter,
       precacheOnboardingAssets(context),
@@ -49,7 +49,9 @@ class _SplashViewState extends State<SplashView> {
     if (!mounted) return;
     await Future.delayed(_pauseBeforeNavigate);
     if (!mounted) return;
-    Get.offNamed(AppRoutes.onBoarding);
+    final route = await Get.find<AuthStartupViewModel>().resolveInitialRoute();
+    if (!mounted) return;
+    Get.offNamed(route);
   }
 
   @override

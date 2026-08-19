@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_constants.dart';
@@ -7,6 +8,7 @@ import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
@@ -14,9 +16,14 @@ import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 
 class HomeController extends GetxController {
-  HomeController({VaultHomeViewModel? vault}) : _vaultOverride = vault;
+  HomeController({
+    VaultHomeViewModel? vault,
+    VaultUnlockService? unlock,
+  }) : _vaultOverride = vault,
+       _unlockOverride = unlock;
 
   final VaultHomeViewModel? _vaultOverride;
+  final VaultUnlockService? _unlockOverride;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final selectedType = Rxn<VaultItemType>();
   final selectedCategoryId = Rxn<String>();
@@ -28,6 +35,9 @@ class HomeController extends GetxController {
 
   VaultHomeViewModel get vault =>
       _vaultOverride ?? Get.find<VaultHomeViewModel>();
+
+  VaultUnlockService get _unlock =>
+      _unlockOverride ?? getIt<VaultUnlockService>();
 
   VaultUiStatus get vaultStatus => vault.status.value;
 
@@ -44,6 +54,11 @@ class HomeController extends GetxController {
 
   void openSettings() {
     switchMainShellTab(MainShellTab.settings);
+  }
+
+  Future<void> lock() async {
+    await _unlock.lock();
+    Get.offAllNamed(AppRoutes.authLogin);
   }
 
   CategoryCatalogController? get _catalog =>

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
@@ -7,16 +8,24 @@ import 'package:keyva/feature/settings/model/security_settings_ui_state.dart';
 import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/settings/model/theme_preference.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsViewModel extends GetxController {
-  SettingsViewModel({SettingsRepository? repository})
-    : _repository = repository;
+  SettingsViewModel({
+    SettingsRepository? repository,
+    VaultUnlockService? unlock,
+  }) : _repository = repository,
+       _unlockOverride = unlock;
 
   final SettingsRepository? _repository;
+  final VaultUnlockService? _unlockOverride;
 
   SettingsRepository? get repository => _repository;
+
+  VaultUnlockService get _unlock =>
+      _unlockOverride ?? getIt<VaultUnlockService>();
 
   final profile = const UserProfile(name: UserProfile.defaultName).obs;
   final themePreference = ThemePreference.system.obs;
@@ -169,8 +178,13 @@ class SettingsViewModel extends GetxController {
     // AppToast.success(context, title: 'در فاز بعد ذخیره می‌شود');
   }
 
+  Future<void> lock() async {
+    await _unlock.lock();
+    Get.offAllNamed(AppRoutes.authLogin);
+  }
+
   Future<void> onLogoutConfirmed() async {
-    // TODO: _repository?.logout()
+    await _unlock.lock();
     Get.offAllNamed(AppRoutes.authLogin);
   }
 }

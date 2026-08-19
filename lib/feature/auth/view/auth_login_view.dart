@@ -31,10 +31,14 @@ class AuthLoginView extends GetView<LoginController> {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Icon(
-                    AppIcon.info,
-                    size: AppSizes.iconLg.s,
-                    color: context.colors.textPrimary,
+                  child: IconButton(
+                    key: const Key('auth-login-info'),
+                    onPressed: controller.showMultiAccountInfo,
+                    icon: Icon(
+                      AppIcon.info,
+                      size: AppSizes.iconLg.s,
+                      color: context.colors.textPrimary,
+                    ),
                   ),
                 ),
 
@@ -52,17 +56,22 @@ class AuthLoginView extends GetView<LoginController> {
                       ),
                       child: Icon(AppIcon.lock),
                     ),
-                    SizedBox(width: AppSpacing.xl.h),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('ورود به کیوا', style: AppTypography.titleLarge),
-                        SizedBox(height: AppSpacing.sm.h),
-                        Text(
-                          'رمز اکانت خود را وارد کنید',
-                          style: AppTypography.bodyLarge,
-                        ),
-                      ],
+                    SizedBox(width: AppSpacing.xl.s),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ورود به کیوا',
+                            style: AppTypography.titleLarge,
+                          ),
+                          SizedBox(height: AppSpacing.sm.h),
+                          Text(
+                            'رمز اکانت خود را وارد کنید',
+                            style: AppTypography.bodyLarge,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -72,6 +81,7 @@ class AuthLoginView extends GetView<LoginController> {
                   return Form(
                     key: controller.loginFormKey,
                     child: AppTextFieldWidget(
+                      key: const Key('auth-login-password'),
                       controller: controller.passwordController,
                       obscureText: !controller.isPasswordVisible.value,
                       textInputAction: TextInputAction.done,
@@ -100,17 +110,30 @@ class AuthLoginView extends GetView<LoginController> {
                   );
                 }),
 
+                Obx(() {
+                  if (controller.errorMessage.value.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: EdgeInsets.only(top: AppSpacing.md.h),
+                    child: Text(
+                      controller.errorMessage.value,
+                      key: const Key('auth-login-error'),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: context.colors.error,
+                      ),
+                    ),
+                  );
+                }),
+
                 SizedBox(height: AppSpacing.sectionGap.h),
 
                 Obx(() {
                   return AppButtonWidget(
+                    key: const Key('auth-login-submit'),
                     title: 'ورود',
                     isLoading: controller.isLoading.value,
-                    onPressed: () {
-                      if (controller.loginFormKey.currentState!.validate()) {
-                        controller.login();
-                      }
-                    },
+                    onPressed: controller.login,
                   );
                 }),
                 SizedBox(height: AppSpacing.sectionGap.h),

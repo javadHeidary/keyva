@@ -6,6 +6,7 @@ abstract final class HiveBoxNames {
 
 abstract final class HiveSettingsKeys {
   static const databaseVersion = 'databaseVersion';
+  static const activeUserId = 'activeUserId';
 }
 
 abstract final class DatabaseConfig {
