@@ -1,0 +1,84 @@
+import 'dart:typed_data';
+
+import 'package:keyva/core/database/models/user_record.dart';
+import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/vault/model/vault_data.dart';
+import 'package:keyva/feature/vault/repository/vault_repository.dart';
+import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/session/vault_session.dart';
+
+class VaultUnlockServiceImpl implements VaultUnlockService {
+  VaultUnlockServiceImpl({
+    required AuthRepository auth,
+    required VaultRepository vaults,
+    required VaultSerializer serializer,
+    required VaultSession vaultSession,
+  }) : _auth = auth,
+       _vaults = vaults,
+       _serializer = serializer,
+       _vaultSession = vaultSession;
+
+  final AuthRepository _auth;
+  final VaultRepository _vaults;
+  final VaultSerializer _serializer;
+  final VaultSession _vaultSession;
+
+  @override
+  Future<Result<void>> unlock({
+    required String userId,
+    required String masterPassword,
+  }) async {
+    final authenticated = await _auth.authenticate(
+      userId: userId,
+      masterPassword: masterPassword,
+    );
+    if (authenticated is FailureResult<UserRecord>) {
+      await _vaultSession.lock();
+      return FailureResult(authenticated.failure);
+    }
+
+    final loaded = await _vaults.loadVaultData();
+    if (loaded is FailureResult<Uint8List?>) {
+      return _failClosed(loaded.failure);
+    }
+    final plaintext = (loaded as Success<Uint8List?>).data;
+
+    late final VaultData vaultData;
+    if (plaintext == null) {
+      vaultData = VaultData(
+        version: VaultData.currentVersion,
+        logins: const [],
+        bankCards: const [],
+        secureNotes: const [],
+        categories: const [],
+      );
+    } else {
+      final deserialized = await _serializer.deserialize(plaintext);
+      if (deserialized is FailureResult<VaultData>) {
+        return _failClosed(deserialized.failure);
+      }
+      vaultData = (deserialized as Success<VaultData>).data;
+    }
+
+    final unlocked = await _vaultSession.unlock(vaultData);
+    if (unlocked is FailureResult<void>) {
+      return _failClosed(unlocked.failure);
+    }
+    return unlocked;
+  }
+
+  @override
+  Future<Result<void>> lock() async {
+    await _vaultSession.lock();
+    return _auth.logout();
+  }
+
+  Future<Result<void>> _failClosed(AppFailure failure) async {
+    await _vaultSession.lock();
+    await _auth.logout();
+    return FailureResult(failure);
+  }
+}

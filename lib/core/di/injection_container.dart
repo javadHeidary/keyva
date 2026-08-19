@@ -16,6 +16,10 @@ import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer_impl.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service_impl.dart';
+import 'package:keyva/feature/vault/session/vault_session.dart';
+import 'package:keyva/feature/vault/session/vault_session_impl.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -46,6 +50,15 @@ void initDependencies(HiveDatabase database) {
       vaults: getIt<VaultDataSource>(),
       crypto: getIt<CryptoService>(),
       session: getIt<SessionService>(),
+    ),
+  );
+  getIt.registerLazySingleton<VaultSession>(VaultSessionImpl.new);
+  getIt.registerLazySingleton<VaultUnlockService>(
+    () => VaultUnlockServiceImpl(
+      auth: getIt<AuthRepository>(),
+      vaults: getIt<VaultRepository>(),
+      serializer: getIt<VaultSerializer>(),
+      vaultSession: getIt<VaultSession>(),
     ),
   );
 }
