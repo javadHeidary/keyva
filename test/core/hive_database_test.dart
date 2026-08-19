@@ -13,6 +13,7 @@ import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
+import 'package:keyva/feature/vault/service/vault_data_service.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
 
@@ -80,6 +81,7 @@ void main() {
       expect(getIt.isRegistered<VaultRepository>(), isTrue);
       expect(getIt.isRegistered<VaultSession>(), isTrue);
       expect(getIt.isRegistered<VaultUnlockService>(), isTrue);
+      expect(getIt.isRegistered<VaultDataService>(), isTrue);
       await getIt.reset();
     },
   );
