@@ -52,6 +52,7 @@ class AppSearchWidget extends GetView<SearchViewModel> {
                   SizedBox(width: AppSpacing.sm.s),
                   Expanded(
                     child: AppSearchHeaderWidget(
+                      key: const Key('vault-search-field'),
                       controller: controller.searchController,
                       focusNode: controller.searchFocusNode,
                       hintText: controller.hintText,
@@ -69,21 +70,18 @@ class AppSearchWidget extends GetView<SearchViewModel> {
   }
 
   Widget _buildBody(BuildContext context) {
-    final query = controller.searchQuery.value.trim();
-
-    if (query.isEmpty) {
-      return Center(
-        child: AppEmptyWidget.searchIdle(typeLabel: controller.typeLabel),
-      );
-    }
-
     if (controller.isSearching.value) {
       return Center(child: AppLoadingWidget.section());
     }
 
     final results = controller.results;
     if (results.isEmpty) {
-      return Center(child: AppEmptyWidget.searchNoResults());
+      final query = controller.searchQuery.value.trim();
+      return Center(
+        child: query.isEmpty
+            ? AppEmptyWidget.searchIdle(typeLabel: controller.typeLabel)
+            : AppEmptyWidget.searchNoResults(),
+      );
     }
 
     return ListView(
@@ -128,7 +126,11 @@ class _SearchResultTile extends GetView<SearchViewModel> {
       ),
       leadingIcon: AppMoreWidget(
         dialogTitle: item.title,
-        actions: vaultMoreActionsForItem(item),
+        actions: vaultMoreActionsForItem(
+          item,
+          source: controller.sourceFor(item.id),
+          onDelete: () => controller.confirmDelete(context, item),
+        ),
       ),
       onTap: () => controller.onItemTap(item),
     );

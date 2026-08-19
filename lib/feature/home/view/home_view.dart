@@ -12,10 +12,13 @@ import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
+import 'package:keyva/feature/vault/view/vault_error_view.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
+import 'package:keyva/shared/widget/app_loading_widger.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -54,10 +57,39 @@ class HomeView extends GetView<HomeController> {
       ),
       body: SafeArea(
         child: Obx(() {
-          if (controller.vaultItems.isEmpty) {
-            return AppEmptyWidget.vault(onCreate: controller.onCreateFirstItem);
+          final status = controller.vaultStatus;
+          switch (status) {
+            case VaultUiStatus.initial:
+            case VaultUiStatus.loading:
+              if (controller.hasLoadedVault) {
+                return const _VaultContent();
+              }
+              return AppLoadingWidget(
+                key: const Key('vault-home-loading'),
+                layout: AppLoadingLayout.page,
+                message: 'در حال بارگذاری گاوصندوق',
+              );
+            case VaultUiStatus.empty:
+              return KeyedSubtree(
+                key: const Key('vault-home-empty'),
+                child: AppEmptyWidget.vault(onCreate: controller.onCreateFirstItem),
+              );
+            case VaultUiStatus.error:
+              if (controller.hasLoadedVault) {
+                return const _VaultContent();
+              }
+              return KeyedSubtree(
+                key: const Key('vault-home-error'),
+                child: VaultErrorView(
+                  message: controller.vaultErrorMessage,
+                  onRetry: controller.loadVault,
+                ),
+              );
+            case VaultUiStatus.loaded:
+            case VaultUiStatus.submitting:
+            case VaultUiStatus.success:
+              return const _VaultContent();
           }
-          return const _VaultContent();
         }),
       ),
     );
@@ -69,24 +101,30 @@ class _VaultContent extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        _homePaddedSliver(child: SizedBox(height: AppSpacing.xxl.h)),
-        _homePaddedSliver(child: _AccountHeader()),
-        _homePaddedSliver(child: _TypesSection()),
-        _homePaddedSliver(child: _CategoriesSection()),
-        _homePaddedSliver(child: _ItemsSection()),
-        _homePaddedSliver(child: _TrashSection(), bottom: AppSpacing.hugePlus),
-      ],
+    return RefreshIndicator(
+      onRefresh: controller.refreshVault,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          _homePaddedSliver(child: SizedBox(height: AppSpacing.xxl.h)),
+          _homePaddedSliver(child: _AccountHeader()),
+          _homePaddedSliver(child: _TypesSection()),
+          _homePaddedSliver(child: _CategoriesSection()),
+          _homePaddedSliver(
+            child: const _ItemsSection(),
+            bottom: AppSpacing.hugePlus,
+          ),
+        ],
+      ),
     );
   }
 }
 
 SliverPadding _homePaddedSliver({required Widget child, double bottom = 0}) {
   return SliverPadding(
-    padding: EdgeInsets.only(
-      right: AppSpacing.lg.s,
-      left: AppSpacing.lg.s,
+    padding: EdgeInsetsDirectional.only(
+      start: AppSpacing.lg.s,
+      end: AppSpacing.lg.s,
       bottom: bottom,
     ),
     sliver: SliverToBoxAdapter(child: child),
@@ -165,10 +203,14 @@ class _AccountHeader extends GetView<HomeController> {
                       color: colors.textSecondary,
                     ),
                     SizedBox(width: AppSpacing.sm.s),
-                    Text(
-                      'جستجو ...',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: colors.textTertiary,
+                    Expanded(
+                      child: Text(
+                        'جستجو ...',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: colors.textTertiary,
+                        ),
                       ),
                     ),
                   ],
@@ -193,8 +235,8 @@ class _TypesSection extends GetView<HomeController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(
-                right: AppSpacing.xs.s,
+              padding: EdgeInsetsDirectional.only(
+                start: AppSpacing.xs.s,
                 bottom: AppSpacing.sm.h,
               ),
               child: Text(
@@ -256,8 +298,8 @@ class _CategoriesSection extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(
-            right: AppSpacing.xs.s,
+          padding: EdgeInsetsDirectional.only(
+            start: AppSpacing.xs.s,
             bottom: AppSpacing.md.h,
           ),
           child: Text(
@@ -270,7 +312,9 @@ class _CategoriesSection extends GetView<HomeController> {
         SizedBox(
           height: 44.h,
           child: Obx(() {
-            final _ = Get.find<CategoryCatalogController>().categories.length;
+            if (Get.isRegistered<CategoryCatalogController>()) {
+              Get.find<CategoryCatalogController>().categories.length;
+            }
             final selectedCategoryId = controller.selectedCategoryId.value;
             final filterCategories = controller.filterCategories;
             return ListView.separated(
@@ -338,6 +382,8 @@ class _CategoryChip extends StatelessWidget {
 }
 
 class _ItemsSection extends GetView<HomeController> {
+  const _ItemsSection();
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -370,71 +416,29 @@ class _VaultItemTile extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return AppListItemWidget(
-      title: item.title,
-      subtitle: item.subtitle,
-      trailingIcon: _CircleIcon(
-        icon: Icon(
-          item.type.icon,
-          size: AppSizes.iconMd.s,
-          color: colors.textSecondary,
+    return KeyedSubtree(
+      key: Key('vault-item-${item.id}'),
+      child: AppListItemWidget(
+        title: item.title,
+        subtitle: item.subtitle,
+        trailingIcon: _CircleIcon(
+          icon: Icon(
+            item.type.icon,
+            size: AppSizes.iconMd.s,
+            color: colors.textSecondary,
+          ),
         ),
-      ),
-      leadingIcon: AppMoreWidget(
-        dialogTitle: item.title,
-        actions: vaultMoreActionsForItem(item),
-      ),
-      onTap: () => controller.onItemTap(item),
-    );
-  }
-}
-
-class _TrashSection extends GetView<HomeController> {
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppSpacing.lg.s),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.only(
-              right: AppSpacing.xs.s,
-              bottom: AppSpacing.sm.h,
-            ),
-            child: Text(
-              'سطل زباله',
-              style: AppTypography.titleMedium.copyWith(
-                color: colors.textPrimary,
-              ),
-            ),
+        leadingIcon: AppMoreWidget(
+          dialogTitle: item.title,
+          actions: vaultMoreActionsForItem(
+            item,
+            source: controller.sourceFor(item.id),
+            onDelete: controller.isVaultSubmitting
+                ? null
+                : () => controller.confirmDelete(context, item),
           ),
-          Obx(
-            () => _SectionCard(
-              children: [
-                AppListItemWidget(
-                  title: 'موارد حذف‌شده',
-                  subtitle: '${controller.trashItemCount.value} مورد',
-                  useFaNumSubtitle: true,
-                  trailingIcon: _CircleIcon(
-                    icon: Icon(
-                      AppIcon.delete,
-                      size: AppSizes.iconMd.s,
-                      color: context.colors.textSecondary,
-                    ),
-                  ),
-                  leadingIcon: Icon(
-                    AppIcon.chevronRight,
-                    size: AppSizes.iconMd.s,
-                  ),
-                  onTap: controller.onTrashTap,
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
+        onTap: () => controller.onItemTap(item),
       ),
     );
   }

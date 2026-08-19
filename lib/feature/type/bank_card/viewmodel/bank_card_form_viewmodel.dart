@@ -9,6 +9,7 @@ abstract class BankCardFormViewModel extends GetxController {
   final formKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final cardNumberController = TextEditingController();
+  final cardHolderController = TextEditingController();
   final bankController = TextEditingController();
   final expiryController = TextEditingController();
   final cvvController = TextEditingController();
@@ -18,6 +19,7 @@ abstract class BankCardFormViewModel extends GetxController {
   final isCvvVisible = false.obs;
   final selectedCategoryId = Rxn<String>();
   final isSubmitting = false.obs;
+  final submitError = Rxn<String>();
   final bankFieldError = Rxn<String>();
 
   String get headerTitle;
@@ -33,6 +35,7 @@ abstract class BankCardFormViewModel extends GetxController {
     String? categoryId,
     String? title,
     String? cardNumberDigits,
+    String? cardHolder,
     String? bankTitle,
     String? expiry,
     String? cvv,
@@ -41,6 +44,7 @@ abstract class BankCardFormViewModel extends GetxController {
     selectedCategoryId.value = categoryId;
     titleController.text = title ?? '';
     cardNumberController.text = formatCardNumberForDisplay(cardNumberDigits ?? '');
+    cardHolderController.text = cardHolder ?? '';
     bankController.text = bankTitle ?? '';
     expiryController.text = expiry ?? '';
     cvvController.text = cvv ?? '';
@@ -80,6 +84,13 @@ abstract class BankCardFormViewModel extends GetxController {
     }
     if (value.trim().length < 2) {
       return 'عنوان باید حداقل ۲ کاراکتر باشد';
+    }
+    return null;
+  }
+
+  String? validateCardHolder(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'نام دارنده کارت الزامی است';
     }
     return null;
   }
@@ -141,6 +152,7 @@ abstract class BankCardFormViewModel extends GetxController {
     cardNumberController.removeListener(_onCardNumberChanged);
     titleController.dispose();
     cardNumberController.dispose();
+    cardHolderController.dispose();
     bankController.dispose();
     expiryController.dispose();
     cvvController.dispose();

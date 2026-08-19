@@ -11,6 +11,7 @@ abstract class NoteFormViewModel extends GetxController {
 
   final selectedCategoryId = Rxn<String>();
   final isSubmitting = false.obs;
+  final submitError = Rxn<String>();
 
   String get headerTitle;
   String get submitLabel;

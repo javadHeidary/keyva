@@ -1,15 +1,21 @@
 import 'package:get/get.dart';
-import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
-import 'package:keyva/feature/type/bank_card/model/bank_card_item_model.dart';
+import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_form_viewmodel.dart';
+import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 
 class BankCardEditViewModel extends BankCardFormViewModel {
-  BankCardEditViewModel({required this.cardId});
+  BankCardEditViewModel({
+    required this.cardId,
+    required VaultItemViewModel items,
+  }) : _items = items;
 
   final String cardId;
-
-  BankCardVaultStore get _store => Get.find<BankCardVaultStore>();
+  final VaultItemViewModel _items;
 
   BankCardItem? _original;
 
@@ -25,20 +31,26 @@ class BankCardEditViewModel extends BankCardFormViewModel {
   @override
   void onInit() {
     super.onInit();
-    _original = _store.findById(cardId);
-    final item = _original;
-    if (item == null) {
+    final found = findVaultItemById(
+      Get.isRegistered<VaultHomeViewModel>()
+          ? Get.find<VaultHomeViewModel>().vault.value
+          : null,
+      cardId,
+    );
+    if (found is! BankCardItem) {
       Get.back();
       return;
     }
+    _original = found;
     initFormFields(
-      categoryId: item.categoryId,
-      title: item.title,
-      cardNumberDigits: item.cardNumber,
-      bankTitle: item.bankTitle,
-      expiry: item.expiry,
-      cvv: item.cvv,
-      notes: item.notes,
+      categoryId: found.categoryId,
+      title: found.title,
+      cardNumberDigits: found.cardNumber,
+      cardHolder: found.cardHolder,
+      bankTitle: found.bankName,
+      expiry: found.expiryDate,
+      cvv: found.cvv,
+      notes: found.notes,
     );
   }
 
@@ -47,43 +59,45 @@ class BankCardEditViewModel extends BankCardFormViewModel {
     final original = _original;
     if (original == null || !validateForm()) return;
 
-    isSubmitting.value = true;
-    try {
-      final notes = notesController.text.trim();
-      final updated = original.copyWith(
-        categoryId: selectedCategoryId.value,
-        clearCategoryId: selectedCategoryId.value == null,
-        title: titleController.text.trim(),
-        cardNumber: collectCardDigits(),
-        bankTitle: collectBankTitle(),
-        expiry: expiryController.text.trim(),
-        cvv: cvvController.text,
-        notes: notes.isEmpty ? null : notes,
-        clearNotes: notes.isEmpty,
-      );
+    final notes = notesController.text.trim();
+    final updated = BankCardItem(
+      id: original.id,
+      title: titleController.text.trim(),
+      cardNumber: collectCardDigits(),
+      cardHolder: cardHolderController.text.trim(),
+      expiryDate: expiryController.text.trim(),
+      cvv: cvvController.text,
+      bankName: collectBankTitle(),
+      notes: notes.isEmpty ? null : notes,
+      categoryId: selectedCategoryId.value,
+      createdAt: original.createdAt,
+      updatedAt: DateTime.now(),
+    );
 
-      _store.update(updated);
-      Get.back(result: true);
-    } finally {
-      isSubmitting.value = false;
-    }
+    await submitVaultItem(
+      items: _items,
+      isSubmitting: isSubmitting,
+      submitError: submitError,
+      run: () => _items.updateItem(updated),
+    );
   }
 
   @override
   void handleDelete() {
     final context = Get.context;
-    if (context == null) return;
+    final original = _original;
+    if (context == null || original == null) return;
+    if (!Get.isRegistered<HomeController>()) return;
 
     AppDialogWidget.show(
       context,
       type: AppDialogType.warning,
-      title: 'انتقال به سطل زباله',
+      title: 'حذف آیتم',
       description:
-          'این کارت به سطل زباله منتقل می‌شود و می‌توانید بعداً آن را بازگردانی کنید.',
-      buttonText: 'انتقال به سطل زباله',
+          '«${original.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
+      buttonText: 'حذف',
       onConfirm: () {
-        _store.moveToTrash(cardId);
-        Get.back();
+        Get.find<HomeController>().vault.deleteItem(original.id);
         Get.back();
       },
     );

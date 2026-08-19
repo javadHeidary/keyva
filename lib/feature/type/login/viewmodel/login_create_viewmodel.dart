@@ -1,11 +1,12 @@
-import 'package:get/get.dart';
-import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/type/login/data/login_vault_store.dart';
-import 'package:keyva/feature/type/login/model/login_item_model.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_form_viewmodel.dart';
+import 'package:keyva/feature/vault/model/login_item.dart';
+import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class LoginCreateViewModel extends LoginFormViewModel {
-  LoginVaultStore get _store => Get.find<LoginVaultStore>();
+  LoginCreateViewModel({required VaultItemViewModel items}) : _items = items;
+
+  final VaultItemViewModel _items;
 
   @override
   String get headerTitle => 'ایجاد ورود';
@@ -23,27 +24,28 @@ class LoginCreateViewModel extends LoginFormViewModel {
   Future<void> submit() async {
     if (!validateForm()) return;
 
-    isSubmitting.value = true;
-    try {
-      final websites = collectNormalizedWebsites();
-      final notes = notesController.text.trim();
+    final now = DateTime.now();
+    final websites = collectNormalizedWebsites();
+    final notes = notesController.text.trim();
 
-      final item = LoginItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        categoryId: selectedCategoryId.value,
-        title: titleController.text.trim(),
-        username: usernameController.text.trim(),
-        password: passwordController.text,
-        websites: websites,
-        notes: notes.isEmpty ? null : notes,
-        createdAt: DateTime.now(),
-      );
+    final item = LoginItem(
+      id: now.millisecondsSinceEpoch.toString(),
+      title: titleController.text.trim(),
+      username: usernameController.text.trim(),
+      password: passwordController.text,
+      website: websites.isEmpty ? null : websites.first,
+      notes: notes.isEmpty ? null : notes,
+      categoryId: selectedCategoryId.value,
+      createdAt: now,
+      updatedAt: now,
+    );
 
-      _store.add(item);
-      Get.offNamed(AppRoutes.loginDetails, arguments: item.id);
-    } finally {
-      isSubmitting.value = false;
-    }
+    await submitVaultItem(
+      items: _items,
+      isSubmitting: isSubmitting,
+      submitError: submitError,
+      run: () => _items.create(item),
+    );
   }
 
   @override

@@ -113,6 +113,21 @@ class BankCardFormContent extends StatelessWidget {
                 validator: controller.validateCardNumber,
               ),
               SizedBox(height: _fieldGap.h),
+              AppTextFieldWidget(
+                controller: controller.cardHolderController,
+                labelText: 'نام دارنده کارت',
+                labelAlwaysVisible: true,
+                hintText: 'نام روی کارت',
+                textInputAction: TextInputAction.next,
+                fillColor: fieldFill,
+                prefixIcon: Icon(
+                  Icons.person_outline_rounded,
+                  size: AppSizes.iconMd.s,
+                  color: colors.textSecondary,
+                ),
+                validator: controller.validateCardHolder,
+              ),
+              SizedBox(height: _fieldGap.h),
               Obx(() {
                 final bank = controller.detectedBank.value;
                 final bankError = controller.bankFieldError.value;

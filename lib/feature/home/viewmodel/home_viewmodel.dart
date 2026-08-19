@@ -7,16 +7,35 @@ import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/view/vault_user_message.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
+import 'package:keyva/shared/widget/app_dialog_widget.dart';
 
 class HomeController extends GetxController {
+  HomeController({VaultHomeViewModel? vault}) : _vaultOverride = vault;
+
+  final VaultHomeViewModel? _vaultOverride;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final selectedType = Rxn<VaultItemType>();
   final selectedCategoryId = Rxn<String>();
-  final trashItemCount = 2.obs;
+  final trashItemCount = 0.obs;
 
   final accountOwnerName = UserProfile.defaultName.obs;
   final accountAvatarId = UserProfileAvatars.defaultId.obs;
   final accountGreeting = 'گاوصندوق شخصی شما';
+
+  VaultHomeViewModel get vault =>
+      _vaultOverride ?? Get.find<VaultHomeViewModel>();
+
+  VaultUiStatus get vaultStatus => vault.status.value;
+
+  String get vaultErrorMessage => vaultUserMessage(vault.errorMessage.value);
+
+  bool get isVaultSubmitting => vaultStatus == VaultUiStatus.submitting;
+
+  bool get hasLoadedVault => vault.vault.value != null;
 
   void updateAccountProfile({required String name, required String avatarId}) {
     accountOwnerName.value = name;
@@ -44,71 +63,11 @@ class HomeController extends GetxController {
     ];
   }
 
-  final vaultItems = <VaultListItem>[
-    const VaultListItem(
-      id: '1',
-      type: VaultItemType.login,
-      title: 'ایمیل سازمانی',
-      subtitle: 'ali.rezaei@company.ir',
-      categoryId: 'work',
-    ),
-    const VaultListItem(
-      id: '2',
-      type: VaultItemType.bankCard,
-      title: 'کارت بانک ملت',
-      subtitle: 'بانک ملت',
-      categoryId: 'finance',
-    ),
-    const VaultListItem(
-      id: '3',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '4',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '5',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '6',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '7',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '4',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-    const VaultListItem(
-      id: '5',
-      type: VaultItemType.secureNote,
-      title: 'کدهای بازیابی',
-      subtitle: 'یادداشت پشتیبان',
-      categoryId: 'personal',
-    ),
-  ].obs;
+  List<VaultListItem> get vaultItems {
+    vault.status.value;
+    vault.searchQuery.value;
+    return mapVaultVisibleItems(vault.visibleItems);
+  }
 
   List<VaultTypeSummary> get typeSummaries {
     final items = vaultItems;
@@ -122,7 +81,7 @@ class HomeController extends GetxController {
         .toList();
   }
 
-  bool get isVaultEmpty => vaultItems.isEmpty;
+  bool get isVaultEmpty => vaultStatus == VaultUiStatus.empty;
 
   List<VaultListItem> get visibleItems {
     final categoryId = selectedCategoryId.value;
@@ -140,28 +99,37 @@ class HomeController extends GetxController {
     }).toList();
   }
 
-  void syncLoginItems(List<VaultListItem> loginItems) {
-    vaultItems.removeWhere((item) => item.type == VaultItemType.login);
-    vaultItems.addAll(loginItems);
-  }
+  void syncLoginItems(List<VaultListItem> loginItems) {}
 
-  void syncBankCardItems(List<VaultListItem> bankCardItems) {
-    vaultItems.removeWhere((item) => item.type == VaultItemType.bankCard);
-    vaultItems.addAll(bankCardItems);
-  }
+  void syncBankCardItems(List<VaultListItem> bankCardItems) {}
 
-  void syncNoteItems(List<VaultListItem> noteItems) {
-    vaultItems.removeWhere((item) => item.type == VaultItemType.secureNote);
-    vaultItems.addAll(noteItems);
-  }
+  void syncNoteItems(List<VaultListItem> noteItems) {}
 
-  void incrementTrashCount() {
-    trashItemCount.value++;
-  }
+  void incrementTrashCount() {}
 
   List<VaultListItem> itemsForType(VaultItemType type) {
     return vaultItems.where((item) => item.type == type).toList();
   }
+
+  Object? sourceFor(String id) {
+    for (final item in vault.visibleItems) {
+      if (vaultItemId(item) == id) {
+        return item;
+      }
+    }
+    return findVaultItemById(vault.vault.value, id);
+  }
+
+  Future<void> loadVault() => vault.loadVault();
+
+  Future<void> refreshVault() {
+    if (vaultStatus == VaultUiStatus.loading) {
+      return Future.value();
+    }
+    return vault.refreshVault();
+  }
+
+  void searchItems(String query) => vault.searchItems(query);
 
   void onHomeSearchTap() {
     Get.toNamed(AppRoutes.search);
@@ -177,6 +145,14 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     selectedCategoryId.value = CategoryConstants.filterAllId;
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    if (vaultStatus == VaultUiStatus.initial) {
+      loadVault();
+    }
   }
 
   void selectType(VaultItemType type) {
@@ -201,22 +177,42 @@ class HomeController extends GetxController {
   void onTypeMoreActions(VaultItemType type) {}
 
   void onItemTap(VaultListItem item) {
-    if (item.type == VaultItemType.login) {
-      Get.toNamed(AppRoutes.loginDetails, arguments: item.id);
-      return;
-    }
-    if (item.type == VaultItemType.bankCard) {
-      Get.toNamed(AppRoutes.bankCardDetails, arguments: item.id);
-      return;
-    }
-    if (item.type == VaultItemType.secureNote) {
-      Get.toNamed(AppRoutes.noteDetails, arguments: item.id);
+    switch (item.type) {
+      case VaultItemType.login:
+        Get.toNamed(AppRoutes.loginEdit, arguments: item.id);
+        break;
+      case VaultItemType.bankCard:
+        Get.toNamed(AppRoutes.bankCardEdit, arguments: item.id);
+        break;
+      case VaultItemType.secureNote:
+        Get.toNamed(AppRoutes.noteEdit, arguments: item.id);
+        break;
     }
   }
 
   void onItemMoreAction(VaultListItem item, String action) {}
 
   void onTrashTap() {}
+
+  void confirmDelete(BuildContext context, VaultListItem item) {
+    if (isVaultSubmitting) {
+      return;
+    }
+
+    AppDialogWidget.show(
+      context,
+      type: AppDialogType.warning,
+      title: 'حذف آیتم',
+      description: '«${item.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
+      buttonText: 'حذف',
+      onConfirm: () {
+        if (isVaultSubmitting) {
+          return;
+        }
+        vault.deleteItem(item.id);
+      },
+    );
+  }
 
   void onCreateFirstItem() => onAddItemForType(VaultItemType.login);
 
@@ -235,5 +231,4 @@ class HomeController extends GetxController {
         break;
     }
   }
-
 }

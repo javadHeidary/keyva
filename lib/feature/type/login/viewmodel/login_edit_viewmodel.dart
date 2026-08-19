@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:keyva/feature/type/login/data/login_vault_store.dart';
-import 'package:keyva/feature/type/login/model/login_item_model.dart';
+import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_form_viewmodel.dart';
+import 'package:keyva/feature/vault/model/login_item.dart';
+import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 
 class LoginEditViewModel extends LoginFormViewModel {
-  LoginEditViewModel({required this.loginId});
+  LoginEditViewModel({
+    required this.loginId,
+    required VaultItemViewModel items,
+  }) : _items = items;
 
   final String loginId;
-
-  LoginVaultStore get _store => Get.find<LoginVaultStore>();
+  final VaultItemViewModel _items;
 
   LoginItem? _original;
 
@@ -26,19 +32,26 @@ class LoginEditViewModel extends LoginFormViewModel {
   @override
   void onInit() {
     super.onInit();
-    _original = _store.findById(loginId);
-    final item = _original;
-    if (item == null) {
+    final found = findVaultItemById(
+      Get.isRegistered<VaultHomeViewModel>()
+          ? Get.find<VaultHomeViewModel>().vault.value
+          : null,
+      loginId,
+    );
+    if (found is! LoginItem) {
       Get.back();
       return;
     }
+    _original = found;
     initFormFields(
-      categoryId: item.categoryId,
-      title: item.title,
-      username: item.username,
-      password: item.password,
-      websites: item.websites,
-      notes: item.notes,
+      categoryId: found.categoryId,
+      title: found.title,
+      username: found.username,
+      password: found.password,
+      websites: found.website == null || found.website!.isEmpty
+          ? const []
+          : [found.website!],
+      notes: found.notes,
     );
   }
 
@@ -47,45 +60,46 @@ class LoginEditViewModel extends LoginFormViewModel {
     final original = _original;
     if (original == null || !validateForm()) return;
 
-    isSubmitting.value = true;
-    try {
-      final websites = collectNormalizedWebsites();
-      final notes = notesController.text.trim();
+    final websites = collectNormalizedWebsites();
+    final notes = notesController.text.trim();
+    final now = DateTime.now();
 
-      final updated = original.copyWith(
-        categoryId: selectedCategoryId.value,
-        clearCategoryId: selectedCategoryId.value == null,
-        title: titleController.text.trim(),
-        username: usernameController.text.trim(),
-        password: passwordController.text,
-        websites: websites,
-        clearWebsites: websites.isEmpty,
-        notes: notes.isEmpty ? null : notes,
-        clearNotes: notes.isEmpty,
-      );
+    final updated = LoginItem(
+      id: original.id,
+      title: titleController.text.trim(),
+      username: usernameController.text.trim(),
+      password: passwordController.text,
+      website: websites.isEmpty ? null : websites.first,
+      notes: notes.isEmpty ? null : notes,
+      categoryId: selectedCategoryId.value,
+      createdAt: original.createdAt,
+      updatedAt: now,
+    );
 
-      _store.update(updated);
-      Get.back(result: true);
-    } finally {
-      isSubmitting.value = false;
-    }
+    await submitVaultItem(
+      items: _items,
+      isSubmitting: isSubmitting,
+      submitError: submitError,
+      run: () => _items.updateItem(updated),
+    );
   }
 
   @override
   void handleDelete() {
     final context = Get.context;
-    if (context == null) return;
+    final original = _original;
+    if (context == null || original == null) return;
+    if (!Get.isRegistered<HomeController>()) return;
 
     AppDialogWidget.show(
       context,
       type: AppDialogType.warning,
-      title: 'انتقال به سطل زباله',
+      title: 'حذف آیتم',
       description:
-          'این ورود به سطل زباله منتقل می‌شود و می‌توانید بعداً آن را بازگردانی کنید.',
-      buttonText: 'انتقال به سطل زباله',
+          '«${original.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
+      buttonText: 'حذف',
       onConfirm: () {
-        _store.moveToTrash(loginId);
-        Get.back();
+        Get.find<HomeController>().vault.deleteItem(original.id);
         Get.back();
       },
     );

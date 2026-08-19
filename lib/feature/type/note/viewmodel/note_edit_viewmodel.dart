@@ -1,17 +1,23 @@
 import 'package:get/get.dart';
-import 'package:keyva/feature/type/note/data/note_vault_store.dart';
-import 'package:keyva/feature/type/note/model/note_item_model.dart';
+import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_form_viewmodel.dart';
+import 'package:keyva/feature/vault/model/secure_note_item.dart';
+import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
 
 class NoteEditViewModel extends NoteFormViewModel {
-  NoteEditViewModel({required this.noteId});
+  NoteEditViewModel({
+    required this.noteId,
+    required VaultItemViewModel items,
+  }) : _items = items;
 
   final String noteId;
+  final VaultItemViewModel _items;
 
-  NoteVaultStore get _store => Get.find<NoteVaultStore>();
-
-  NoteItem? _original;
+  SecureNoteItem? _original;
 
   @override
   String get headerTitle => 'ویرایش یادداشت';
@@ -25,16 +31,21 @@ class NoteEditViewModel extends NoteFormViewModel {
   @override
   void onInit() {
     super.onInit();
-    _original = _store.findById(noteId);
-    final item = _original;
-    if (item == null) {
+    final found = findVaultItemById(
+      Get.isRegistered<VaultHomeViewModel>()
+          ? Get.find<VaultHomeViewModel>().vault.value
+          : null,
+      noteId,
+    );
+    if (found is! SecureNoteItem) {
       Get.back();
       return;
     }
+    _original = found;
     initFormFields(
-      categoryId: item.categoryId,
-      title: item.title,
-      body: item.body,
+      categoryId: found.categoryId,
+      title: found.title,
+      body: found.content,
     );
   }
 
@@ -43,37 +54,39 @@ class NoteEditViewModel extends NoteFormViewModel {
     final original = _original;
     if (original == null || !validateForm()) return;
 
-    isSubmitting.value = true;
-    try {
-      final updated = original.copyWith(
-        categoryId: selectedCategoryId.value,
-        clearCategoryId: selectedCategoryId.value == null,
-        title: titleController.text.trim(),
-        body: notesController.text.trim(),
-      );
+    final updated = SecureNoteItem(
+      id: original.id,
+      title: titleController.text.trim(),
+      content: notesController.text.trim(),
+      categoryId: selectedCategoryId.value,
+      createdAt: original.createdAt,
+      updatedAt: DateTime.now(),
+    );
 
-      _store.update(updated);
-      Get.back(result: true);
-    } finally {
-      isSubmitting.value = false;
-    }
+    await submitVaultItem(
+      items: _items,
+      isSubmitting: isSubmitting,
+      submitError: submitError,
+      run: () => _items.updateItem(updated),
+    );
   }
 
   @override
   void handleDelete() {
     final context = Get.context;
-    if (context == null) return;
+    final original = _original;
+    if (context == null || original == null) return;
+    if (!Get.isRegistered<HomeController>()) return;
 
     AppDialogWidget.show(
       context,
       type: AppDialogType.warning,
-      title: 'انتقال به سطل زباله',
+      title: 'حذف آیتم',
       description:
-          'این یادداشت به سطل زباله منتقل می‌شود و می‌توانید بعداً آن را بازگردانی کنید.',
-      buttonText: 'انتقال به سطل زباله',
+          '«${original.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
+      buttonText: 'حذف',
       onConfirm: () {
-        _store.moveToTrash(noteId);
-        Get.back();
+        Get.find<HomeController>().vault.deleteItem(original.id);
         Get.back();
       },
     );

@@ -1,11 +1,12 @@
-import 'package:get/get.dart';
-import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/type/note/data/note_vault_store.dart';
-import 'package:keyva/feature/type/note/model/note_item_model.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_form_viewmodel.dart';
+import 'package:keyva/feature/vault/model/secure_note_item.dart';
+import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class NoteCreateViewModel extends NoteFormViewModel {
-  NoteVaultStore get _store => Get.find<NoteVaultStore>();
+  NoteCreateViewModel({required VaultItemViewModel items}) : _items = items;
+
+  final VaultItemViewModel _items;
 
   @override
   String get headerTitle => 'ایجاد یادداشت';
@@ -23,21 +24,22 @@ class NoteCreateViewModel extends NoteFormViewModel {
   Future<void> submit() async {
     if (!validateForm()) return;
 
-    isSubmitting.value = true;
-    try {
-      final item = NoteItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        categoryId: selectedCategoryId.value,
-        title: titleController.text.trim(),
-        body: notesController.text.trim(),
-        createdAt: DateTime.now(),
-      );
+    final now = DateTime.now();
+    final item = SecureNoteItem(
+      id: now.millisecondsSinceEpoch.toString(),
+      title: titleController.text.trim(),
+      content: notesController.text.trim(),
+      categoryId: selectedCategoryId.value,
+      createdAt: now,
+      updatedAt: now,
+    );
 
-      _store.add(item);
-      Get.offNamed(AppRoutes.noteDetails, arguments: item.id);
-    } finally {
-      isSubmitting.value = false;
-    }
+    await submitVaultItem(
+      items: _items,
+      isSubmitting: isSubmitting,
+      submitError: submitError,
+      run: () => _items.create(item),
+    );
   }
 
   @override

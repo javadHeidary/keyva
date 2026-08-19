@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 
 class SearchViewModel extends GetxController {
   static const _searchDebounceMs = 300;
@@ -17,6 +19,8 @@ class SearchViewModel extends GetxController {
   Timer? _debounceTimer;
 
   HomeController get _homeController => Get.find<HomeController>();
+
+  VaultHomeViewModel get _vault => Get.find<VaultHomeViewModel>();
 
   VaultItemType? get filterType {
     final args = Get.arguments;
@@ -36,6 +40,7 @@ class SearchViewModel extends GetxController {
   void onInit() {
     super.onInit();
     searchController.addListener(_onSearchTextChanged);
+    _applyResults();
   }
 
   @override
@@ -49,13 +54,6 @@ class SearchViewModel extends GetxController {
     searchQuery.value = query;
 
     _debounceTimer?.cancel();
-
-    if (query.trim().isEmpty) {
-      isSearching.value = false;
-      results.clear();
-      return;
-    }
-
     isSearching.value = true;
     _debounceTimer = Timer(
       const Duration(milliseconds: _searchDebounceMs),
@@ -64,32 +62,42 @@ class SearchViewModel extends GetxController {
   }
 
   void _performSearch() {
-    final query = searchQuery.value.trim().toLowerCase();
-    if (query.isEmpty) {
-      isSearching.value = false;
+    if (Get.isRegistered<VaultHomeViewModel>()) {
+      _vault.searchItems(searchQuery.value);
+    }
+    _applyResults();
+    isSearching.value = false;
+  }
+
+  void _applyResults() {
+    if (!Get.isRegistered<VaultHomeViewModel>()) {
       results.clear();
       return;
     }
 
+    final mapped = mapVaultVisibleItems(_vault.visibleItems);
     final type = filterType;
-    final items = _homeController.vaultItems;
-
-    results.assignAll(
-      items.where((item) {
-        if (type != null && item.type != type) return false;
-        return item.title.toLowerCase().contains(query) ||
-            item.subtitle.toLowerCase().contains(query);
-      }),
-    );
-
-    isSearching.value = false;
+    if (type == null) {
+      results.assignAll(mapped);
+      return;
+    }
+    results.assignAll(mapped.where((item) => item.type == type));
   }
 
   void onItemTap(VaultListItem item) => _homeController.onItemTap(item);
 
+  void confirmDelete(BuildContext context, VaultListItem item) {
+    _homeController.confirmDelete(context, item);
+  }
+
+  Object? sourceFor(String id) => _homeController.sourceFor(id);
+
   @override
   void onClose() {
     _debounceTimer?.cancel();
+    if (Get.isRegistered<VaultHomeViewModel>()) {
+      _vault.searchItems('');
+    }
     searchController.dispose();
     searchFocusNode.dispose();
     super.onClose();

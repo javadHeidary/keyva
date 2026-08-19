@@ -117,7 +117,13 @@ class _TypeListVaultItemTile extends GetView<HomeController> {
       ),
       leadingIcon: AppMoreWidget(
         dialogTitle: item.title,
-        actions: vaultMoreActionsForItem(item),
+        actions: vaultMoreActionsForItem(
+          item,
+          source: controller.sourceFor(item.id),
+          onDelete: controller.isVaultSubmitting
+              ? null
+              : () => controller.confirmDelete(context, item),
+        ),
       ),
       onTap: () => controller.onItemTap(item),
     );

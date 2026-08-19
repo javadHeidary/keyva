@@ -9,6 +9,7 @@ import 'package:keyva/feature/type/bank_card/widget/bank_card_form_content.dart'
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
+import 'package:keyva/feature/vault/view/vault_error_view.dart';
 
 class BankCardFormScaffold extends StatelessWidget {
   const BankCardFormScaffold({super.key, required this.controller});
@@ -68,10 +69,18 @@ class BankCardFormScaffold extends StatelessWidget {
               ),
               sliver: SliverToBoxAdapter(
                 child: Obx(() {
-                  return AppButtonWidget(
-                    title: controller.submitLabel,
-                    isLoading: controller.isSubmitting.value,
-                    onPressed: controller.submit,
+                  final error = controller.submitError.value;
+                  return Column(
+                    children: [
+                      if (error != null && error.isNotEmpty)
+                        VaultSubmitErrorText(message: error),
+                      AppButtonWidget(
+                        key: const Key('vault-form-submit'),
+                        title: controller.submitLabel,
+                        isLoading: controller.isSubmitting.value,
+                        onPressed: controller.submit,
+                      ),
+                    ],
                   );
                 }),
               ),

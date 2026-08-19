@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/type/note/data/note_vault_store.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_create_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_edit_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class NoteBindings extends Bindings {
   @override
@@ -17,13 +19,21 @@ class NoteBindings extends Bindings {
       Get.put(NoteVaultStore(), permanent: true);
     }
   }
+
+  static VaultItemViewModel _itemViewModel() {
+    if (!Get.isRegistered<VaultItemViewModel>()) {
+      Get.lazyPut(() => getIt<VaultItemViewModel>());
+    }
+    return Get.find<VaultItemViewModel>();
+  }
 }
 
 class NoteCreateBindings extends Bindings {
   @override
   void dependencies() {
     NoteBindings._ensureStore();
-    Get.lazyPut(() => NoteCreateViewModel());
+    final items = NoteBindings._itemViewModel();
+    Get.lazyPut(() => NoteCreateViewModel(items: items));
   }
 }
 
@@ -31,8 +41,9 @@ class NoteEditBindings extends Bindings {
   @override
   void dependencies() {
     NoteBindings._ensureStore();
+    final items = NoteBindings._itemViewModel();
     final noteId = Get.arguments as String? ?? '';
-    Get.lazyPut(() => NoteEditViewModel(noteId: noteId));
+    Get.lazyPut(() => NoteEditViewModel(noteId: noteId, items: items));
   }
 }
 

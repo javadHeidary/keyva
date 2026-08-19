@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
-import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
+import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/note/data/note_vault_store.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 
 class HomeBindings extends Bindings {
   @override
@@ -19,6 +21,9 @@ class HomeBindings extends Bindings {
     }
     if (!Get.isRegistered<CategoryCatalogController>()) {
       Get.put(CategoryCatalogController(), permanent: true);
+    }
+    if (!Get.isRegistered<VaultHomeViewModel>()) {
+      Get.lazyPut(() => getIt<VaultHomeViewModel>());
     }
     if (!Get.isRegistered<HomeController>()) {
       Get.lazyPut(() => HomeController());

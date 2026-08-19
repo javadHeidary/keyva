@@ -16,6 +16,7 @@ abstract class LoginFormViewModel extends GetxController {
   final passwordStrength = 0.0.obs;
   final selectedCategoryId = Rxn<String>();
   final isSubmitting = false.obs;
+  final submitError = Rxn<String>();
   final hasPasswordInput = false.obs;
   final websiteFields = <LoginWebsiteField>[].obs;
 

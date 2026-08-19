@@ -13,13 +13,17 @@ import 'package:keyva/shared/widget/toast_widget.dart';
 class AppMoreAction {
   const AppMoreAction({
     required this.label,
-    required this.value,
-    required this.toastMessage,
+    this.value = '',
+    this.toastMessage = '',
+    this.onPressed,
+    this.isDestructive = false,
   });
 
   final String label;
   final String value;
   final String toastMessage;
+  final VoidCallback? onPressed;
+  final bool isDestructive;
 }
 
 class AppMoreWidget extends StatelessWidget {
@@ -115,10 +119,27 @@ class _AppMoreDialog extends StatelessWidget {
                 if (i > 0) SizedBox(height: AppSpacing.sm.s),
                 AppButtonWidget(
                   title: actions[i].label,
-                  icon: Icon(AppIcon.copy, size: AppSizes.iconSm.s),
-                  backgroundColor: colors.input,
-                  foregroundColor: colors.textPrimary,
-                  onPressed: () => _copyAction(context, actions[i]),
+                  icon: Icon(
+                    actions[i].onPressed != null
+                        ? AppIcon.delete
+                        : AppIcon.copy,
+                    size: AppSizes.iconSm.s,
+                  ),
+                  backgroundColor: actions[i].isDestructive
+                      ? colors.error.withValues(alpha: 0.12)
+                      : colors.input,
+                  foregroundColor: actions[i].isDestructive
+                      ? colors.error
+                      : colors.textPrimary,
+                  onPressed: () {
+                    final action = actions[i];
+                    if (action.onPressed != null) {
+                      Navigator.of(context).pop();
+                      action.onPressed!();
+                      return;
+                    }
+                    _copyAction(context, action);
+                  },
                 ),
               ],
             ],
