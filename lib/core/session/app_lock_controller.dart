@@ -34,6 +34,8 @@ class AppLockController extends GetxController with WidgetsBindingObserver {
   final VoidCallback? _onLocked;
   final bool observeBinding;
 
+  final overlayVisible = false.obs;
+
   bool _isBackground = false;
   int _generation = 0;
   DateTime? _pausedAt;
@@ -66,14 +68,24 @@ class AppLockController extends GetxController with WidgetsBindingObserver {
   void handleLifecycle(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        unawaited(_onForeground());
+        unawaited(_onResumed());
       case AppLifecycleState.inactive:
-        break;
+        _showOverlay();
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
+        _showOverlay();
         unawaited(_onBackground());
     }
+  }
+
+  void _showOverlay() {
+    overlayVisible.value = true;
+  }
+
+  Future<void> _onResumed() async {
+    await _onForeground();
+    overlayVisible.value = false;
   }
 
   Future<void> _onBackground() async {

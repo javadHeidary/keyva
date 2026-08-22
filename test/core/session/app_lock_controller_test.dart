@@ -54,15 +54,64 @@ void main() {
     Get.reset();
   });
 
+  test('starts with the overlay hidden and the session intact', () {
+    expect(lock.overlayVisible.value, isFalse);
+    expect(session.isAuthenticated, isTrue);
+    expect(unlock.lockCount, 0);
+  });
+
+  test('inactive shows the overlay without locking', () async {
+    lock.handleLifecycle(AppLifecycleState.inactive);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(lock.overlayVisible.value, isTrue);
+    expect(unlock.lockCount, 0);
+    expect(session.isAuthenticated, isTrue);
+    expect(navigated, isFalse);
+  });
+
   test('immediate timeout locks while backgrounded', () async {
     auth.autoLockTimeout = AutoLockPolicy.immediate;
 
     lock.handleLifecycle(AppLifecycleState.hidden);
     await Future<void>.delayed(Duration.zero);
 
+    expect(lock.overlayVisible.value, isTrue);
     expect(unlock.lockCount, 1);
     expect(session.isAuthenticated, isFalse);
     expect(navigated, isTrue);
+  });
+
+  test('paused shows the overlay and keeps auto-lock', () async {
+    auth.autoLockTimeout = AutoLockPolicy.oneMinute;
+
+    lock.handleLifecycle(AppLifecycleState.paused);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(lock.overlayVisible.value, isTrue);
+    expect(unlock.lockCount, 0);
+    expect(session.isAuthenticated, isTrue);
+  });
+
+  test('overlay stays on through inactive after pause until resumed', () async {
+    auth.autoLockTimeout = AutoLockPolicy.oneMinute;
+
+    lock.handleLifecycle(AppLifecycleState.inactive);
+    lock.handleLifecycle(AppLifecycleState.paused);
+    await Future<void>.delayed(Duration.zero);
+    lock.handleLifecycle(AppLifecycleState.inactive);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(lock.overlayVisible.value, isTrue);
+    expect(session.isAuthenticated, isTrue);
+
+    now = now.add(const Duration(seconds: 10));
+    lock.handleLifecycle(AppLifecycleState.resumed);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(lock.overlayVisible.value, isFalse);
+    expect(unlock.lockCount, 0);
+    expect(session.isAuthenticated, isTrue);
   });
 
   test('resuming before the timeout keeps the session', () async {
@@ -74,6 +123,7 @@ void main() {
     lock.handleLifecycle(AppLifecycleState.resumed);
     await Future<void>.delayed(Duration.zero);
 
+    expect(lock.overlayVisible.value, isFalse);
     expect(unlock.lockCount, 0);
     expect(session.isAuthenticated, isTrue);
     expect(navigated, isFalse);
@@ -88,6 +138,7 @@ void main() {
     lock.handleLifecycle(AppLifecycleState.resumed);
     await Future<void>.delayed(Duration.zero);
 
+    expect(lock.overlayVisible.value, isFalse);
     expect(unlock.lockCount, 1);
     expect(session.isAuthenticated, isFalse);
     expect(navigated, isTrue);
@@ -101,6 +152,25 @@ void main() {
     fireTimer?.call();
     await Future<void>.delayed(Duration.zero);
 
+    expect(lock.overlayVisible.value, isTrue);
+    expect(unlock.lockCount, 1);
+    expect(navigated, isTrue);
+  });
+
+  test('hiding overlay after a background lock does not unlock', () async {
+    auth.autoLockTimeout = AutoLockPolicy.immediate;
+
+    lock.handleLifecycle(AppLifecycleState.paused);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(session.isAuthenticated, isFalse);
+    expect(navigated, isTrue);
+
+    lock.handleLifecycle(AppLifecycleState.resumed);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(lock.overlayVisible.value, isFalse);
+    expect(session.isAuthenticated, isFalse);
     expect(unlock.lockCount, 1);
     expect(navigated, isTrue);
   });
@@ -112,6 +182,7 @@ void main() {
     lock.handleLifecycle(AppLifecycleState.paused);
     await Future<void>.delayed(Duration.zero);
 
+    expect(lock.overlayVisible.value, isTrue);
     expect(unlock.lockCount, 0);
     expect(navigated, isFalse);
   });
