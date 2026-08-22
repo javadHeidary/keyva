@@ -137,6 +137,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('home-lock')));
     await pumpAuthSettle(tester);
+    await pumpAuthSettle(tester);
 
     expect(unlock.lockCount, 1);
     expect(session.isAuthenticated, isFalse);
@@ -176,6 +177,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('settings-logout')));
     await pumpAuthSettle(tester);
+    await pumpAuthSettle(tester);
 
     expect(unlock.lockCount, 1);
     expect(session.isAuthenticated, isFalse);
@@ -212,13 +214,14 @@ void main() {
 
     await tester.tap(find.byKey(const Key('home-lock')));
     await pumpAuthSettle(tester);
+    await pumpAuthSettle(tester);
 
     expect(unlock.lockCount, 1);
     expect(session.isAuthenticated, isFalse);
     expect(find.byKey(const Key('auth-login-submit')), findsOneWidget);
 
     final redirect = SessionGuard().redirect(AppRoutes.home);
-    expect(redirect?.name, AppRoutes.authLogin);
+    expect(redirect?.name, AppRoutes.authAccounts);
     expect(find.byKey(const Key('home-page')), findsNothing);
   });
 }

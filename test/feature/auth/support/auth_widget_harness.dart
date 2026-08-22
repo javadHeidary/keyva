@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/routes/session_guard.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/auth/view/account_selection_view.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
+import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 
 Widget authTestApp({
@@ -13,6 +17,18 @@ Widget authTestApp({
   required LoginController login,
   List<GetPage>? extraPages,
 }) {
+  void bindAccounts() {
+    if (!Get.isRegistered<AccountSelectionViewModel>()) {
+      Get.put(AccountSelectionViewModel(auth: getIt<AuthRepository>()));
+    }
+  }
+
+  void bindUnlock() {
+    if (!Get.isRegistered<LoginController>()) {
+      Get.put(login);
+    }
+  }
+
   return GetMaterialApp(
     theme: AppTheme.light,
     darkTheme: AppTheme.dark,
@@ -21,12 +37,22 @@ Widget authTestApp({
     getPages: [
       GetPage(
         name: AppRoutes.authLogin,
+        page: () => const AccountSelectionView(),
+        binding: BindingsBuilder(bindAccounts),
+        middlewares: [UnlockedRedirectMiddleware()],
+        transition: Transition.noTransition,
+      ),
+      GetPage(
+        name: AppRoutes.authAccounts,
+        page: () => const AccountSelectionView(),
+        binding: BindingsBuilder(bindAccounts),
+        middlewares: [UnlockedRedirectMiddleware()],
+        transition: Transition.noTransition,
+      ),
+      GetPage(
+        name: AppRoutes.authUnlock,
         page: () => const AuthLoginView(),
-        binding: BindingsBuilder(() {
-          if (!Get.isRegistered<LoginController>()) {
-            Get.put(login);
-          }
-        }),
+        binding: BindingsBuilder(bindUnlock),
         middlewares: [UnlockedRedirectMiddleware()],
         transition: Transition.noTransition,
       ),

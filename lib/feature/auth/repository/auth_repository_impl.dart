@@ -12,6 +12,7 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/session/session_service.dart';
+import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -279,6 +280,32 @@ class AuthRepositoryImpl implements AuthRepository {
       return FailureResult(ids.failure);
     }
     return Success((ids as Success<List<String>>).data.isNotEmpty);
+  }
+
+  @override
+  Future<Result<List<AccountSummary>>> getAccounts() async {
+    final listed = await _users.list();
+    if (listed is FailureResult<List<UserRecord>>) {
+      return FailureResult(listed.failure);
+    }
+    final records = (listed as Success<List<UserRecord>>).data;
+    return Success([
+      for (final user in records)
+        AccountSummary(id: user.id, username: user.username),
+    ]);
+  }
+
+  @override
+  Future<Result<AccountSummary>> getAccount(String userId) async {
+    final loaded = await _users.findById(userId);
+    if (loaded is FailureResult<UserRecord?>) {
+      return FailureResult(loaded.failure);
+    }
+    final user = (loaded as Success<UserRecord?>).data;
+    if (user == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    return Success(AccountSummary(id: user.id, username: user.username));
   }
 
   @override

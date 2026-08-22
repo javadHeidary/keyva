@@ -34,6 +34,7 @@ class AppTextFieldWidget extends StatefulWidget {
     this.textAlign = TextAlign.start,
     this.labelAlwaysVisible = false,
     this.fillColor,
+    this.enableInteractiveSelection,
   });
 
   final TextEditingController? controller;
@@ -62,6 +63,7 @@ class AppTextFieldWidget extends StatefulWidget {
   final TextAlign textAlign;
   final bool labelAlwaysVisible;
   final Color? fillColor;
+  final bool? enableInteractiveSelection;
 
   @override
   State<AppTextFieldWidget> createState() => _AppTextFieldWidgetState();
@@ -144,6 +146,7 @@ class _AppTextFieldWidgetState extends State<AppTextFieldWidget> {
       inputFormatters: widget.inputFormatters,
       autovalidateMode: widget.autovalidateMode,
       textAlign: widget.textAlign,
+      enableInteractiveSelection: widget.enableInteractiveSelection,
       style: AppTypography.bodyMedium.copyWith(
         color: widget.enabled ? colors.textPrimary : colors.textTertiary,
       ),

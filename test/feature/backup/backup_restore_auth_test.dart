@@ -41,7 +41,7 @@ void main() {
 
   const masterPassword = 'correct-master-password';
   const backupPassword = 'backup-pass-1';
-  const pinCode = '2468';
+  const pinCode = '123456';
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('keyva_backup_auth_');

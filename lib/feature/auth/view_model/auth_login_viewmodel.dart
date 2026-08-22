@@ -6,6 +6,7 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/security/pin_service.dart';
+import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
@@ -36,24 +37,52 @@ class LoginController extends GetxController {
   final errorMessage = ''.obs;
   final loginFormKey = GlobalKey<FormState>();
   final unlockMethod = UnlockMethod.masterPassword.obs;
+  final showMethodPicker = true.obs;
   final pinEnabled = false.obs;
   final pinLockedOut = false.obs;
   final biometricEnabled = false.obs;
   final biometricAvailable = false.obs;
+  final selectedUserId = ''.obs;
+  final selectedUsername = ''.obs;
+  final canSwitchAccount = false.obs;
+
+  bool get pinAvailable => pinEnabled.value && !pinLockedOut.value;
+
+  bool get biometricOptionAvailable =>
+      biometricEnabled.value && biometricAvailable.value;
 
   @override
   void onInit() {
     super.onInit();
-    loadUnlockOptions();
+    prepareSelectedAccount();
   }
 
-  Future<void> loadUnlockOptions() async {
-    final resolved = await _auth.resolveUnlockUserId();
-    if (resolved is! Success<String>) {
+  Future<void> prepareSelectedAccount() async {
+    final argumentId = _argumentUserId();
+    String? userId = argumentId;
+    if (userId == null) {
+      final resolved = await _auth.resolveUnlockUserId();
+      if (resolved is Success<String>) {
+        userId = resolved.data;
+      }
+    }
+    if (userId == null || userId.isEmpty) {
+      Get.offNamed(AppRoutes.authAccounts);
       return;
     }
-    final userId = resolved.data;
+    selectedUserId.value = userId;
+    final account = await _auth.getAccount(userId);
+    if (account is Success<AccountSummary>) {
+      selectedUsername.value = account.data.username;
+    }
+    final listed = await _auth.getAccounts();
+    if (listed is Success<List<AccountSummary>>) {
+      canSwitchAccount.value = listed.data.length > 1;
+    }
+    await loadUnlockOptions(userId);
+  }
 
+  Future<void> loadUnlockOptions(String userId) async {
     if (_pin != null) {
       final enabled = await _pin.isEnabled(userId);
       pinEnabled.value = enabled is Success<bool> && enabled.data;
@@ -65,23 +94,46 @@ class LoginController extends GetxController {
       final enabled = await _biometric.isEnabled(userId);
       biometricEnabled.value = enabled is Success<bool> && enabled.data;
     }
-    _selectPreferredMethod();
-    if (unlockMethod.value == UnlockMethod.biometric) {
-      unlockWithBiometric();
-    }
+    _showPickerOrMasterPassword();
   }
 
-  void useMasterPassword() {
+  void chooseMasterPassword() {
     errorMessage.value = '';
+    showMethodPicker.value = false;
     unlockMethod.value = UnlockMethod.masterPassword;
   }
 
-  void usePin() {
-    if (!pinEnabled.value || pinLockedOut.value) {
+  void choosePin() {
+    if (!pinAvailable) {
       return;
     }
     errorMessage.value = '';
+    showMethodPicker.value = false;
     unlockMethod.value = UnlockMethod.pin;
+  }
+
+  Future<void> chooseBiometric() async {
+    if (!biometricOptionAvailable) {
+      return;
+    }
+    await unlockWithBiometric();
+  }
+
+  void backToMethods() {
+    errorMessage.value = '';
+    _showPickerOrMasterPassword();
+  }
+
+  void changeAccount() {
+    Get.offAllNamed(AppRoutes.authAccounts);
+  }
+
+  void useMasterPassword() {
+    chooseMasterPassword();
+  }
+
+  void usePin() {
+    choosePin();
   }
 
   void togglePasswordVisibility() {
@@ -100,15 +152,14 @@ class LoginController extends GetxController {
     if (!(loginFormKey.currentState?.validate() ?? false)) {
       return;
     }
+    final userId = selectedUserId.value;
+    if (userId.isEmpty) {
+      Get.offNamed(AppRoutes.authAccounts);
+      return;
+    }
 
     isLoading.value = true;
     try {
-      final resolved = await _auth.resolveUnlockUserId();
-      if (resolved is FailureResult<String>) {
-        errorMessage.value = vaultUserMessage(resolved.failure.message);
-        return;
-      }
-      final userId = (resolved as Success<String>).data;
       final unlocked = await _unlock.unlock(
         userId: userId,
         masterPassword: passwordController.text,
@@ -131,24 +182,23 @@ class LoginController extends GetxController {
     errorMessage.value = '';
     final pin = pinController.text;
     if (!PinPolicy.isValid(pin)) {
-      errorMessage.value = 'کد PIN باید ۴ تا ۶ رقم باشد';
+      errorMessage.value = PinPolicy.userMessage;
+      return;
+    }
+    final userId = selectedUserId.value;
+    if (userId.isEmpty) {
+      Get.offNamed(AppRoutes.authAccounts);
       return;
     }
 
     isLoading.value = true;
     try {
-      final resolved = await _auth.resolveUnlockUserId();
-      if (resolved is FailureResult<String>) {
-        errorMessage.value = vaultUserMessage(resolved.failure.message);
-        return;
-      }
-      final userId = (resolved as Success<String>).data;
       final unlocked = await _unlock.unlockWithPin(userId: userId, pin: pin);
       if (unlocked is FailureResult<void>) {
         final locked = await _pin?.isLockedOut(userId);
         pinLockedOut.value = locked is Success<bool> && locked.data;
         if (pinLockedOut.value) {
-          unlockMethod.value = UnlockMethod.masterPassword;
+          chooseMasterPassword();
         }
         errorMessage.value = vaultUserMessage(unlocked.failure.message);
         return;
@@ -165,14 +215,13 @@ class LoginController extends GetxController {
       return;
     }
     errorMessage.value = '';
+    final userId = selectedUserId.value;
+    if (userId.isEmpty) {
+      Get.offNamed(AppRoutes.authAccounts);
+      return;
+    }
     isLoading.value = true;
     try {
-      final resolved = await _auth.resolveUnlockUserId();
-      if (resolved is FailureResult<String>) {
-        errorMessage.value = vaultUserMessage(resolved.failure.message);
-        return;
-      }
-      final userId = (resolved as Success<String>).data;
       final unlocked = await _unlock.unlockWithBiometric(userId: userId);
       if (unlocked is FailureResult<void>) {
         if (unlocked.failure is BiometricCancelledFailure) {
@@ -187,35 +236,18 @@ class LoginController extends GetxController {
     }
   }
 
-  void showMultiAccountInfo() {
-    Get.dialog(
-      Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          title: const Text('چند حساب روی دستگاه', textAlign: TextAlign.right),
-          content: const Text(
-            'اگر چند حساب روی این دستگاه دارید، تنها کافی است رمز اکانت مربوط به هر حساب را وارد کنید. '
-            'برنامه به‌صورت خودکار همان حساب را شناسایی و وارد آن می‌شود.\n\n'
-            'لیستی از حساب‌ها نمایش داده نمی‌شود تا حریم خصوصی شما حفظ شود.',
-            textAlign: TextAlign.right,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: const Text('متوجه شدم', textAlign: TextAlign.left),
-            ),
-          ],
-        ),
-      ),
-    );
+  String? _argumentUserId() {
+    final arguments = Get.arguments;
+    if (arguments is String && arguments.isNotEmpty) {
+      return arguments;
+    }
+    return null;
   }
 
-  void _selectPreferredMethod() {
-    if (biometricEnabled.value && biometricAvailable.value) {
-      unlockMethod.value = UnlockMethod.biometric;
-    } else if (pinEnabled.value && !pinLockedOut.value) {
-      unlockMethod.value = UnlockMethod.pin;
-    } else {
+  void _showPickerOrMasterPassword() {
+    final hasAlternate = pinAvailable || biometricOptionAvailable;
+    showMethodPicker.value = hasAlternate;
+    if (!hasAlternate) {
       unlockMethod.value = UnlockMethod.masterPassword;
     }
   }

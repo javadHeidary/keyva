@@ -14,6 +14,7 @@ import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 import 'support/auth_widget_harness.dart';
 import 'support/fake_auth_repository.dart';
+import 'support/fake_biometric_service.dart';
 import 'support/fake_pin_service.dart';
 import 'support/fake_vault_unlock_service.dart';
 
@@ -45,7 +46,7 @@ void main() {
   testWidgets('starts locked with a password field', (tester) async {
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthFrame(tester);
 
@@ -58,7 +59,7 @@ void main() {
   testWidgets('empty password shows validation error', (tester) async {
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthFrame(tester);
 
@@ -73,7 +74,7 @@ void main() {
   testWidgets('short password shows validation error', (tester) async {
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthFrame(tester);
 
@@ -94,7 +95,7 @@ void main() {
     unlock.unlockGate = Completer<void>();
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthFrame(tester);
 
@@ -124,7 +125,7 @@ void main() {
   ) async {
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthFrame(tester);
 
@@ -149,7 +150,7 @@ void main() {
     unlock.unlockFailure = const AuthenticationFailure();
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthFrame(tester);
 
@@ -175,9 +176,13 @@ void main() {
     login = LoginController(unlock: unlock, auth: auth, pin: pin);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-unlock-method-pin')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('auth-unlock-method-pin')));
+    await pumpAuthFrame(tester);
 
     expect(find.byKey(const Key('auth-login-pin')), findsOneWidget);
     expect(find.byKey(const Key('auth-login-password')), findsNothing);
@@ -190,16 +195,18 @@ void main() {
     login = LoginController(unlock: unlock, auth: auth, pin: pin);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthSettle(tester);
 
-    await tester.enterText(find.byKey(const Key('auth-login-pin')), '1234');
+    await tester.tap(find.byKey(const Key('auth-unlock-method-pin')));
+    await pumpAuthFrame(tester);
+    await tester.enterText(find.byKey(const Key('auth-login-pin')), '123456');
     await tester.tap(find.byKey(const Key('auth-login-pin-submit')));
     await pumpAuthSettle(tester);
 
     expect(unlock.pinUnlockCount, 1);
-    expect(unlock.lastPin, '1234');
+    expect(unlock.lastPin, '123456');
     expect(session.isAuthenticated, isFalse);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
@@ -213,10 +220,12 @@ void main() {
     login = LoginController(unlock: unlock, auth: auth, pin: pin);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthSettle(tester);
 
+    await tester.tap(find.byKey(const Key('auth-unlock-method-pin')));
+    await pumpAuthFrame(tester);
     await tester.tap(find.byKey(const Key('auth-login-use-master-password')));
     await pumpAuthFrame(tester);
 
@@ -231,12 +240,130 @@ void main() {
     login = LoginController(unlock: unlock, auth: auth, pin: pin);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
-      authTestApp(initialRoute: AppRoutes.authLogin, login: login),
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthSettle(tester);
 
     expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
     expect(find.byKey(const Key('auth-login-pin')), findsNothing);
+    expect(find.byKey(const Key('auth-unlock-method-pin')), findsNothing);
     expect(find.byKey(const Key('auth-login-use-pin')), findsNothing);
+  });
+
+  testWidgets('biometric option appears only when enabled and available', (
+    tester,
+  ) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-unlock-method-biometric')), findsOneWidget);
+    expect(find.byKey(const Key('auth-unlock-method-master')), findsOneWidget);
+  });
+
+  testWidgets('successful biometric unlock uses the selected account', (
+    tester,
+  ) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(unlock.biometricUnlockCount, 1);
+    expect(unlock.lastUserId, 'user-1');
+    expect(session.isAuthenticated, isTrue);
+    expect(session.current!.userId, 'user-1');
+    expect(find.byKey(const Key('shell-page')), findsOneWidget);
+  });
+
+  testWidgets('cancelled biometric does not unlock', (tester) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    unlock.unlockFailure = const BiometricCancelledFailure();
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(session.isAuthenticated, isFalse);
+    expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(find.byKey(const Key('auth-login-error')), findsNothing);
+  });
+
+  testWidgets('failed biometric does not unlock', (tester) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    unlock.unlockFailure = const AuthenticationFailure();
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(session.isAuthenticated, isFalse);
+    expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
+  });
+
+  testWidgets('PIN shorter than 6 digits is rejected before unlock', (
+    tester,
+  ) async {
+    final pin = FakePinService()..enabled = true;
+    login = LoginController(unlock: unlock, auth: auth, pin: pin);
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-pin')));
+    await pumpAuthFrame(tester);
+    await tester.enterText(find.byKey(const Key('auth-login-pin')), '12345');
+    await tester.tap(find.byKey(const Key('auth-login-pin-submit')));
+    await pumpAuthFrame(tester);
+
+    expect(unlock.pinUnlockCount, 0);
+    expect(find.text('پین کد باید ۶ رقم باشد.'), findsWidgets);
   });
 }

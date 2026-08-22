@@ -217,7 +217,7 @@ class _LoginTextState extends State<_LoginText> {
   void initState() {
     super.initState();
     _recognizer = TapGestureRecognizer()
-      ..onTap = () => Get.offNamed(AppRoutes.authLogin);
+      ..onTap = () => Get.offNamed(AppRoutes.authAccounts);
   }
 
   @override

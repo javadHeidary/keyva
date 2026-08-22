@@ -169,7 +169,7 @@ void main() {
       session: session,
       database: database!,
     );
-    _expectSuccess(await pin.enable('2468'));
+    _expectSuccess(await pin.enable('123456'));
     _expectSuccess(
       await auth.changeMasterPassword(
         currentPassword: currentPassword,
@@ -183,7 +183,7 @@ void main() {
     );
     session.clear();
     expect(
-      _expectSuccess(await pin.unwrapVaultKey(userId: user.id, pin: '2468')),
+      _expectSuccess(await pin.unwrapVaultKey(userId: user.id, pin: '123456')),
       vaultKey,
     );
   }, timeout: kdfTimeout);
@@ -260,6 +260,9 @@ class _RejectingUpdateUsers implements UserDataSource {
 
   @override
   Future<Result<List<String>>> listIds() => _inner.listIds();
+
+  @override
+  Future<Result<List<UserRecord>>> list() => _inner.list();
 
   @override
   Future<Result<void>> update(UserRecord user) async {

@@ -5,6 +5,7 @@ import 'package:get/get_navigation/src/routes/transitions_type.dart';
 import 'package:keyva/core/routes/session_guard.dart';
 import 'package:keyva/core/theme/design_system_example.dart';
 import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
+import 'package:keyva/feature/auth/view/account_selection_view.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
 import 'package:keyva/feature/backup/bindings/backup_bindings.dart';
@@ -48,6 +49,8 @@ class AppRoutes {
   static const String splash = '/splash';
   static const String onBoarding = '/on-boarding';
   static const String authLogin = '/authLogin';
+  static const String authAccounts = '/auth/accounts';
+  static const String authUnlock = '/auth/unlock';
   static const String authRegister = '/authRegister';
   static const String widgetBuilderTest = '/widgetBuilderTest';
   static const String shell = '/shell';
@@ -114,6 +117,26 @@ class AppRoutes {
 
     GetPage(
       name: authLogin,
+      page: () => const AccountSelectionView(),
+      binding: AuthBindings(),
+      middlewares: _unlockedRedirect,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: authAccounts,
+      page: () => const AccountSelectionView(),
+      binding: AuthBindings(),
+      middlewares: _unlockedRedirect,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: authUnlock,
       page: () => const AuthLoginView(),
       binding: AuthBindings(),
       middlewares: _unlockedRedirect,

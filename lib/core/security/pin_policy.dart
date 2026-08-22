@@ -5,6 +5,8 @@ enum PinValidationError { empty, notDigits, tooShort, tooLong }
 abstract final class PinPolicy {
   static final _digitsOnly = RegExp(r'^\d+$');
 
+  static const userMessage = 'پین کد باید ۶ رقم باشد.';
+
   static PinValidationError? validate(String pin) {
     if (pin.isEmpty) {
       return PinValidationError.empty;

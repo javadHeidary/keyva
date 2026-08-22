@@ -268,12 +268,31 @@ void main() {
     await users.create(_storedUser(id: 'user-2'));
     _expectAuthenticationFailure(await auth.resolveUnlockUserId());
   });
+
+  test('getAccounts returns safe summaries and does not require vault data', () async {
+    expect(_expectSuccess(await auth.getAccounts()), isEmpty);
+    await users.create(_storedUser(id: 'user-a', username: 'علی'));
+    await users.create(_storedUser(id: 'user-b', username: 'رضا'));
+
+    final summaries = _expectSuccess(await auth.getAccounts());
+    expect(summaries, hasLength(2));
+    expect(summaries.map((account) => account.id), containsAll(['user-a', 'user-b']));
+    expect(
+      summaries.map((account) => account.username),
+      containsAll(['علی', 'رضا']),
+    );
+    expect(database!.vaults.isEmpty, isTrue);
+
+    final loaded = _expectSuccess(await auth.getAccount('user-b'));
+    expect(loaded.id, 'user-b');
+    expect(loaded.username, 'رضا');
+  });
 }
 
-UserRecord _storedUser({required String id}) {
+UserRecord _storedUser({required String id, String username = 'علی'}) {
   return UserRecord(
     id: id,
-    username: 'علی',
+    username: username,
     createdAt: DateTime.utc(2026, 1, 1),
     updatedAt: DateTime.utc(2026, 1, 2),
     kdfSalt: Uint8List.fromList(List<int>.filled(16, 1)),

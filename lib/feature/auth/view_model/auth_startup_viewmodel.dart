@@ -20,10 +20,10 @@ class AuthStartupViewModel extends GetxController {
     }
     final result = await _auth.hasAnyAccount();
     if (result is FailureResult<bool>) {
-      return AppRoutes.authLogin;
+      return AppRoutes.authAccounts;
     }
     if (result is Success<bool> && result.data) {
-      return AppRoutes.authLogin;
+      return AppRoutes.authAccounts;
     }
     return AppRoutes.onBoarding;
   }

@@ -99,11 +99,21 @@ void main() {
     expect(_expectSuccess(await users.listIds()), isEmpty);
 
     await users.create(_user(id: 'user-1'));
-    await users.create(_user(id: 'user-2'));
+    await users.create(_user(id: 'user-2', username: 'رضا'));
 
     final ids = _expectSuccess(await users.listIds());
     expect(ids, containsAll(<String>['user-1', 'user-2']));
     expect(ids, hasLength(2));
+  });
+
+  test('list returns user records from the users box only', () async {
+    await users.create(_user(id: 'user-1'));
+    await users.create(_user(id: 'user-2', username: 'رضا'));
+
+    final listed = _expectSuccess(await users.list());
+    expect(listed, hasLength(2));
+    expect(listed.map((user) => user.username), containsAll(['علی', 'رضا']));
+    expect(database!.vaults.isEmpty, isTrue);
   });
 }
 

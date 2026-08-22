@@ -114,13 +114,13 @@ void main() {
     );
     await pumpAuthSettle(tester);
 
-    await tester.enterText(find.byKey(const Key('settings-pin-new')), '2468');
-    await tester.enterText(find.byKey(const Key('settings-pin-confirm')), '2468');
+    await tester.enterText(find.byKey(const Key('settings-pin-new')), '123456');
+    await tester.enterText(find.byKey(const Key('settings-pin-confirm')), '123456');
     await tester.tap(find.byKey(const Key('settings-pin-save')));
     await pumpAuthSettle(tester);
 
     expect(pin.enableCount, 1);
-    expect(pin.lastEnabledPin, '2468');
+    expect(pin.lastEnabledPin, '123456');
     expect(settings.security.value.pinEnabled, isTrue);
   });
 

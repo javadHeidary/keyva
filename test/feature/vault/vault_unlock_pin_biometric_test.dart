@@ -36,7 +36,7 @@ void main() {
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
   const masterPassword = 'correct-master-password';
-  const pinCode = '2468';
+  const pinCode = '123456';
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('keyva_unlock_pin_');
@@ -144,7 +144,7 @@ void main() {
     _expectSuccess(await pin.enable(pinCode));
     _expectSuccess(await unlock.lock());
 
-    final result = await unlock.unlockWithPin(userId: userId, pin: '0000');
+    final result = await unlock.unlockWithPin(userId: userId, pin: '000000');
     expect(result, isA<FailureResult<void>>());
     expect(
       (result as FailureResult<void>).failure,

@@ -28,7 +28,7 @@ void main() {
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
   const masterPassword = 'correct-master-password';
-  const pinCode = '2468';
+  const pinCode = '123456';
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('keyva_pin_');
@@ -86,6 +86,14 @@ void main() {
     expect(storage.values, isEmpty);
   }, timeout: kdfTimeout);
 
+  test('enable rejects PINs that are not exactly 6 digits', () async {
+    await unlockAccount();
+    final tooShort = await pin.enable('1234');
+    expect(tooShort, isA<FailureResult<void>>());
+    expect((tooShort as FailureResult<void>).failure, isA<ValidationFailure>());
+    expect(_expectSuccess(await pin.isEnabled(session.current!.userId)), isFalse);
+  }, timeout: kdfTimeout);
+
   test('enable stores a wrapped copy and never writes the plaintext PIN', () async {
     final (userId, vaultKey) = await unlockAccount();
     _expectSuccess(await pin.enable(pinCode));
@@ -121,13 +129,13 @@ void main() {
     session.clear();
 
     for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
-      final result = await pin.unwrapVaultKey(userId: userId, pin: '0000');
+      final result = await pin.unwrapVaultKey(userId: userId, pin: '000000');
       expect(result, isA<FailureResult<Uint8List>>());
       expect(
         (result as FailureResult<Uint8List>).failure,
         isA<AuthenticationFailure>(),
       );
-      expect(result.failure.message, isNot(contains('0000')));
+      expect(result.failure.message, isNot(contains('000000')));
       expect(result.failure.message, isNot(contains(pinCode)));
     }
 
@@ -141,7 +149,7 @@ void main() {
     _expectSuccess(await pin.enable(pinCode));
     session.clear();
     for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
-      await pin.unwrapVaultKey(userId: userId, pin: '0000');
+      await pin.unwrapVaultKey(userId: userId, pin: '000000');
     }
     expect(_expectSuccess(await pin.isLockedOut(userId)), isTrue);
 

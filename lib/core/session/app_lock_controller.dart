@@ -140,7 +140,7 @@ class AppLockController extends GetxController with WidgetsBindingObserver {
         onLocked();
         return;
       }
-      Get.offAllNamed(AppRoutes.authLogin);
+      Get.offAllNamed(AppRoutes.authAccounts);
     } finally {
       _locking = false;
     }

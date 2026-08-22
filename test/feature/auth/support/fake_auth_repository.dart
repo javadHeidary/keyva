@@ -7,6 +7,7 @@ import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
@@ -29,6 +30,9 @@ class FakeAuthRepository implements AuthRepository {
   AppFailure? setAutoLockTimeoutFailure;
   bool userRecordDeleted = false;
   bool vaultRecordDeleted = false;
+  List<AccountSummary> accounts = const [
+    AccountSummary(id: 'user-1', username: 'علی'),
+  ];
 
   @override
   Future<Result<UserRecord>> createAccount({
@@ -98,6 +102,21 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<Result<bool>> hasAnyAccount() async {
     return Success(anyAccount);
+  }
+
+  @override
+  Future<Result<List<AccountSummary>>> getAccounts() async {
+    return Success(List<AccountSummary>.from(accounts));
+  }
+
+  @override
+  Future<Result<AccountSummary>> getAccount(String userId) async {
+    for (final account in accounts) {
+      if (account.id == userId) {
+        return Success(account);
+      }
+    }
+    return const FailureResult(AuthenticationFailure());
   }
 
   @override

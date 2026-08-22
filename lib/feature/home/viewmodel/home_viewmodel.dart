@@ -58,7 +58,7 @@ class HomeController extends GetxController {
 
   Future<void> lock() async {
     await _unlock.lock();
-    Get.offAllNamed(AppRoutes.authLogin);
+    Get.offAllNamed(AppRoutes.authAccounts);
   }
 
   CategoryCatalogController? get _catalog =>

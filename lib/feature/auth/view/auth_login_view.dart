@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
@@ -31,58 +32,33 @@ class AuthLoginView extends GetView<LoginController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    key: const Key('auth-login-info'),
-                    onPressed: controller.showMultiAccountInfo,
-                    icon: Icon(
-                      AppIcon.info,
-                      size: AppSizes.iconLg.s,
-                      color: context.colors.textPrimary,
+                Obx(() {
+                  if (!controller.canSwitchAccount.value) {
+                    return SizedBox(height: AppSizes.iconLg.s);
+                  }
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      key: const Key('auth-unlock-change-account'),
+                      onPressed: controller.changeAccount,
+                      child: Text(
+                        'تغییر حساب',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: context.colors.primary,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-
+                  );
+                }),
                 const Spacer(flex: 1),
-
-                Row(
-                  children: [
-                    Container(
-                      width: 65.s,
-                      height: 65.s,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        color: context.colors.strengthBarBg,
-                        borderRadius: BorderRadius.circular(18.s),
-                      ),
-                      child: Icon(AppIcon.lock),
-                    ),
-                    SizedBox(width: AppSpacing.xl.s),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ورود به کیوا',
-                            style: AppTypography.titleLarge,
-                          ),
-                          SizedBox(height: AppSpacing.sm.h),
-                          Obx(() {
-                            return Text(
-                              _subtitle(controller.unlockMethod.value),
-                              style: AppTypography.bodyLarge,
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                Obx(() => _header(context)),
                 SizedBox(height: AppSpacing.xxl.h),
-
-                Obx(() => _unlockForm(context)),
-
+                Obx(() {
+                  if (controller.showMethodPicker.value) {
+                    return _methodPicker(context);
+                  }
+                  return _unlockForm(context);
+                }),
                 Obx(() {
                   if (controller.errorMessage.value.isEmpty) {
                     return const SizedBox.shrink();
@@ -98,43 +74,67 @@ class AuthLoginView extends GetView<LoginController> {
                     ),
                   );
                 }),
-
                 SizedBox(height: AppSpacing.sectionGap.h),
-
-                Obx(() => _primaryAction()),
+                Obx(() {
+                  if (controller.showMethodPicker.value) {
+                    return const SizedBox.shrink();
+                  }
+                  return _primaryAction();
+                }),
                 SizedBox(height: AppSpacing.md.h),
-                Obx(() => _fallbackActions(context)),
+                Obx(() => _secondaryActions(context)),
                 SizedBox(height: AppSpacing.sectionGap.h),
-                Align(
-                  alignment: Alignment.center,
-                  child: Text.rich(
-                    TextSpan(
-                      text: 'اکانتی ندارید؟ ',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: context.colors.textTertiary,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: 'ثبت‌نام',
-                          style: AppTypography.titleMedium.copyWith(
-                            color: context.colors.primary,
-                          ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Get.toNamed(AppRoutes.authRegister);
-                            },
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+                const Align(alignment: Alignment.center, child: _RegisterText()),
                 const Spacer(flex: 2),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _header(BuildContext context) {
+    final username = controller.selectedUsername.value;
+    return Row(
+      children: [
+        Container(
+          width: 65.s,
+          height: 65.s,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            color: context.colors.strengthBarBg,
+            borderRadius: BorderRadius.circular(18.s),
+          ),
+          child: username.isEmpty
+              ? const Icon(AppIcon.lock)
+              : Text(
+                  String.fromCharCodes(username.trim().runes.take(1)),
+                  style: AppTypography.titleLarge,
+                ),
+        ),
+        SizedBox(width: AppSpacing.xl.s),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                username.isEmpty ? 'ورود به حساب' : username,
+                key: const Key('auth-unlock-username'),
+                style: AppTypography.titleLarge,
+              ),
+              SizedBox(height: AppSpacing.sm.h),
+              Text(
+                controller.showMethodPicker.value
+                    ? 'روش ورود را انتخاب کنید'
+                    : _subtitle(controller.unlockMethod.value),
+                style: AppTypography.bodyLarge,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -149,6 +149,36 @@ class AuthLoginView extends GetView<LoginController> {
     }
   }
 
+  Widget _methodPicker(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppButtonWidget(
+          key: const Key('auth-unlock-method-master'),
+          title: 'رمز اصلی',
+          onPressed: controller.chooseMasterPassword,
+        ),
+        if (controller.pinAvailable) ...[
+          SizedBox(height: AppSpacing.md.h),
+          AppButtonWidget(
+            key: const Key('auth-unlock-method-pin'),
+            title: 'پین کد',
+            onPressed: controller.choosePin,
+          ),
+        ],
+        if (controller.biometricOptionAvailable) ...[
+          SizedBox(height: AppSpacing.md.h),
+          AppButtonWidget(
+            key: const Key('auth-unlock-method-biometric'),
+            title: 'ورود با بیومتریک',
+            isLoading: controller.isLoading.value,
+            onPressed: controller.chooseBiometric,
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _unlockForm(BuildContext context) {
     switch (controller.unlockMethod.value) {
       case UnlockMethod.pin:
@@ -161,6 +191,7 @@ class AuthLoginView extends GetView<LoginController> {
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
             textDirection: TextDirection.ltr,
+            enableInteractiveSelection: false,
             onFieldSubmitted: (_) => controller.unlockWithPin(),
             labelText: 'کد PIN',
             hintText: 'PIN را وارد کنید',
@@ -181,10 +212,8 @@ class AuthLoginView extends GetView<LoginController> {
               if (value == null || value.isEmpty) {
                 return 'کد PIN الزامی است';
               }
-              if (!RegExp(r'^\d+$').hasMatch(value) ||
-                  value.length < SecurityConstants.pinMinLength ||
-                  value.length > SecurityConstants.pinMaxLength) {
-                return 'کد PIN باید ۴ تا ۶ رقم باشد';
+              if (!PinPolicy.isValid(value)) {
+                return PinPolicy.userMessage;
               }
               return null;
             },
@@ -203,7 +232,7 @@ class AuthLoginView extends GetView<LoginController> {
             onFieldSubmitted: (_) => controller.login(),
             labelText: 'رمز عبور',
             hintText: 'رمز را وارد کنید',
-            prefixIcon: Icon(AppIcon.lock),
+            prefixIcon: const Icon(AppIcon.lock),
             suffixIcon: IconButton(
               icon: Icon(
                 controller.isPasswordVisible.value
@@ -252,45 +281,103 @@ class AuthLoginView extends GetView<LoginController> {
     }
   }
 
-  Widget _fallbackActions(BuildContext context) {
-    final method = controller.unlockMethod.value;
-    final showMaster =
-        method != UnlockMethod.masterPassword &&
-        (controller.pinEnabled.value || controller.biometricEnabled.value);
-    final showPin =
-        method != UnlockMethod.pin &&
-        controller.pinEnabled.value &&
-        !controller.pinLockedOut.value;
-
-    if (!showMaster && !showPin) {
+  Widget _secondaryActions(BuildContext context) {
+    if (controller.showMethodPicker.value) {
       return const SizedBox.shrink();
     }
+    final method = controller.unlockMethod.value;
+    final canPickMethods =
+        controller.pinAvailable || controller.biometricOptionAvailable;
+    final children = <Widget>[
+      if (canPickMethods)
+        TextButton(
+          key: const Key('auth-unlock-back-methods'),
+          onPressed: controller.backToMethods,
+          child: Text(
+            'روش‌های ورود',
+            style: AppTypography.titleMedium.copyWith(
+              color: context.colors.primary,
+            ),
+          ),
+        ),
+    ];
+    if (method != UnlockMethod.masterPassword &&
+        (controller.pinEnabled.value || controller.biometricEnabled.value)) {
+      children.add(
+        TextButton(
+          key: const Key('auth-login-use-master-password'),
+          onPressed: controller.useMasterPassword,
+          child: Text(
+            'ورود با رمز اصلی',
+            style: AppTypography.titleMedium.copyWith(
+              color: context.colors.primary,
+            ),
+          ),
+        ),
+      );
+    }
+    if (method != UnlockMethod.pin && controller.pinAvailable) {
+      children.add(
+        TextButton(
+          key: const Key('auth-login-use-pin'),
+          onPressed: controller.usePin,
+          child: Text(
+            'ورود با PIN',
+            style: AppTypography.titleMedium.copyWith(
+              color: context.colors.primary,
+            ),
+          ),
+        ),
+      );
+    }
+    return Column(children: children);
+  }
+}
 
-    return Column(
-      children: [
-        if (showMaster)
-          TextButton(
-            key: const Key('auth-login-use-master-password'),
-            onPressed: controller.useMasterPassword,
-            child: Text(
-              'ورود با رمز اصلی',
-              style: AppTypography.titleMedium.copyWith(
-                color: context.colors.primary,
-              ),
+class _RegisterText extends StatefulWidget {
+  const _RegisterText();
+
+  @override
+  State<_RegisterText> createState() => _RegisterTextState();
+}
+
+class _RegisterTextState extends State<_RegisterText> {
+  late final TapGestureRecognizer _recognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _recognizer = TapGestureRecognizer()
+      ..onTap = () {
+        Get.toNamed(AppRoutes.authRegister);
+      };
+  }
+
+  @override
+  void dispose() {
+    _recognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        text: 'اکانتی ندارید؟ ',
+        style: AppTypography.bodyMedium.copyWith(
+          color: context.colors.textTertiary,
+        ),
+        children: [
+          TextSpan(
+            text: 'ثبت‌نام',
+            style: AppTypography.titleMedium.copyWith(
+              color: context.colors.primary,
             ),
+            recognizer: _recognizer,
           ),
-        if (showPin)
-          TextButton(
-            key: const Key('auth-login-use-pin'),
-            onPressed: controller.usePin,
-            child: Text(
-              'ورود با PIN',
-              style: AppTypography.titleMedium.copyWith(
-                color: context.colors.primary,
-              ),
-            ),
-          ),
-      ],
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }

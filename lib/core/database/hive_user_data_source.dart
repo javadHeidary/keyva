@@ -53,6 +53,15 @@ class HiveUserDataSource implements UserDataSource {
   }
 
   @override
+  Future<Result<List<UserRecord>>> list() async {
+    try {
+      return Success(_database.users.values.toList());
+    } catch (error) {
+      return FailureResult(HiveErrorMapper.map(error));
+    }
+  }
+
+  @override
   Future<Result<void>> update(UserRecord user) async {
     try {
       if (!_database.users.containsKey(user.id)) {

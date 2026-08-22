@@ -366,7 +366,7 @@ class SettingsViewModel extends GetxController {
     required BuildContext context,
   }) async {
     if (!PinPolicy.isValid(pin)) {
-      AppToast.error(context, title: 'کد PIN باید ۴ تا ۶ رقم باشد');
+      AppToast.error(context, title: PinPolicy.userMessage);
       return;
     }
     if (pin != confirmPin) {
@@ -405,7 +405,7 @@ class SettingsViewModel extends GetxController {
     required BuildContext context,
   }) async {
     if (!PinPolicy.isValid(pin)) {
-      AppToast.error(context, title: 'کد PIN باید ۴ تا ۶ رقم باشد');
+      AppToast.error(context, title: PinPolicy.userMessage);
       return;
     }
     if (pin != confirmPin) {
@@ -441,11 +441,11 @@ class SettingsViewModel extends GetxController {
 
   Future<void> lock() async {
     await _unlock.lock();
-    Get.offAllNamed(AppRoutes.authLogin);
+    Get.offAllNamed(AppRoutes.authAccounts);
   }
 
   Future<void> onLogoutConfirmed() async {
     await _unlock.lock();
-    Get.offAllNamed(AppRoutes.authLogin);
+    Get.offAllNamed(AppRoutes.authAccounts);
   }
 }

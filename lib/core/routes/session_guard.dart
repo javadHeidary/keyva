@@ -11,7 +11,7 @@ class SessionGuard extends GetMiddleware {
     if (_isUnlocked) {
       return null;
     }
-    return const RouteSettings(name: '/authLogin');
+    return const RouteSettings(name: '/auth/accounts');
   }
 }
 

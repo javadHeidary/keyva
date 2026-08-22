@@ -32,7 +32,7 @@ void main() {
 
   test('locked device with an account goes to Unlock', () async {
     auth.anyAccount = true;
-    expect(await startup.resolveInitialRoute(), AppRoutes.authLogin);
+    expect(await startup.resolveInitialRoute(), AppRoutes.authAccounts);
   });
 
   test('locked device with no account goes to onboarding', () async {
@@ -43,7 +43,7 @@ void main() {
   test('account lookup failure fails closed to Unlock', () async {
     auth = FakeHasAccountFailure();
     startup = AuthStartupViewModel(session: session, auth: auth);
-    expect(await startup.resolveInitialRoute(), AppRoutes.authLogin);
+    expect(await startup.resolveInitialRoute(), AppRoutes.authAccounts);
   });
 }
 
