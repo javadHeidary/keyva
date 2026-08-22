@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
+import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
@@ -17,6 +18,7 @@ class SettingsBindings extends Bindings {
         biometric: getIt<BiometricService>(),
         session: getIt<SessionService>(),
         auth: getIt<AuthRepository>(),
+        screenProtection: getIt<ScreenProtectionService>(),
       ),
     );
   }

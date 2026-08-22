@@ -5,6 +5,7 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
+import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
@@ -20,12 +21,14 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
     required VaultSession vaultSession,
     PinService? pin,
     BiometricService? biometric,
+    ScreenProtectionService? screenProtection,
   }) : _auth = auth,
        _vaults = vaults,
        _serializer = serializer,
        _vaultSession = vaultSession,
        _pin = pin,
-       _biometric = biometric;
+       _biometric = biometric,
+       _screenProtection = screenProtection;
 
   final AuthRepository _auth;
   final VaultRepository _vaults;
@@ -33,6 +36,7 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
   final VaultSession _vaultSession;
   final PinService? _pin;
   final BiometricService? _biometric;
+  final ScreenProtectionService? _screenProtection;
 
   static const _biometricUnlockReason = 'برای باز کردن گاوصندوق';
 
@@ -139,6 +143,7 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
     if (unlocked is FailureResult<void>) {
       return _failClosed(unlocked.failure);
     }
+    await _screenProtection?.applyPersisted();
     return unlocked;
   }
 

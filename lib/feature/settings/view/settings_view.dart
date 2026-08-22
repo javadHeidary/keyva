@@ -140,11 +140,19 @@ class SettingsView extends GetView<SettingsViewModel> {
                                 ),
                               ),
                             ),
-                          SettingsRow.toggle(
-                            title: 'جلوگیری از اسکرین‌شات و ضبط صفحه',
-                            icon: AppIcon.noPhotography,
-                            value: controller.security.value.preventScreenshot,
-                            onChanged: controller.setPreventScreenshot,
+                          KeyedSubtree(
+                            key: const Key('settings-prevent-screenshot'),
+                            child: SettingsRow.toggle(
+                              title: 'جلوگیری از اسکرین‌شات و ضبط صفحه',
+                              icon: AppIcon.noPhotography,
+                              value:
+                                  controller.security.value.preventScreenshot,
+                              onChanged: (enabled) =>
+                                  controller.setPreventScreenshot(
+                                    enabled,
+                                    context,
+                                  ),
+                            ),
                           ),
                           KeyedSubtree(
                             key: const Key('settings-auto-lock'),

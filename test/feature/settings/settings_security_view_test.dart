@@ -17,6 +17,7 @@ import '../auth/support/auth_widget_harness.dart';
 import '../auth/support/fake_auth_repository.dart';
 import '../auth/support/fake_biometric_service.dart';
 import '../auth/support/fake_pin_service.dart';
+import '../../core/security/support/fake_screen_protection_service.dart';
 import '../auth/support/fake_vault_unlock_service.dart';
 
 void main() {
@@ -27,6 +28,7 @@ void main() {
   late FakePinService pin;
   late FakeBiometricService biometric;
   late FakeAuthRepository auth;
+  late FakeScreenProtectionService protection;
   late SettingsViewModel settings;
 
   setUp(() async {
@@ -42,12 +44,14 @@ void main() {
     pin = FakePinService();
     biometric = FakeBiometricService();
     auth = FakeAuthRepository();
+    protection = FakeScreenProtectionService();
     settings = SettingsViewModel(
       unlock: unlock,
       pin: pin,
       biometric: biometric,
       session: session,
       auth: auth,
+      screenProtection: protection,
     );
     getIt.registerSingleton<SessionService>(session);
     getIt.registerSingleton<VaultUnlockService>(unlock);
@@ -228,5 +232,63 @@ void main() {
     expect(auth.setAutoLockTimeoutCount, 1);
     expect(auth.lastAutoLockTimeout, const Duration(seconds: 30));
     expect(settings.security.value.autoLockTimeout, const Duration(seconds: 30));
+  });
+
+  testWidgets('screenshot toggle defaults to off', (tester) async {
+    await pumpSettings(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings-prevent-screenshot')),
+      200,
+      scrollable: find.byType(Scrollable),
+    );
+
+    final toggle = tester.widget<Switch>(
+      find.descendant(
+        of: find.byKey(const Key('settings-prevent-screenshot')),
+        matching: find.byType(Switch),
+      ),
+    );
+    expect(toggle.value, isFalse);
+  });
+
+  testWidgets('screenshot toggle reflects the persisted setting', (tester) async {
+    auth.preventScreenshots = true;
+    await pumpSettings(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings-prevent-screenshot')),
+      200,
+      scrollable: find.byType(Scrollable),
+    );
+
+    final toggle = tester.widget<Switch>(
+      find.descendant(
+        of: find.byKey(const Key('settings-prevent-screenshot')),
+        matching: find.byType(Switch),
+      ),
+    );
+    expect(toggle.value, isTrue);
+  });
+
+  testWidgets('enabling screenshot protection persists and applies', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('settings-prevent-screenshot')),
+      200,
+      scrollable: find.byType(Scrollable),
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('settings-prevent-screenshot')),
+        matching: find.byType(Switch),
+      ),
+    );
+    await pumpAuthSettle(tester);
+
+    expect(auth.setPreventScreenshotsCount, 1);
+    expect(auth.preventScreenshots, isTrue);
+    expect(protection.isEnabled, isTrue);
+    expect(settings.security.value.preventScreenshot, isTrue);
   });
 }

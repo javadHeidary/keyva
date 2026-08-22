@@ -287,6 +287,50 @@ void main() {
     expect(loaded.id, 'user-b');
     expect(loaded.username, 'رضا');
   });
+
+  test('setPreventScreenshots persists for the authenticated user', () async {
+    await users.create(_storedUser(id: 'user-1'));
+    session.setAuthenticated(
+      userId: 'user-1',
+      username: 'علی',
+      vaultKey: Uint8List(32),
+    );
+
+    expect(
+      _expectSuccess(await auth.currentSecuritySettings()).preventScreenshots,
+      isFalse,
+    );
+    _expectSuccess(await auth.setPreventScreenshots(true));
+    expect(
+      _expectSuccess(await users.findById('user-1'))!
+          .securitySettings
+          .preventScreenshots,
+      isTrue,
+    );
+    expect(
+      _expectSuccess(await auth.currentSecuritySettings()).preventScreenshots,
+      isTrue,
+    );
+
+    _expectSuccess(await auth.setPreventScreenshots(false));
+    expect(
+      _expectSuccess(await users.findById('user-1'))!
+          .securitySettings
+          .preventScreenshots,
+      isFalse,
+    );
+  });
+
+  test('setPreventScreenshots requires an authenticated session', () async {
+    await users.create(_storedUser(id: 'user-1'));
+    _expectAuthenticationFailure(await auth.setPreventScreenshots(true));
+    expect(
+      _expectSuccess(await users.findById('user-1'))!
+          .securitySettings
+          .preventScreenshots,
+      isFalse,
+    );
+  });
 }
 
 UserRecord _storedUser({required String id, String username = 'علی'}) {

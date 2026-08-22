@@ -34,6 +34,8 @@ String vaultUserMessage(String? errorMessage) {
       return 'بازیابی اطلاعات انجام نشد.';
     case 'Unable to save backup file':
       return 'ذخیره فایل پشتیبان انجام نشد.';
+    case 'Unable to update screen capture protection':
+      return 'به‌روزرسانی محافظت صفحه انجام نشد.';
   }
 
   if (errorMessage.contains('Exception') ||

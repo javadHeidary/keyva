@@ -36,4 +36,11 @@ void main() {
       'خطایی رخ داد. لطفاً دوباره تلاش کنید.',
     );
   });
+
+  test('maps screen protection failure', () {
+    expect(
+      vaultUserMessage('Unable to update screen capture protection'),
+      'به‌روزرسانی محافظت صفحه انجام نشد.',
+    );
+  });
 }

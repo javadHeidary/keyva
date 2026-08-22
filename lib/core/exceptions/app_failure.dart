@@ -105,3 +105,9 @@ final class BackupRestorePersistenceFailure extends AppFailure {
     super.message = 'Unable to restore vault data',
   });
 }
+
+final class ScreenProtectionFailure extends AppFailure {
+  const ScreenProtectionFailure({
+    super.message = 'Unable to update screen capture protection',
+  });
+}

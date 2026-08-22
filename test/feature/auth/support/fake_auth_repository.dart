@@ -28,6 +28,10 @@ class FakeAuthRepository implements AuthRepository {
   Duration? lastAutoLockTimeout;
   AppFailure? changeMasterPasswordFailure;
   AppFailure? setAutoLockTimeoutFailure;
+  int setPreventScreenshotsCount = 0;
+  bool preventScreenshots = false;
+  bool? lastPreventScreenshots;
+  AppFailure? setPreventScreenshotsFailure;
   bool userRecordDeleted = false;
   bool vaultRecordDeleted = false;
   List<AccountSummary> accounts = const [
@@ -83,7 +87,10 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<Result<SecuritySettings>> currentSecuritySettings() async {
     return Success(
-      SecuritySettings.initial().copyWith(autoLockTimeout: autoLockTimeout),
+      SecuritySettings.initial().copyWith(
+        autoLockTimeout: autoLockTimeout,
+        preventScreenshots: preventScreenshots,
+      ),
     );
   }
 
@@ -96,6 +103,18 @@ class FakeAuthRepository implements AuthRepository {
       return FailureResult(failure);
     }
     autoLockTimeout = timeout;
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void>> setPreventScreenshots(bool enabled) async {
+    setPreventScreenshotsCount++;
+    lastPreventScreenshots = enabled;
+    final failure = setPreventScreenshotsFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    preventScreenshots = enabled;
     return const Success(null);
   }
 

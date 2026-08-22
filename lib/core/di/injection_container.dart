@@ -12,8 +12,12 @@ import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
 import 'package:keyva/core/security/local_auth_biometric_gateway.dart';
+import 'package:keyva/core/security/method_channel_screen_protection_gateway.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/screen_protection_gateway.dart';
+import 'package:keyva/core/security/screen_protection_service.dart';
+import 'package:keyva/core/security/screen_protection_service_impl.dart';
 import 'package:keyva/core/security/secure_storage_service.dart';
 import 'package:keyva/core/security/secure_storage_service_impl.dart';
 import 'package:keyva/core/session/session_service.dart';
@@ -62,6 +66,17 @@ void initDependencies(HiveDatabase database) {
   getIt.registerLazySingleton<BiometricGateway>(
     LocalAuthBiometricGateway.new,
   );
+  getIt.registerLazySingleton<ScreenProtectionGateway>(
+    MethodChannelScreenProtectionGateway.new,
+  );
+  getIt.registerLazySingleton<ScreenProtectionService>(
+    () => ScreenProtectionServiceImpl(
+      gateway: getIt<ScreenProtectionGateway>(),
+      users: getIt<UserDataSource>(),
+      session: getIt<SessionService>(),
+      database: getIt<HiveDatabase>(),
+    ),
+  );
   getIt.registerLazySingleton<PinService>(
     () => PinServiceImpl(
       crypto: getIt<CryptoService>(),
@@ -107,6 +122,7 @@ void initDependencies(HiveDatabase database) {
       vaultSession: getIt<VaultSession>(),
       pin: getIt<PinService>(),
       biometric: getIt<BiometricService>(),
+      screenProtection: getIt<ScreenProtectionService>(),
     ),
   );
   getIt.registerLazySingleton<VaultDataService>(

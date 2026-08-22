@@ -249,6 +249,23 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<void>> setPreventScreenshots(bool enabled) async {
+    final loaded = await _loadCurrentUser();
+    if (loaded is FailureResult<UserRecord>) {
+      return FailureResult(loaded.failure);
+    }
+    final user = (loaded as Success<UserRecord>).data;
+    return _users.update(
+      user.copyWith(
+        updatedAt: DateTime.now(),
+        securitySettings: user.securitySettings.copyWith(
+          preventScreenshots: enabled,
+        ),
+      ),
+    );
+  }
+
+  @override
   Future<Result<UserRecord>> openSession({
     required String userId,
     required Uint8List vaultKey,

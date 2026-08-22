@@ -9,6 +9,7 @@ import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/security/pin_service.dart';
+import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
@@ -30,12 +31,14 @@ class SettingsViewModel extends GetxController {
     BiometricService? biometric,
     SessionService? session,
     AuthRepository? auth,
+    ScreenProtectionService? screenProtection,
   }) : _repository = repository,
        _unlockOverride = unlock,
        _pinOverride = pin,
        _biometricOverride = biometric,
        _sessionOverride = session,
-       _authOverride = auth;
+       _authOverride = auth,
+       _screenProtectionOverride = screenProtection;
 
   final SettingsRepository? _repository;
   final VaultUnlockService? _unlockOverride;
@@ -43,6 +46,7 @@ class SettingsViewModel extends GetxController {
   final BiometricService? _biometricOverride;
   final SessionService? _sessionOverride;
   final AuthRepository? _authOverride;
+  final ScreenProtectionService? _screenProtectionOverride;
 
   SettingsRepository? get repository => _repository;
 
@@ -89,6 +93,16 @@ class SettingsViewModel extends GetxController {
     return null;
   }
 
+  ScreenProtectionService? get _screenProtection {
+    if (_screenProtectionOverride != null) {
+      return _screenProtectionOverride;
+    }
+    if (getIt.isRegistered<ScreenProtectionService>()) {
+      return getIt<ScreenProtectionService>();
+    }
+    return null;
+  }
+
   final profile = const UserProfile(name: UserProfile.defaultName).obs;
   final themePreference = ThemePreference.system.obs;
   final security = const SecuritySettingsUiState().obs;
@@ -118,6 +132,7 @@ class SettingsViewModel extends GetxController {
       if (loaded is Success<SecuritySettings>) {
         security.value = security.value.copyWith(
           autoLockTimeout: loaded.data.autoLockTimeout,
+          preventScreenshot: loaded.data.preventScreenshots,
         );
       }
     }
@@ -288,9 +303,47 @@ class SettingsViewModel extends GetxController {
     AppToast.info(context, title: 'اشتراک‌گذاری در فاز بعد فعال می‌شود');
   }
 
-  void setPreventScreenshot(bool value) {
-    security.value = security.value.copyWith(preventScreenshot: value);
-    // TODO: ScreenshotGuardService via repository
+  Future<void> setPreventScreenshot(bool value, BuildContext context) async {
+    if (isSecurityBusy.value) {
+      return;
+    }
+    final auth = _auth;
+    final protection = _screenProtection;
+    if (auth == null || protection == null) {
+      AppToast.error(
+        context,
+        title: vaultUserMessage(const AuthenticationFailure().message),
+      );
+      return;
+    }
+    final previous = security.value.preventScreenshot;
+    isSecurityBusy.value = true;
+    try {
+      final persisted = await auth.setPreventScreenshots(value);
+      if (persisted is FailureResult<void>) {
+        if (context.mounted) {
+          AppToast.error(
+            context,
+            title: vaultUserMessage(persisted.failure.message),
+          );
+        }
+        return;
+      }
+      final applied = await protection.setEnabled(value);
+      if (applied is FailureResult<void>) {
+        await auth.setPreventScreenshots(previous);
+        if (context.mounted) {
+          AppToast.error(
+            context,
+            title: vaultUserMessage(applied.failure.message),
+          );
+        }
+        return;
+      }
+      security.value = security.value.copyWith(preventScreenshot: value);
+    } finally {
+      isSecurityBusy.value = false;
+    }
   }
 
   Future<void> setAutoLockTimeout(Duration timeout) async {

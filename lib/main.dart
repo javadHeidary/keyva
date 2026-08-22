@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/session/app_lock_controller.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
@@ -15,6 +16,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final database = await HiveDatabase.initialize();
   initDependencies(database);
+  await getIt<ScreenProtectionService>().applyPersisted();
   Get.put(
     AppLockController(
       session: getIt<SessionService>(),

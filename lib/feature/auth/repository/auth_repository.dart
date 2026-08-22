@@ -30,6 +30,8 @@ abstract interface class AuthRepository {
 
   Future<Result<void>> setAutoLockTimeout(Duration timeout);
 
+  Future<Result<void>> setPreventScreenshots(bool enabled);
+
   Future<Result<bool>> hasAnyAccount();
 
   Future<Result<List<AccountSummary>>> getAccounts();
