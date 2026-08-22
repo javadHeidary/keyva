@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -114,7 +115,10 @@ class FakeVaultOperationService implements VaultOperationService {
         for (final item in current.secureNotes)
           if (item.id != id) item,
       ],
-      categories: current.categories,
+      categories: [
+        for (final item in current.categories)
+          if (item.id != id) item,
+      ],
     );
     return const Success(null);
   }
@@ -139,7 +143,10 @@ class FakeVaultOperationService implements VaultOperationService {
         for (final note in current.secureNotes)
           if (item is SecureNoteItem && note.id == item.id) item else note,
       ],
-      categories: current.categories,
+      categories: [
+        for (final category in current.categories)
+          if (item is CategoryItem && category.id == item.id) item else category,
+      ],
     );
   }
 
@@ -167,7 +174,10 @@ class FakeVaultOperationService implements VaultOperationService {
         ...current.secureNotes,
         if (item is SecureNoteItem) item,
       ],
-      categories: current.categories,
+      categories: [
+        ...current.categories,
+        if (item is CategoryItem) item,
+      ],
     );
   }
 }

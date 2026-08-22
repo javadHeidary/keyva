@@ -1,22 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_model.dart';
+import 'package:keyva/feature/category/util/category_vault_mapper.dart';
+import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 enum CategoryFormMode { create, edit }
 
 class CategoryFormViewModel extends GetxController {
-  CategoryFormViewModel({required this.mode, this.categoryId});
+  CategoryFormViewModel({
+    required this.mode,
+    required VaultItemViewModel items,
+    this.categoryId,
+  }) : _items = items;
 
   final CategoryFormMode mode;
   final String? categoryId;
+  final VaultItemViewModel _items;
 
   final nameController = TextEditingController();
   final selectedIconId = CategoryIconPresets.defaultId.obs;
   final formKey = GlobalKey<FormState>();
+  final isSubmitting = false.obs;
+  final submitError = Rxn<String>();
 
-  CategoryCatalogController get _catalog =>
-      Get.find<CategoryCatalogController>();
+  CategoryItem? _original;
 
   String get headerTitle => mode == CategoryFormMode.create
       ? 'ایجاد دسته‌بندی'
@@ -28,13 +39,22 @@ class CategoryFormViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (mode == CategoryFormMode.edit && categoryId != null) {
-      final category = _catalog.findById(categoryId);
-      if (category != null) {
-        nameController.text = category.name;
-        selectedIconId.value = category.iconId;
-      }
+    if (mode != CategoryFormMode.edit || categoryId == null) {
+      return;
     }
+    final found = findVaultItemById(
+      Get.isRegistered<VaultHomeViewModel>()
+          ? Get.find<VaultHomeViewModel>().vault.value
+          : null,
+      categoryId!,
+    );
+    if (found is! CategoryItem) {
+      Get.back();
+      return;
+    }
+    _original = found;
+    nameController.text = found.name;
+    selectedIconId.value = found.icon ?? CategoryIconPresets.defaultId;
   }
 
   String? validateName(String? value) {
@@ -48,19 +68,48 @@ class CategoryFormViewModel extends GetxController {
     selectedIconId.value = iconId;
   }
 
-  void submit() {
-    if (!(formKey.currentState?.validate() ?? false)) return;
+  Future<void> submit() async {
     final name = nameController.text.trim();
-    final iconId = selectedIconId.value;
-
-    if (mode == CategoryFormMode.create) {
-      _catalog.createCategory(name: name, iconId: iconId);
-    } else if (categoryId != null) {
-      _catalog.updateCategory(
-        CategoryModel(id: categoryId!, name: name, iconId: iconId),
-      );
+    if (validateName(name) != null) {
+      formKey.currentState?.validate();
+      return;
     }
-    Get.back();
+    if (formKey.currentState != null && !formKey.currentState!.validate()) {
+      return;
+    }
+
+    final iconId = selectedIconId.value;
+    if (mode == CategoryFormMode.create) {
+      final now = DateTime.now();
+      final item = CategoryItem(
+        id: 'cat_${now.microsecondsSinceEpoch}',
+        name: name,
+        icon: iconId,
+        createdAt: now,
+      );
+      await submitVaultItem(
+        items: _items,
+        isSubmitting: isSubmitting,
+        submitError: submitError,
+        run: () => _items.create(item),
+      );
+      return;
+    }
+
+    final original = _original;
+    if (original == null || categoryId == null) {
+      return;
+    }
+    final updated = categoryItemFromModel(
+      CategoryModel(id: original.id, name: name, iconId: iconId),
+      createdAt: original.createdAt,
+    );
+    await submitVaultItem(
+      items: _items,
+      isSubmitting: isSubmitting,
+      submitError: submitError,
+      run: () => _items.updateItem(updated),
+    );
   }
 
   @override

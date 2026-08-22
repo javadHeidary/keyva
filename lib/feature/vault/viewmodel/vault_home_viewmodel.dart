@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
@@ -34,6 +35,7 @@ class VaultHomeViewModel extends GetxController {
     final data = (result as Success<VaultData>).data;
     vault.value = data;
     _applyVisibleItems(data);
+    _syncCategoryCatalog(data);
   }
 
   Future<void> refreshVault() => loadVault();
@@ -78,6 +80,13 @@ class VaultHomeViewModel extends GetxController {
   void _setError(AppFailure failure) {
     status.value = VaultUiStatus.error;
     errorMessage.value = failure.message;
+  }
+
+  void _syncCategoryCatalog(VaultData data) {
+    if (!Get.isRegistered<CategoryCatalogController>()) {
+      return;
+    }
+    Get.find<CategoryCatalogController>().replaceFromVault(data.categories);
   }
 
   static bool _isEmpty(VaultData data) {

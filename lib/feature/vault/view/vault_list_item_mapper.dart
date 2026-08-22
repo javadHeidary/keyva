@@ -73,6 +73,11 @@ Object? findVaultItemById(VaultData? data, String id) {
       return item;
     }
   }
+  for (final item in data.categories) {
+    if (item.id == id) {
+      return item;
+    }
+  }
   return null;
 }
 

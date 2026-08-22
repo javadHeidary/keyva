@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/category/viewmodel/category_form_viewmodel.dart';
 import 'package:keyva/feature/category/widget/category_form_content.dart';
+import 'package:keyva/feature/vault/view/vault_error_view.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 
@@ -52,10 +53,22 @@ class CategoryFormScaffold extends StatelessWidget {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.lg.s),
-          child: AppButtonWidget(
-            title: controller.submitLabel,
-            onPressed: controller.submit,
-          ),
+          child: Obx(() {
+            final error = controller.submitError.value;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (error != null && error.isNotEmpty)
+                  VaultSubmitErrorText(message: error),
+                AppButtonWidget(
+                  key: const Key('vault-form-submit'),
+                  title: controller.submitLabel,
+                  isLoading: controller.isSubmitting.value,
+                  onPressed: controller.submit,
+                ),
+              ],
+            );
+          }),
         ),
       ),
     );
