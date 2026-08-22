@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iranian_banks/iranian_banks.dart';
 import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
-import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
-import 'package:keyva/feature/type/bank_card/model/bank_card_item_model.dart';
+import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
-import 'package:keyva/shared/widget/app_dialog_widget.dart';
+import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 class BankCardDetailsViewModel extends GetxController {
@@ -17,29 +17,22 @@ class BankCardDetailsViewModel extends GetxController {
 
   final isCvvVisible = false.obs;
 
-  BankCardVaultStore get _store => Get.find<BankCardVaultStore>();
-
-  List<BankCardItem> get storeItems => _store.items;
+  VaultHomeViewModel? get _vaultHome => Get.isRegistered<VaultHomeViewModel>()
+      ? Get.find<VaultHomeViewModel>()
+      : null;
 
   BankCardItem? get item {
-    for (final entry in _store.items) {
-      if (entry.id == cardId) return entry;
-    }
-    return null;
+    final data = _vaultHome?.vault.value;
+    final found = findVaultItemById(data, cardId);
+    return found is BankCardItem ? found : null;
   }
 
   String get headerTitle => item?.title ?? 'جزئیات کارت';
 
-  String get categoryLabel {
-    final card = item;
-    if (card == null) return 'بدون دسته‌بندی';
-    if (!Get.isRegistered<CategoryCatalogController>()) {
-      return 'بدون دسته‌بندی';
-    }
-    return Get.find<CategoryCatalogController>().labelForCategoryId(
-      card.categoryId,
-    );
-  }
+  String get categoryLabel => vaultCategoryLabel(
+    _vaultHome?.vault.value,
+    item?.categoryId,
+  );
 
   String get createdAtLabel {
     final card = item;
@@ -62,7 +55,7 @@ class BankCardDetailsViewModel extends GetxController {
   String get displayBankTitle {
     final info = bankInfo;
     if (info != null) return info.title;
-    return item?.bankTitle ?? '';
+    return item?.bankName ?? '';
   }
 
   @override
@@ -89,25 +82,18 @@ class BankCardDetailsViewModel extends GetxController {
   }
 
   void navigateToEdit() {
-    Get.toNamed(AppRoutes.bankCardEdit, arguments: cardId)?.then((result) {
-      if (result == true) {
-        update();
-      }
-    });
+    Get.toNamed(AppRoutes.bankCardEdit, arguments: cardId);
   }
 
   void confirmDelete(BuildContext context) {
-    AppDialogWidget.show(
+    final card = item;
+    if (card == null || !Get.isRegistered<HomeController>()) return;
+    final listItem = mapVaultListItem(card);
+    if (listItem == null) return;
+    Get.find<HomeController>().confirmDelete(
       context,
-      type: AppDialogType.warning,
-      title: 'انتقال به سطل زباله',
-      description:
-          'این کارت به سطل زباله منتقل می‌شود و می‌توانید بعداً آن را بازگردانی کنید.',
-      buttonText: 'انتقال به سطل زباله',
-      onConfirm: () {
-        _store.moveToTrash(cardId);
-        Get.back();
-      },
+      listItem,
+      onDeleted: Get.back,
     );
   }
 }

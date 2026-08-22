@@ -31,12 +31,14 @@ class AppEmptyWidget extends StatelessWidget {
   final AppEmptyLayout layout;
   final Widget? illustration;
 
-  factory AppEmptyWidget.vault({Key? key}) {
+  factory AppEmptyWidget.vault({Key? key, VoidCallback? onAction}) {
     return AppEmptyWidget(
       key: key,
       icon: AppIcon.lock,
       title: 'هنوز چیزی اضافه نکرده‌اید',
       description: 'اولین اطلاعات خود را به کیوا اضافه کنید.',
+      actionLabel: onAction == null ? null : 'افزودن آیتم',
+      onAction: onAction,
       layout: AppEmptyLayout.card,
     );
   }

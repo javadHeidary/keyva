@@ -92,12 +92,15 @@ class _DateSection extends StatelessWidget {
         SizedBox(height: 2.s),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              value,
-              style: AppTypography.titleSmall.copyWith(
-                color: colors.textPrimary,
+            Flexible(
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.titleSmall.copyWith(
+                  color: colors.textPrimary,
+                ),
               ),
             ),
             if (onCopy != null) ...[

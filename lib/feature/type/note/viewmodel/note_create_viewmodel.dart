@@ -1,6 +1,8 @@
+import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_form_viewmodel.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class NoteCreateViewModel extends NoteFormViewModel {
@@ -39,6 +41,10 @@ class NoteCreateViewModel extends NoteFormViewModel {
       isSubmitting: isSubmitting,
       submitError: submitError,
       run: () => _items.create(item),
+      onSuccess: () => openCreatedVaultItem(
+        type: VaultItemType.secureNote,
+        id: item.id,
+      ),
     );
   }
 

@@ -1,6 +1,8 @@
+import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_form_viewmodel.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/view/vault_form_submit.dart';
+import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class LoginCreateViewModel extends LoginFormViewModel {
@@ -45,6 +47,10 @@ class LoginCreateViewModel extends LoginFormViewModel {
       isSubmitting: isSubmitting,
       submitError: submitError,
       run: () => _items.create(item),
+      onSuccess: () => openCreatedVaultItem(
+        type: VaultItemType.login,
+        id: item.id,
+      ),
     );
   }
 

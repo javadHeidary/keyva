@@ -24,10 +24,10 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
     final colors = context.colors;
 
     return Scaffold(
+      key: const Key('vault-bank-card-details'),
       backgroundColor: colors.pageBackground,
       body: SafeArea(
         child: Obx(() {
-          controller.storeItems;
           controller.isCvvVisible.value;
           final card = controller.item;
           if (card == null) {
@@ -69,7 +69,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         bankName: controller.displayBankTitle,
                         cardType: 'کارت بانکی',
                         cardNumber: card.cardNumber,
-                        expiryDate: card.expiry,
+                        expiryDate: card.expiryDate,
                         cvv: cvvOnCard,
                         backgroundColor: bankInfo?.primaryColor,
                         textColor: bankInfo?.onPrimaryColor,
@@ -104,6 +104,22 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                       ),
                       SizedBox(height: _cardGap.h),
                       LoginDetailCredentialCard(
+                        icon: AppIcon.accountCircle,
+                        label: 'نام دارنده',
+                        value: card.cardHolder,
+                        trailing: LoginDetailActionIcon(
+                          icon: AppIcon.copy,
+                          tooltip: 'کپی',
+                          onTap: () => controller.copyValue(
+                            context,
+                            card.cardHolder,
+                            'کپی',
+                            'نام دارنده کپی شد',
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: _cardGap.h),
+                      LoginDetailCredentialCard(
                         icon: AppIcon.hash,
                         label: 'شماره کارت',
                         value: controller.formattedCardNumber,
@@ -127,7 +143,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                             leftLabel: 'بانک',
                             leftValue: controller.displayBankTitle,
                             rightLabel: 'تاریخ انقضا',
-                            rightValue: card.expiry,
+                            rightValue: card.expiryDate,
                             icon: bankInfo != null
                                 ? bankInfo.logoBuilder(
                                     width: 18.s,
@@ -147,7 +163,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                             ),
                             onRightCopy: () => controller.copyValue(
                               context,
-                              card.expiry,
+                              card.expiryDate,
                               'کپی',
 
                               'تاریخ انقضا کپی شد',
@@ -228,6 +244,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                     children: [
                       Expanded(
                         child: AppButtonWidget(
+                          key: const Key('vault-item-edit'),
                           title: 'ویرایش',
                           icon: Icon(AppIcon.edit, size: AppSizes.iconMd.s),
                           onPressed: controller.navigateToEdit,

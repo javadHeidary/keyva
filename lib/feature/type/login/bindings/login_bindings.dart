@@ -5,6 +5,7 @@ import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_create_viewmodel.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_edit_viewmodel.dart';
+import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class LoginBindings extends Bindings {
@@ -42,7 +43,7 @@ class LoginEditBindings extends Bindings {
   void dependencies() {
     LoginBindings._ensureStore();
     final items = LoginBindings._itemViewModel();
-    final loginId = Get.arguments as String? ?? '';
+    final loginId = vaultRouteItemId();
     Get.lazyPut(() => LoginEditViewModel(loginId: loginId, items: items));
   }
 }
@@ -51,7 +52,7 @@ class LoginDetailsBindings extends Bindings {
   @override
   void dependencies() {
     LoginBindings._ensureStore();
-    final loginId = Get.arguments as String? ?? '';
+    final loginId = vaultRouteItemId();
     Get.lazyPut(() => LoginDetailsViewModel(loginId: loginId));
   }
 }

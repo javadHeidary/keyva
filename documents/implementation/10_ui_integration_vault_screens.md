@@ -18,8 +18,20 @@ Related code:
 - [`lib/feature/type/note/viewmodel/note_create_viewmodel.dart`](../../lib/feature/type/note/viewmodel/note_create_viewmodel.dart)
 - [`lib/feature/type/note/viewmodel/note_edit_viewmodel.dart`](../../lib/feature/type/note/viewmodel/note_edit_viewmodel.dart)
 - [`lib/feature/search/viewmodel/search_viewmodel.dart`](../../lib/feature/search/viewmodel/search_viewmodel.dart)
+- [`lib/feature/vault/view/vault_item_navigation.dart`](../../lib/feature/vault/view/vault_item_navigation.dart)
+- [`lib/feature/type/login/viewmodel/login_details_viewmodel.dart`](../../lib/feature/type/login/viewmodel/login_details_viewmodel.dart)
+- [`lib/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart`](../../lib/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart)
+- [`lib/feature/type/note/viewmodel/note_details_viewmodel.dart`](../../lib/feature/type/note/viewmodel/note_details_viewmodel.dart)
+- [`lib/feature/vault/view/vault_item_navigation.dart`](../../lib/feature/vault/view/vault_item_navigation.dart)
+- [`lib/feature/type/login/viewmodel/login_details_viewmodel.dart`](../../lib/feature/type/login/viewmodel/login_details_viewmodel.dart)
+- [`lib/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart`](../../lib/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart)
+- [`lib/feature/type/note/viewmodel/note_details_viewmodel.dart`](../../lib/feature/type/note/viewmodel/note_details_viewmodel.dart)
 - [`test/feature/vault/vault_home_view_test.dart`](../../test/feature/vault/vault_home_view_test.dart)
 - [`test/feature/vault/vault_item_form_view_test.dart`](../../test/feature/vault/vault_item_form_view_test.dart)
+- [`test/feature/vault/vault_item_details_view_test.dart`](../../test/feature/vault/vault_item_details_view_test.dart)
+- [`test/feature/vault/vault_item_details_navigation_test.dart`](../../test/feature/vault/vault_item_details_navigation_test.dart)
+- [`test/feature/vault/vault_item_details_view_test.dart`](../../test/feature/vault/vault_item_details_view_test.dart)
+- [`test/feature/vault/vault_item_details_navigation_test.dart`](../../test/feature/vault/vault_item_details_navigation_test.dart)
 
 It reuses Task 09 (`VaultHomeViewModel`, `VaultItemViewModel`) and Task 05 models (`LoginItem`, `BankCardItem`, `SecureNoteItem`). It does **not** change operations, mutation, serializer, crypto, Hive, unlock, or ViewModel public APIs.
 
@@ -88,21 +100,29 @@ Get.lazyPut(() => getIt<VaultItemViewModel>())   ← per create/edit route
 |---|---|
 | Home (`HomeView`) | Vault list, load/empty/error/retry, pull-to-refresh, FAB create-by-type |
 | Search (`AppSearchWidget`) | Delegates query to `VaultHomeViewModel.searchItems` |
+| Type list (`TypeListItemView`) | Items of one `VaultItemType`; back returns to Home |
+| Login / Bank card / Secure note details | Read-only Task 05 fields from the loaded vault snapshot |
 | Login create / edit | Task 05 `LoginItem` via `VaultItemViewModel` |
 | Bank card create / edit | Task 05 `BankCardItem` via `VaultItemViewModel` (includes `cardHolder`) |
 | Secure note create / edit | Task 05 `SecureNoteItem` via `VaultItemViewModel` |
 
-Minimum navigation:
+Navigation:
 
 ```text
-Vault Home
-   ├── FAB / empty CTA → Login | Bank Card | Note create
-   └── Item tap → matching edit route
+Vault Home / Search / Type list
+   ├── Item tap → matching details route (id argument)
+   │      └── «ویرایش» → matching edit route
+   └── FAB / empty CTA → create
+          └── success → type list + details (create removed from the stack)
 ```
 
-Details routes remain in the router for later work. Home item tap goes to **edit**, not details. The prototype trash section was removed from Home because vault delete is a real `deleteItem`, not move-to-trash.
+Detail screens are Login, Bank Card, and Secure Note. They read `VaultHomeViewModel.vault` through `findVaultItemById`. They do not talk to Hive, `VaultRepository`, `VaultDataService`, or `CryptoService`.
 
-Password strength stays on the Login form only (`PasswordStrengthBarWidget`).
+The More menu stays copy + delete. Edit is not a More action. Primary path is always Tap → Detail → Edit.
+
+Password and CVV are masked by default on details (`•` + eye toggle). List subtitles never include password, PAN, or CVV.
+
+Password strength stays on the Login form and Login details (`PasswordStrengthBarWidget` on the form; strength label on details).
 
 ---
 
@@ -123,7 +143,7 @@ Form screens:
 |---|---|
 | Field validation | Existing Persian `Form` validators |
 | `submitting` | `AppButtonWidget.isLoading` (duplicate taps ignored) |
-| `success` | Refresh Home vault, `Get.back` |
+| `success` | Refresh Home vault; create opens Detail above Type list; edit `Get.back` to Detail |
 | `error` | `VaultSubmitErrorText` from mapped `AppFailure.message` |
 
 Users do not see `HiveException`, `CryptoException`, or repository types. Known `AppFailure` strings are mapped to Persian in [`vault_user_message.dart`](../../lib/feature/vault/view/vault_user_message.dart). Strings that look like exceptions fall back to a generic Persian error.
@@ -138,21 +158,37 @@ Users do not see `HiveException`, `CryptoException`, or repository types. Known 
 
 ### Search
 
-Home search chip opens `AppSearchWidget`. `SearchViewModel` calls `searchItems(query)` and displays the mapped `visibleItems`. Empty/whitespace query restores the in-memory full list. Closing search resets the query. Persist count is not increased (Task 09 already guarantees that).
+Home search chip opens `AppSearchWidget`. `SearchViewModel` calls `searchItems(query)` and displays the mapped `visibleItems`. An `ever` worker on `visibleItems` re-applies results without clearing the query, so returning from Detail/Edit does not show stale titles. Empty/whitespace query restores the in-memory full list. Closing search resets the query. Persist count is not increased (Task 09 already guarantees that).
 
 ### Create
 
-FAB or empty CTA → type create route → field controllers → Task 05 model (UI generates `id` / timestamps) → `VaultItemViewModel.create` → pop + `refreshVault()`.
+FAB or empty CTA → type create route → field controllers → Task 05 model (UI generates `id` / timestamps) → `VaultItemViewModel.create` → `refreshVault()` → `openCreatedVaultItem`.
+
+That helper pops Create (and any extra type list under it) until `/shell` or `/home`, then pushes Type list for that kind and Detail for the new id:
+
+```text
+/shell
+  → /type-list (VaultItemType)
+    → /login/details | /bank-card/details | /note/details
+```
+
+Back from Detail → type list. Type-list header back → Home. Create is not left on the stack.
 
 Login maps the first website string to `LoginItem.website`. Note maps body → `content`. Bank card maps `bankTitle` → `bankName`, `expiry` → `expiryDate`.
 
+### Detail
+
+List tap → details route with item id. The screen hydrates from the already-loaded `VaultHomeViewModel.vault` snapshot (`findVaultItemById`). Missing item → `Get.back`. Category names come from `VaultData.categories`.
+
+Sensitive fields: login password and bank-card CVV are hidden by default with an eye toggle. Secure note details show title + content only.
+
 ### Edit
 
-Home tap → edit route with item id. The form hydrates from the already-loaded `VaultHomeViewModel.vault` snapshot (`findVaultItemById`). It does not call `getItemById` from the widget. Missing item → `Get.back`. Submit uses `updateItem` and preserves `id` / `createdAt`.
+Detail «ویرایش» → existing edit route with the same item id (not `offNamed`). The form hydrates from the already-loaded `VaultHomeViewModel.vault` snapshot (`findVaultItemById`). It does not call `getItemById` from the widget. Missing item → `Get.back`. Submit uses `updateItem` and preserves `id` / `createdAt`. Back from Edit returns to Detail.
 
 ### Delete
 
-More menu → `حذف` → `AppDialogWidget` confirm → `VaultHomeViewModel.deleteItem(id)`. Copy actions in the same menu read the Task 05 object already in memory, not mock stores.
+More menu → `حذف` → `AppDialogWidget` confirm → `VaultHomeViewModel.deleteItem(id)`. Copy actions in the same menu read the Task 05 object already in memory, not mock stores. Detail footer delete uses the same confirm path and then pops Detail.
 
 ### Retry
 
@@ -178,7 +214,9 @@ Widget tests use fakes, not Hive. They pump `GetMaterialApp` + `AppTheme` + `App
 | File | Scenarios |
 |---|---|
 | [`vault_home_view_test.dart`](../../test/feature/vault/vault_home_view_test.dart) | loading, loaded items (categories omitted; secrets not in subtitles), empty, error + retry, search filters then restores, search screen delegates to ViewModel, confirmed delete calls `deleteItem` |
-| [`vault_item_form_view_test.dart`](../../test/feature/vault/vault_item_form_view_test.dart) | Login fields, validation errors, submitting, successful `addItem`, failure banner, edit hydrates from loaded vault |
+| [`vault_item_form_view_test.dart`](../../test/feature/vault/vault_item_form_view_test.dart) | Login fields, validation errors, submitting, successful `addItem` then Detail (Create gone), failure banner, edit hydrates from loaded vault |
+| [`vault_item_details_view_test.dart`](../../test/feature/vault/vault_item_details_view_test.dart) | Login / Bank Card / Secure Note details show Task 05 fields; password and CVV hidden by default; Detail refreshes after vault update |
+| [`vault_item_details_navigation_test.dart`](../../test/feature/vault/vault_item_details_navigation_test.dart) | Home/Search tap → Detail; «ویرایش» → Edit; back Edit → Detail → list; More is copy/delete not Edit; create → Detail → type list → Home; search results are not stale |
 
 GetX is process-global, so [`dart_test.yaml`](../../dart_test.yaml) sets `concurrency: 1` for stable widget tests.
 
@@ -193,7 +231,14 @@ GetX is process-global, so [`dart_test.yaml`](../../dart_test.yaml) sets `concur
 | `lib/feature/vault/view/vault_form_submit.dart` | created — create/update submit helper |
 | `lib/feature/vault/view/vault_error_view.dart` | created — Home error/retry + form error text |
 | `lib/feature/home/view/home_view.dart` | status rendering, refresh, hide trash, directional padding |
-| `lib/feature/home/viewmodel/home_viewmodel.dart` | real vault list, edit navigation, confirmed delete |
+| `lib/feature/home/viewmodel/home_viewmodel.dart` | vault list, item tap → details, confirmed delete |
+| `lib/feature/home/view/type_list_item_view.dart` | capture type at construction so later Detail args cannot overwrite it |
+| `lib/feature/vault/view/vault_item_navigation.dart` | details route helper + post-create stack (type list + details) |
+| `lib/feature/vault/view/vault_form_submit.dart` | optional `onSuccess` so create can open Detail instead of `Get.back` |
+| `lib/feature/search/viewmodel/search_viewmodel.dart` | searchItems + `ever(visibleItems)` so results are not stale |
+| Login / Bank Card / Note details ViewModels + views | Task 05 snapshot via `findVaultItemById`; masked secrets; «ویرایش» reuses edit |
+| `test/feature/vault/vault_item_details_view_test.dart` | created |
+| `test/feature/vault/vault_item_details_navigation_test.dart` | created |
 | `lib/feature/home/bindings/home_bindings.dart` | register `VaultHomeViewModel` factory |
 | `lib/feature/home/util/vault_more_actions.dart` | copy/delete from Task 05 models |
 | `lib/feature/search/viewmodel/search_viewmodel.dart` | delegate to `searchItems` |
@@ -213,14 +258,14 @@ Task 05–09 models and services, serializer, crypto, Hive adapters, and authent
 
 ### Security limitations
 
-- Home list and search results still hold plaintext Task 05 objects in `VaultHomeViewModel` (same as Task 09). Subtitles avoid password, PAN, and CVV; the more menu can still copy those values after an explicit tap.
+- Home list, search results, and details still hold plaintext Task 05 objects in `VaultHomeViewModel` (same as Task 09). Subtitles avoid password, PAN, and CVV. Details mask password and CVV by default. The more menu can still copy those values after an explicit tap.
 - Form controllers hold plaintext while the screen is open. They are disposed in `onClose`.
 
 ### Explicit non-goals
 
 This task does **not** provide:
 
-- Settings, onboarding, authentication, backup/restore, or details-screen persistence wiring
+- Settings, onboarding, authentication, or backup/restore changes
 - Category cascade / trash / favorites
 - A UseCase / Domain / DTO layer
 - A second state-management framework

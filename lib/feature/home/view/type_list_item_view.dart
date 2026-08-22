@@ -16,9 +16,12 @@ import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
 
 class TypeListItemView extends GetView<HomeController> {
-  const TypeListItemView({super.key});
+  TypeListItemView({super.key, VaultItemType? type})
+    : vaultType = type ?? _typeFromArguments();
 
-  VaultItemType get _vaultType {
+  final VaultItemType vaultType;
+
+  static VaultItemType _typeFromArguments() {
     final args = Get.arguments;
     if (args is VaultItemType) return args;
     return VaultItemType.login;
@@ -27,8 +30,8 @@ class TypeListItemView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final vaultType = _vaultType;
     return Scaffold(
+      key: const Key('vault-type-list'),
       backgroundColor: colors.pageBackground,
 
       floatingActionButton: AppFabWidget(
@@ -105,27 +108,30 @@ class _TypeListVaultItemTile extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return AppListItemWidget(
-      title: item.title,
-      subtitle: item.subtitle,
-      trailingIcon: _TypeListCircleIcon(
-        icon: Icon(
-          item.type.icon,
-          size: AppSizes.iconMd.s,
-          color: colors.textSecondary,
+    return KeyedSubtree(
+      key: Key('vault-item-${item.id}'),
+      child: AppListItemWidget(
+        title: item.title,
+        subtitle: item.subtitle,
+        trailingIcon: _TypeListCircleIcon(
+          icon: Icon(
+            item.type.icon,
+            size: AppSizes.iconMd.s,
+            color: colors.textSecondary,
+          ),
         ),
-      ),
-      leadingIcon: AppMoreWidget(
-        dialogTitle: item.title,
-        actions: vaultMoreActionsForItem(
-          item,
-          source: controller.sourceFor(item.id),
-          onDelete: controller.isVaultSubmitting
-              ? null
-              : () => controller.confirmDelete(context, item),
+        leadingIcon: AppMoreWidget(
+          dialogTitle: item.title,
+          actions: vaultMoreActionsForItem(
+            item,
+            source: controller.sourceFor(item.id),
+            onDelete: controller.isVaultSubmitting
+                ? null
+                : () => controller.confirmDelete(context, item),
+          ),
         ),
+        onTap: () => controller.onItemTap(item),
       ),
-      onTap: () => controller.onItemTap(item),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
@@ -73,4 +74,19 @@ Object? findVaultItemById(VaultData? data, String id) {
     }
   }
   return null;
+}
+
+String vaultCategoryLabel(VaultData? data, String? categoryId) {
+  if (categoryId == null || categoryId.isEmpty) {
+    return CategoryConstants.withoutCategoryLabel;
+  }
+  if (data == null) {
+    return CategoryConstants.withoutCategoryLabel;
+  }
+  for (final category in data.categories) {
+    if (category.id == categoryId) {
+      return category.name;
+    }
+  }
+  return CategoryConstants.withoutCategoryLabel;
 }

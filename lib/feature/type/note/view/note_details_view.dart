@@ -16,7 +16,6 @@ import 'package:keyva/shared/widget/login_section_card_widget.dart';
 class NoteDetailsView extends GetView<NoteDetailsViewModel> {
   const NoteDetailsView({super.key});
 
-  static const _cardGap = AppSpacing.md;
   static const _notesMaxHeight = 280;
 
   @override
@@ -24,10 +23,10 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
     final colors = context.colors;
 
     return Scaffold(
+      key: const Key('vault-note-details'),
       backgroundColor: colors.pageBackground,
       body: SafeArea(
         child: Obx(() {
-          controller.storeItems;
           final note = controller.item;
           if (note == null) {
             return const SizedBox.shrink();
@@ -73,9 +72,8 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                             tooltip: 'کپی',
                             onTap: () => controller.copyValue(
                               context,
-                              note.body,
+                              note.content,
                               'کپی',
-
                               'متن یادداشت کپی شد',
                             ),
                           ),
@@ -91,43 +89,13 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                             ),
                             child: SingleChildScrollView(
                               child: NoteBodyTextWidget(
-                                text: note.body,
+                                text: note.content,
                                 onLinkTap: (type, value) => controller
                                     .openNoteLink(context, type, value),
                               ),
                             ),
                           ),
                         ],
-                      ),
-                      SizedBox(height: AppSpacing.sectionGap.h),
-                      LoginDetailCredentialCard(
-                        icon: AppIcon.folder,
-                        label: 'دسته‌بندی',
-                        value: controller.categoryLabel,
-                      ),
-                      SizedBox(height: _cardGap.h),
-                      LoginDetailCredentialCard(
-                        icon: AppIcon.heading,
-                        label: 'عنوان',
-                        value: note.title,
-                        trailing: LoginDetailActionIcon(
-                          icon: AppIcon.copy,
-                          tooltip: 'کپی',
-                          onTap: () => controller.copyValue(
-                            context,
-                            note.title,
-                            'کپی',
-
-                            'عنوان کپی شد',
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: _cardGap.h),
-                      LoginDetailCredentialCard(
-                        icon: AppIcon.calendar,
-                        label: 'تاریخ ایجاد',
-                        value: controller.createdAtLabel,
-                        useFaNumValue: true,
                       ),
                     ],
                   ),
@@ -145,6 +113,7 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                     children: [
                       Expanded(
                         child: AppButtonWidget(
+                          key: const Key('vault-item-edit'),
                           title: 'ویرایش',
                           icon: Icon(AppIcon.edit, size: AppSizes.iconMd.s),
                           onPressed: controller.navigateToEdit,

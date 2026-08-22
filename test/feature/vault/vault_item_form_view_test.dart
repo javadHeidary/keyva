@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/type/login/view/login_create_view.dart';
 import 'package:keyva/feature/type/login/view/login_edit_view.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_create_viewmodel.dart';
@@ -51,8 +52,47 @@ void main() {
 
   Future<void> pumpCreate(WidgetTester tester) async {
     setupVaultWidgetSurface(tester);
+    operations.vault ??= VaultData(
+      version: VaultData.currentVersion,
+      logins: const [],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+    if (!Get.isRegistered<VaultHomeViewModel>()) {
+      Get.put(VaultHomeViewModel(operations: operations));
+    }
     Get.put(LoginCreateViewModel(items: items));
-    await tester.pumpWidget(vaultTestApp(home: const LoginCreateView()));
+    await tester.pumpWidget(
+      vaultTestApp(
+        home: const LoginCreateView(),
+        initialRoute: AppRoutes.loginCreate,
+        getPages: [
+          GetPage(
+            name: AppRoutes.home,
+            page: () => const Scaffold(key: Key('home-root')),
+          ),
+          GetPage(
+            name: AppRoutes.loginCreate,
+            page: () => const LoginCreateView(),
+          ),
+          GetPage(
+            name: AppRoutes.typeList,
+            page: () => const Scaffold(
+              key: Key('type-list-test'),
+              body: Text('ورودها'),
+            ),
+          ),
+          GetPage(
+            name: AppRoutes.loginDetails,
+            page: () => const Scaffold(
+              key: Key('login-details-test'),
+              body: Text('جزئیات ورود'),
+            ),
+          ),
+        ],
+      ),
+    );
     await pumpVaultFrame(tester);
   }
 
@@ -92,6 +132,13 @@ void main() {
 
   testWidgets('submitting state renders', (tester) async {
     operations.addGate = Completer<void>();
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: const [],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
     await pumpCreate(tester);
 
     await fillRequiredLoginFields(tester);
@@ -112,13 +159,6 @@ void main() {
   });
 
   testWidgets('successful submission completes correctly', (tester) async {
-    operations.vault = VaultData(
-      version: VaultData.currentVersion,
-      logins: const [],
-      bankCards: const [],
-      secureNotes: const [],
-      categories: const [],
-    );
     await pumpCreate(tester);
 
     await fillRequiredLoginFields(tester);
@@ -130,6 +170,8 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('vault-form-submit')));
     await pumpVaultFrame(tester);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
     expect(operations.addCount, 1);
     expect(items.status.value, VaultUiStatus.success);
@@ -138,6 +180,8 @@ void main() {
     expect(added.title, 'Work Mail');
     expect(added.username, 'user@test.com');
     expect(added.password, 'secret-pass');
+    expect(find.byKey(const Key('login-details-test')), findsOneWidget);
+    expect(find.text('ایجاد ورود'), findsNothing);
   });
 
   testWidgets('failure state renders correctly', (tester) async {

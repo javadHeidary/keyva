@@ -175,7 +175,7 @@ class AppRoutes {
     ),
     GetPage(
       name: typeList,
-      page: () => const TypeListItemView(),
+      page: () => TypeListItemView(),
       binding: HomeBindings(),
       middlewares: _sessionGuard,
       transition: _pageTransition,

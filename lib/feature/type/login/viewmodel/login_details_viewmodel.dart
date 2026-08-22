@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
-import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
-import 'package:keyva/feature/type/login/data/login_vault_store.dart';
-import 'package:keyva/feature/type/login/model/login_item_model.dart';
+import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/login/util/login_password_util.dart';
-import 'package:keyva/shared/widget/app_dialog_widget.dart';
+import 'package:keyva/feature/vault/model/login_item.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
+import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,34 +17,27 @@ class LoginDetailsViewModel extends GetxController {
 
   final isPasswordVisible = false.obs;
 
-  LoginVaultStore get _store => Get.find<LoginVaultStore>();
-
-  List<LoginItem> get storeItems => _store.items;
+  VaultHomeViewModel? get _vaultHome => Get.isRegistered<VaultHomeViewModel>()
+      ? Get.find<VaultHomeViewModel>()
+      : null;
 
   LoginItem? get item {
-    for (final entry in _store.items) {
-      if (entry.id == loginId) return entry;
-    }
-    return null;
+    final data = _vaultHome?.vault.value;
+    final found = findVaultItemById(data, loginId);
+    return found is LoginItem ? found : null;
   }
 
   String get headerTitle => item?.title ?? 'جزئیات ورود';
 
-  String get categoryLabel {
-    final login = item;
-    if (login == null) return 'بدون دسته‌بندی';
-    if (!Get.isRegistered<CategoryCatalogController>()) {
-      return 'بدون دسته‌بندی';
-    }
-    return Get.find<CategoryCatalogController>().labelForCategoryId(
-      login.categoryId,
-    );
-  }
+  String get categoryLabel => vaultCategoryLabel(
+    _vaultHome?.vault.value,
+    item?.categoryId,
+  );
 
-  String get createdAtLabel {
+  String get updatedAtLabel {
     final login = item;
     if (login == null) return '';
-    return formatLoginDetailsDate(login.createdAt);
+    return formatLoginDetailsDate(login.updatedAt);
   }
 
   double get passwordStrength {
@@ -55,8 +48,6 @@ class LoginDetailsViewModel extends GetxController {
 
   String get passwordStrengthLabel =>
       loginPasswordStrengthLabel(passwordStrength);
-
-  String? get websiteHost => websiteHostForFavicon(item?.primaryWebsite);
 
   @override
   void onInit() {
@@ -92,25 +83,18 @@ class LoginDetailsViewModel extends GetxController {
   }
 
   void navigateToEdit() {
-    Get.toNamed(AppRoutes.loginEdit, arguments: loginId)?.then((result) {
-      if (result == true) {
-        update();
-      }
-    });
+    Get.toNamed(AppRoutes.loginEdit, arguments: loginId);
   }
 
   void confirmDelete(BuildContext context) {
-    AppDialogWidget.show(
+    final login = item;
+    if (login == null || !Get.isRegistered<HomeController>()) return;
+    final listItem = mapVaultListItem(login);
+    if (listItem == null) return;
+    Get.find<HomeController>().confirmDelete(
       context,
-      type: AppDialogType.warning,
-      title: 'انتقال به سطل زباله',
-      description:
-          'این ورود به سطل زباله منتقل می‌شود و می‌توانید بعداً آن را بازگردانی کنید.',
-      buttonText: 'انتقال به سطل زباله',
-      onConfirm: () {
-        _store.moveToTrash(loginId);
-        Get.back();
-      },
+      listItem,
+      onDeleted: Get.back,
     );
   }
 }

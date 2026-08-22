@@ -10,6 +10,7 @@ import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
@@ -196,24 +197,18 @@ class HomeController extends GetxController {
   void onTypeMoreActions(VaultItemType type) {}
 
   void onItemTap(VaultListItem item) {
-    switch (item.type) {
-      case VaultItemType.login:
-        Get.toNamed(AppRoutes.loginEdit, arguments: item.id);
-        break;
-      case VaultItemType.bankCard:
-        Get.toNamed(AppRoutes.bankCardEdit, arguments: item.id);
-        break;
-      case VaultItemType.secureNote:
-        Get.toNamed(AppRoutes.noteEdit, arguments: item.id);
-        break;
-    }
+    openVaultItemDetails(item.type, item.id);
   }
 
   void onItemMoreAction(VaultListItem item, String action) {}
 
   void onTrashTap() {}
 
-  void confirmDelete(BuildContext context, VaultListItem item) {
+  void confirmDelete(
+    BuildContext context,
+    VaultListItem item, {
+    VoidCallback? onDeleted,
+  }) {
     if (isVaultSubmitting) {
       return;
     }
@@ -229,6 +224,7 @@ class HomeController extends GetxController {
           return;
         }
         vault.deleteItem(item.id);
+        onDeleted?.call();
       },
     );
   }

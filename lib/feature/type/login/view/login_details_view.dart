@@ -26,10 +26,10 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
     final colors = context.colors;
 
     return Scaffold(
+      key: const Key('vault-login-details'),
       backgroundColor: colors.pageBackground,
       body: SafeArea(
         child: Obx(() {
-          controller.storeItems;
           controller.isPasswordVisible.value;
           final login = controller.item;
           if (login == null) {
@@ -116,17 +116,16 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                           ],
                         ),
                       ),
-                      for (var i = 0; i < login.websites.length; i++) ...[
+                      if (login.website != null &&
+                          login.website!.isNotEmpty) ...[
                         SizedBox(height: _cardGap.h),
                         LoginDetailCredentialCard(
-                          label: login.websites.length > 1
-                              ? 'وب‌سایت ${i + 1}'
-                              : 'وب‌سایت',
+                          label: 'وب‌سایت',
                           value:
-                              websiteHostForFavicon(login.websites[i]) ??
-                              login.websites[i],
+                              websiteHostForFavicon(login.website) ??
+                              login.website!,
                           leading: LoginFaviconWidget(
-                            website: login.websites[i],
+                            website: login.website!,
                             size: 44.s,
                           ),
                           trailing: Row(
@@ -137,7 +136,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                                 tooltip: 'کپی',
                                 onTap: () => controller.copyValue(
                                   context,
-                                  login.websites[i],
+                                  login.website!,
                                   'آدرس وب‌سایت کپی شد',
                                 ),
                               ),
@@ -146,7 +145,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                                 tooltip: 'باز کردن',
                                 onTap: () => controller.openWebsite(
                                   context,
-                                  login.websites[i],
+                                  login.website!,
                                 ),
                               ),
                             ],
@@ -211,7 +210,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                                     ),
                                     SizedBox(height: AppSpacing.xxs.s),
                                     Text(
-                                      controller.createdAtLabel,
+                                      controller.updatedAtLabel,
                                       style: AppTypography.withFaNum(
                                         AppTypography.titleMedium.copyWith(
                                           color: colors.textPrimary,
@@ -262,6 +261,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                     children: [
                       Expanded(
                         child: AppButtonWidget(
+                          key: const Key('vault-item-edit'),
                           title: 'ویرایش',
                           icon: Icon(AppIcon.edit, size: AppSizes.iconMd.s),
                           onPressed: controller.navigateToEdit,

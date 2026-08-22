@@ -8,6 +8,8 @@ Widget vaultTestApp({required Widget home, String? initialRoute, List<GetPage>? 
   return GetMaterialApp(
     theme: AppTheme.light,
     darkTheme: AppTheme.dark,
+    defaultTransition: Transition.noTransition,
+    transitionDuration: Duration.zero,
     home: getPages == null ? home : null,
     initialRoute: initialRoute,
     getPages: getPages,

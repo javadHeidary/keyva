@@ -80,6 +80,7 @@ class FakeVaultOperationService implements VaultOperationService {
     if (failure != null) {
       return FailureResult(failure);
     }
+    _replace(item);
     return const Success(null);
   }
 
@@ -116,6 +117,30 @@ class FakeVaultOperationService implements VaultOperationService {
       categories: current.categories,
     );
     return const Success(null);
+  }
+
+  void _replace(Object item) {
+    final current = vault;
+    if (current == null) {
+      _insert(item);
+      return;
+    }
+    vault = VaultData(
+      version: current.version,
+      logins: [
+        for (final login in current.logins)
+          if (item is LoginItem && login.id == item.id) item else login,
+      ],
+      bankCards: [
+        for (final card in current.bankCards)
+          if (item is BankCardItem && card.id == item.id) item else card,
+      ],
+      secureNotes: [
+        for (final note in current.secureNotes)
+          if (item is SecureNoteItem && note.id == item.id) item else note,
+      ],
+      categories: current.categories,
+    );
   }
 
   void _insert(Object item) {

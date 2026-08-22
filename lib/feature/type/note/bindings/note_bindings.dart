@@ -5,6 +5,7 @@ import 'package:keyva/feature/type/note/data/note_vault_store.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_create_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_edit_viewmodel.dart';
+import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
 class NoteBindings extends Bindings {
@@ -42,7 +43,7 @@ class NoteEditBindings extends Bindings {
   void dependencies() {
     NoteBindings._ensureStore();
     final items = NoteBindings._itemViewModel();
-    final noteId = Get.arguments as String? ?? '';
+    final noteId = vaultRouteItemId();
     Get.lazyPut(() => NoteEditViewModel(noteId: noteId, items: items));
   }
 }
@@ -51,7 +52,7 @@ class NoteDetailsBindings extends Bindings {
   @override
   void dependencies() {
     NoteBindings._ensureStore();
-    final noteId = Get.arguments as String? ?? '';
+    final noteId = vaultRouteItemId();
     Get.lazyPut(() => NoteDetailsViewModel(noteId: noteId));
   }
 }

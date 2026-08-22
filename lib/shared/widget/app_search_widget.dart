@@ -116,25 +116,28 @@ class _SearchResultTile extends GetView<SearchViewModel> {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return AppListItemWidget(
-      title: item.title,
-      subtitle: item.subtitle,
-      trailingIcon: _SearchCircleIcon(
-        icon: Icon(
-          item.type.icon,
-          size: AppSizes.iconMd.s,
-          color: colors.textSecondary,
+    return KeyedSubtree(
+      key: Key('vault-item-${item.id}'),
+      child: AppListItemWidget(
+        title: item.title,
+        subtitle: item.subtitle,
+        trailingIcon: _SearchCircleIcon(
+          icon: Icon(
+            item.type.icon,
+            size: AppSizes.iconMd.s,
+            color: colors.textSecondary,
+          ),
         ),
-      ),
-      leadingIcon: AppMoreWidget(
-        dialogTitle: item.title,
-        actions: vaultMoreActionsForItem(
-          item,
-          source: controller.sourceFor(item.id),
-          onDelete: () => controller.confirmDelete(context, item),
+        leadingIcon: AppMoreWidget(
+          dialogTitle: item.title,
+          actions: vaultMoreActionsForItem(
+            item,
+            source: controller.sourceFor(item.id),
+            onDelete: () => controller.confirmDelete(context, item),
+          ),
         ),
+        onTap: () => controller.onItemTap(item),
       ),
-      onTap: () => controller.onItemTap(item),
     );
   }
 }

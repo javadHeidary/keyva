@@ -420,7 +420,10 @@ class _ItemsSection extends GetView<HomeController> {
 
 Widget _itemsEmptyState(HomeController controller) {
   if (controller.hasNoVaultItems) {
-    return AppEmptyWidget.vault(key: const Key('vault-home-empty'));
+    return AppEmptyWidget.vault(
+      key: const Key('vault-home-empty'),
+      onAction: controller.onCreateFirstItem,
+    );
   }
 
   final type = controller.selectedType.value;

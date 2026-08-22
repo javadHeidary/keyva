@@ -17,16 +17,12 @@ class SearchViewModel extends GetxController {
   final results = <VaultListItem>[].obs;
 
   Timer? _debounceTimer;
+  Worker? _visibleItemsWorker;
+  VaultItemType? filterType;
 
   HomeController get _homeController => Get.find<HomeController>();
 
   VaultHomeViewModel get _vault => Get.find<VaultHomeViewModel>();
-
-  VaultItemType? get filterType {
-    final args = Get.arguments;
-    if (args is VaultItemType) return args;
-    return null;
-  }
 
   String get hintText {
     final type = filterType;
@@ -39,7 +35,14 @@ class SearchViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final args = Get.arguments;
+    filterType = args is VaultItemType ? args : null;
     searchController.addListener(_onSearchTextChanged);
+    if (Get.isRegistered<VaultHomeViewModel>()) {
+      _visibleItemsWorker = ever(_vault.visibleItems, (_) {
+        _applyResults();
+      });
+    }
     _applyResults();
   }
 
@@ -118,6 +121,7 @@ class SearchViewModel extends GetxController {
   @override
   void onClose() {
     _debounceTimer?.cancel();
+    _visibleItemsWorker?.dispose();
     if (Get.isRegistered<VaultHomeViewModel>()) {
       _vault.searchItems('');
     }

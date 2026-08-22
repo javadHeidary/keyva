@@ -9,6 +9,7 @@ Future<void> submitVaultItem({
   required RxBool isSubmitting,
   required Rxn<String> submitError,
   required Future<void> Function() run,
+  void Function()? onSuccess,
 }) async {
   if (isSubmitting.value || items.status.value == VaultUiStatus.submitting) {
     return;
@@ -27,7 +28,11 @@ Future<void> submitVaultItem({
     if (Get.isRegistered<VaultHomeViewModel>()) {
       await Get.find<VaultHomeViewModel>().refreshVault();
     }
-    Get.back(result: true);
+    if (onSuccess != null) {
+      onSuccess();
+    } else {
+      Get.back(result: true);
+    }
     return;
   }
 
