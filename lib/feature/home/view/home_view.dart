@@ -35,21 +35,25 @@ class HomeView extends GetView<HomeController> {
         expandable: true,
       ),
       floatingActionButton: AppFabWidget(
+        expandableKey: controller.createFabKey,
         bottomInset: fabBottomInset,
         buttonSize: 45.s,
         icon: const Icon(AppIcon.add),
         children: [
           AppFabChildButton(
+            key: const Key('home-fab-bank-card'),
             icon: Icon(AppIcon.creditCard),
             onPressed: () =>
                 controller.onAddItemForType(VaultItemType.bankCard),
           ),
           AppFabChildButton(
+            key: const Key('home-fab-secure-note'),
             icon: Icon(AppIcon.stickyNote),
             onPressed: () =>
                 controller.onAddItemForType(VaultItemType.secureNote),
           ),
           AppFabChildButton(
+            key: const Key('home-fab-login'),
             icon: Icon(AppIcon.lock),
             onPressed: () => controller.onAddItemForType(VaultItemType.login),
           ),
@@ -69,11 +73,6 @@ class HomeView extends GetView<HomeController> {
                 layout: AppLoadingLayout.page,
                 message: 'در حال بارگذاری گاوصندوق',
               );
-            case VaultUiStatus.empty:
-              return KeyedSubtree(
-                key: const Key('vault-home-empty'),
-                child: AppEmptyWidget.vault(onCreate: controller.onCreateFirstItem),
-              );
             case VaultUiStatus.error:
               if (controller.hasLoadedVault) {
                 return const _VaultContent();
@@ -85,6 +84,7 @@ class HomeView extends GetView<HomeController> {
                   onRetry: controller.loadVault,
                 ),
               );
+            case VaultUiStatus.empty:
             case VaultUiStatus.loaded:
             case VaultUiStatus.submitting:
             case VaultUiStatus.success:
@@ -137,6 +137,7 @@ class _AccountHeader extends GetView<HomeController> {
     final colors = context.colors;
 
     return Row(
+      key: const Key('home-account-header'),
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Material(
@@ -186,6 +187,7 @@ class _AccountHeader extends GetView<HomeController> {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
+              key: const Key('home-search-chip'),
               onTap: controller.onHomeSearchTap,
               borderRadius: BorderRadius.circular(12.s),
               child: Container(
@@ -224,11 +226,7 @@ class _AccountHeader extends GetView<HomeController> {
           key: const Key('home-lock'),
           onPressed: controller.lock,
           visualDensity: VisualDensity.compact,
-          icon: Icon(
-            AppIcon.lock,
-            size: 22.s,
-            color: colors.textPrimary,
-          ),
+          icon: Icon(AppIcon.lock, size: 22.s, color: colors.textPrimary),
           tooltip: 'قفل کردن',
         ),
       ],
@@ -244,6 +242,7 @@ class _TypesSection extends GetView<HomeController> {
       child: Obx(() {
         final summaries = controller.typeSummaries;
         return Column(
+          key: const Key('home-type-selector'),
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -403,7 +402,7 @@ class _ItemsSection extends GetView<HomeController> {
       child: Obx(() {
         final items = controller.visibleItems;
         if (items.isEmpty) {
-          return _SectionCard(children: [AppEmptyWidget.filteredResults()]);
+          return _SectionCard(children: [_itemsEmptyState(controller)]);
         }
 
         return _SectionCard(
@@ -417,6 +416,25 @@ class _ItemsSection extends GetView<HomeController> {
       }),
     );
   }
+}
+
+Widget _itemsEmptyState(HomeController controller) {
+  if (controller.hasNoVaultItems) {
+    return AppEmptyWidget.vault(key: const Key('vault-home-empty'));
+  }
+
+  final type = controller.selectedType.value;
+  if (type != null) {
+    return KeyedSubtree(
+      key: const Key('vault-home-empty'),
+      child: AppEmptyWidget.typeList(type),
+    );
+  }
+
+  return KeyedSubtree(
+    key: const Key('vault-home-empty'),
+    child: AppEmptyWidget.filteredResults(),
+  );
 }
 
 class _VaultItemTile extends GetView<HomeController> {

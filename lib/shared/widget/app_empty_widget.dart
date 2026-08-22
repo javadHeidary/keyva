@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
@@ -33,21 +31,13 @@ class AppEmptyWidget extends StatelessWidget {
   final AppEmptyLayout layout;
   final Widget? illustration;
 
-  factory AppEmptyWidget.vault({required VoidCallback onCreate}) {
+  factory AppEmptyWidget.vault({Key? key}) {
     return AppEmptyWidget(
+      key: key,
       icon: AppIcon.lock,
-      title: 'هنوز چیزی ذخیره نکرده‌اید',
-      description:
-          'رمزها، کارت‌های بانکی و یادداشت‌های امن خود را در گاوصندوق شخصی نگه دارید.',
-      actionLabel: 'ایجاد اولین آیتم',
-      onAction: onCreate,
-      layout: AppEmptyLayout.page,
-      illustration: SvgPicture.asset(
-        Assets.images.onboardinTest.path,
-        width: 220,
-        height: 220,
-        fit: BoxFit.contain,
-      ),
+      title: 'هنوز چیزی اضافه نکرده‌اید',
+      description: 'اولین اطلاعات خود را به کیوا اضافه کنید.',
+      layout: AppEmptyLayout.card,
     );
   }
 
@@ -143,11 +133,7 @@ class AppEmptyWidget extends StatelessWidget {
         children: [
           const Spacer(flex: 2),
           if (illustration != null)
-            SizedBox(
-              width: 220.w,
-              height: 220.h,
-              child: illustration,
-            ),
+            SizedBox(width: 220.w, height: 220.h, child: illustration),
           SizedBox(height: AppSpacing.xl.h),
           Text(
             title,
@@ -220,6 +206,7 @@ class AppEmptyWidget extends StatelessWidget {
         if (actionLabel != null && onAction != null) ...[
           SizedBox(height: AppSpacing.lg.h),
           AppButtonWidget(
+            key: const Key('vault-home-empty-cta'),
             title: actionLabel!,
             icon: Icon(AppIcon.add, size: AppSizes.iconMd.s),
             onPressed: onAction,
@@ -246,11 +233,7 @@ class _EmptyIconCircle extends StatelessWidget {
         color: colors.input,
         borderRadius: BorderRadius.circular(AppRadius.medium),
       ),
-      child: Icon(
-        icon,
-        size: AppSizes.iconXl.s,
-        color: colors.textSecondary,
-      ),
+      child: Icon(icon, size: AppSizes.iconXl.s, color: colors.textSecondary),
     );
   }
 }

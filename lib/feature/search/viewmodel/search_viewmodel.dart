@@ -84,6 +84,19 @@ class SearchViewModel extends GetxController {
     results.assignAll(mapped.where((item) => item.type == type));
   }
 
+  bool get isVaultContentEmpty {
+    if (!Get.isRegistered<VaultHomeViewModel>()) {
+      return true;
+    }
+    final data = _vault.vault.value;
+    if (data == null) {
+      return true;
+    }
+    return data.logins.isEmpty &&
+        data.bankCards.isEmpty &&
+        data.secureNotes.isEmpty;
+  }
+
   void reloadFromVault() {
     searchController.clear();
     searchQuery.value = '';

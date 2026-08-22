@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
@@ -12,6 +14,8 @@ import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
+import 'package:keyva/shared/widget/app_empty_widget.dart';
+import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_search_widget.dart';
 
 import 'support/fake_vault_operation_service.dart';
@@ -114,10 +118,14 @@ void main() {
   }
 
   Future<void> revealFinder(WidgetTester tester, Finder finder) async {
+    final verticalScrollable = find.descendant(
+      of: find.byType(CustomScrollView),
+      matching: find.byType(Scrollable),
+    );
     await tester.scrollUntilVisible(
       finder,
       200,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: verticalScrollable.first,
     );
     await pumpVaultFrame(tester);
   }
@@ -161,15 +169,179 @@ void main() {
     expect(find.text('6219861234567890'), findsNothing);
   });
 
-  testWidgets('empty state renders', (tester) async {
+  Future<void> expectHomeChrome(WidgetTester tester) async {
+    expect(find.byKey(const Key('home-account-header')), findsOneWidget);
+    expect(find.byKey(const Key('home-search-chip')), findsOneWidget);
+    expect(find.byKey(const Key('home-type-selector')), findsOneWidget);
+    expect(find.text('انواع آیتم‌ها'), findsOneWidget);
+    expect(find.text('ورودها'), findsOneWidget);
+    expect(find.text('کارت‌های بانکی'), findsOneWidget);
+    expect(find.text('یادداشت‌ها'), findsOneWidget);
+    expect(find.byType(AppFabWidget), findsOneWidget);
+  }
+
+  testWidgets('empty vault keeps Home chrome and content empty state', (
+    tester,
+  ) async {
     operations.vault = emptyVault();
 
     await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-home-empty')));
+
+    await expectHomeChrome(tester);
+    expect(find.byKey(const Key('vault-home-empty')), findsOneWidget);
+    expect(find.byKey(const Key('vault-home-empty-cta')), findsOneWidget);
+    expect(find.text('هنوز چیزی اضافه نکرده‌اید'), findsOneWidget);
+    expect(find.text('اولین اطلاعات خود را به کیوا اضافه کنید.'), findsOneWidget);
+    expect(find.text('افزودن آیتم'), findsOneWidget);
+    expect(find.text('هنوز چیزی ذخیره نکرده‌اید'), findsNothing);
+    expect(find.text('ایجاد اولین آیتم'), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is AppEmptyWidget && widget.layout == AppEmptyLayout.page,
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('empty vault CTA opens the existing FAB create flow', (
+    tester,
+  ) async {
+    operations.vault = emptyVault();
+    var openedLoginCreate = false;
+
+    setupVaultWidgetSurface(tester);
+    await home.loadVault();
+    await tester.pumpWidget(
+      vaultTestApp(
+        home: const HomeView(),
+        initialRoute: '/home',
+        getPages: [
+          GetPage(name: '/home', page: () => const HomeView()),
+          GetPage(
+            name: AppRoutes.loginCreate,
+            page: () {
+              openedLoginCreate = true;
+              return const Scaffold(
+                key: Key('login-create-test'),
+                body: SizedBox.shrink(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+    await pumpVaultFrame(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-home-empty-cta')));
+
+    await tester.tap(find.byKey(const Key('vault-home-empty-cta')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.byKey(const Key('home-fab-login')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('home-fab-login')));
     await pumpVaultFrame(tester);
 
+    expect(openedLoginCreate, isTrue);
+    expect(find.byKey(const Key('login-create-test')), findsOneWidget);
+    expect(operations.addCount, 0);
+  });
+
+  testWidgets('create from empty replaces content empty state with the item', (
+    tester,
+  ) async {
+    operations.vault = emptyVault();
+
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-home-empty')));
+
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login()],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+    await home.refreshVault();
+    await pumpVaultFrame(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-1')));
+
+    await expectHomeChrome(tester);
+    expect(find.byKey(const Key('vault-item-login-1')), findsOneWidget);
+    expect(find.text('Mail'), findsOneWidget);
+    expect(find.byKey(const Key('vault-home-empty')), findsNothing);
+  });
+
+  testWidgets('deleting the last item restores content empty state', (
+    tester,
+  ) async {
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login()],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-1')));
+
+    await tester.tap(find.byIcon(Icons.more_horiz).first);
+    await pumpVaultFrame(tester);
+    await tester.tap(find.text('حذف').last);
+    await pumpVaultFrame(tester);
+    await tester.tap(find.text('حذف').last);
+    await pumpVaultFrame(tester);
+    await tester.pump(const Duration(milliseconds: 100));
+    await revealFinder(tester, find.byKey(const Key('vault-home-empty')));
+
+    expect(operations.lastDeletedId, 'login-1');
+    await expectHomeChrome(tester);
     expect(find.byKey(const Key('vault-home-empty')), findsOneWidget);
-    expect(find.text('هنوز چیزی ذخیره نکرده‌اید'), findsOneWidget);
-    expect(find.text('ایجاد اولین آیتم'), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-login-1')), findsNothing);
+  });
+
+  testWidgets('type filter with zero items keeps Home chrome', (tester) async {
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login()],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-1')));
+
+    home.selectType(VaultItemType.bankCard);
+    await pumpVaultFrame(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-home-empty')));
+
+    await expectHomeChrome(tester);
+    expect(find.byKey(const Key('vault-item-login-1')), findsNothing);
+    expect(find.text('هنوز کارت بانکی ثبت نشده'), findsOneWidget);
+    expect(find.text('افزودن آیتم'), findsNothing);
+  });
+
+  testWidgets('empty vault search stays idle instead of no-results', (
+    tester,
+  ) async {
+    operations.vault = emptyVault();
+    await vault.loadVault();
+    Get.put(SearchViewModel());
+
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(vaultTestApp(home: const AppSearchWidget()));
+    await pumpVaultFrame(tester);
+
+    await tester.enterText(find.byType(TextField), 'anything');
+    await tester.pump(const Duration(milliseconds: 350));
+    await pumpVaultFrame(tester);
+
+    expect(find.text('برای جستجو تایپ کنید'), findsOneWidget);
+    expect(find.text('موردی یافت نشد'), findsNothing);
   });
 
   testWidgets('error state renders', (tester) async {
@@ -199,9 +371,11 @@ void main() {
 
     await tester.tap(find.byKey(const Key('vault-home-retry')));
     await pumpVaultFrame(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-home-empty')));
 
     expect(operations.getVaultCount, loadsBeforeRetry + 1);
     expect(find.byKey(const Key('vault-home-empty')), findsOneWidget);
+    expect(find.byKey(const Key('home-type-selector')), findsOneWidget);
   });
 
   testWidgets('search updates displayed results', (tester) async {

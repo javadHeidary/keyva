@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
@@ -25,6 +26,7 @@ class HomeController extends GetxController {
   final VaultHomeViewModel? _vaultOverride;
   final VaultUnlockService? _unlockOverride;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final createFabKey = GlobalKey<ExpandableFabState>();
   final selectedType = Rxn<VaultItemType>();
   final selectedCategoryId = Rxn<String>();
   final trashItemCount = 0.obs;
@@ -97,6 +99,8 @@ class HomeController extends GetxController {
   }
 
   bool get isVaultEmpty => vaultStatus == VaultUiStatus.empty;
+
+  bool get hasNoVaultItems => vaultItems.isEmpty;
 
   List<VaultListItem> get visibleItems {
     final categoryId = selectedCategoryId.value;
@@ -229,7 +233,17 @@ class HomeController extends GetxController {
     );
   }
 
-  void onCreateFirstItem() => onAddItemForType(VaultItemType.login);
+  void onCreateFirstItem() => openCreateMenu();
+
+  void openCreateMenu() {
+    final fab = createFabKey.currentState;
+    if (fab == null) {
+      return;
+    }
+    if (!fab.isOpen) {
+      fab.toggle();
+    }
+  }
 
   void onAddItem() {}
 

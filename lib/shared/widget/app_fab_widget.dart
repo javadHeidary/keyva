@@ -46,6 +46,7 @@ class AppFabWidget extends StatelessWidget {
     this.showOverlay = true,
     this.buttonSize = AppSizes.fabButtonSize,
     this.iconSize = AppSizes.iconLg,
+    this.expandableKey,
   }) : assert(
          onPressed != null || children.isNotEmpty,
          'Provide onPressed or non-empty children',
@@ -53,6 +54,7 @@ class AppFabWidget extends StatelessWidget {
 
   final Widget? icon;
   final VoidCallback? onPressed;
+  final GlobalKey<ExpandableFabState>? expandableKey;
   final List<Widget> children;
   final double bottomInset;
   final double? distance;
@@ -120,6 +122,7 @@ class AppFabWidget extends StatelessWidget {
     }
 
     return ExpandableFab(
+      key: expandableKey,
       type: ExpandableFabType.fan,
       pos: ExpandableFabPos.left,
       fanAngle: fanAngle,

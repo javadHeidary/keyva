@@ -77,8 +77,10 @@ class AppSearchWidget extends GetView<SearchViewModel> {
     final results = controller.results;
     if (results.isEmpty) {
       final query = controller.searchQuery.value.trim();
+      final showIdle =
+          query.isEmpty || controller.isVaultContentEmpty;
       return Center(
-        child: query.isEmpty
+        child: showIdle
             ? AppEmptyWidget.searchIdle(typeLabel: controller.typeLabel)
             : AppEmptyWidget.searchNoResults(),
       );

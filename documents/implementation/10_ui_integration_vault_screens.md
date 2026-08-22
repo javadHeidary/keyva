@@ -112,8 +112,8 @@ Home reads `VaultHomeViewModel.status`:
 
 | Status | UI |
 |---|---|
-| `initial` / `loading` | `AppLoadingWidget` page (unless a vault snapshot already exists) |
-| `empty` | `AppEmptyWidget.vault` with create CTA |
+| `initial` / `loading` | `AppLoadingWidget` page (unless a vault snapshot already exists; then Home chrome stays) |
+| `empty` | Same Home chrome as loaded; items section shows `AppEmptyWidget.vault` (card layout + create CTA). Not a full-page empty Home. |
 | `loaded` / `submitting` / `success` | List chrome; submitting keeps the previous list and disables extra deletes |
 | `error` | `VaultErrorView` + retry when no snapshot; if a snapshot exists, the list stays |
 
