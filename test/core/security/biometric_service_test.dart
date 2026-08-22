@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service_impl.dart';
 import 'package:keyva/core/database/hive_database.dart';
@@ -27,6 +29,7 @@ void main() {
   late AuthRepositoryImpl auth;
   late BiometricServiceImpl biometric;
   late HiveUserDataSource users;
+  late List<String> diagnosticLogs;
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
   const masterPassword = 'correct-master-password';
@@ -41,6 +44,7 @@ void main() {
     session = SessionServiceImpl();
     storage = MemorySecureStorageService();
     gateway = FakeBiometricGateway();
+    diagnosticLogs = <String>[];
     auth = AuthRepositoryImpl(
       users: users,
       crypto: crypto,
@@ -54,6 +58,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
+      diagnosticLog: diagnosticLogs.add,
     );
   });
 
@@ -86,8 +91,27 @@ void main() {
     final (userId, _) = await unlockAccount();
     final result = await biometric.enable(localizedReason: reason);
     expect(result, isA<FailureResult<void>>());
+    expect(
+      (result as FailureResult<void>).failure,
+      isA<BiometricUnavailableFailure>(),
+    );
     expect(_expectSuccess(await biometric.isEnabled(userId)), isFalse);
     expect(storage.values, isEmpty);
+  }, timeout: kdfTimeout);
+
+  test('unwrap is unavailable when device biometrics are missing', () async {
+    gateway.available = false;
+    final (userId, _) = await unlockAccount();
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(result, isA<FailureResult<Uint8List>>());
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<BiometricUnavailableFailure>(),
+    );
+    expect(session.isAuthenticated, isTrue);
   }, timeout: kdfTimeout);
 
   test('enable stores wrap material after OS authentication', () async {
@@ -129,6 +153,137 @@ void main() {
       isA<BiometricCancelledFailure>(),
     );
     expect(session.isAuthenticated, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('failed OS auth does not unwrap the VaultKey', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+    gateway.result = BiometricPromptResult.failed;
+
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(result, isA<FailureResult<Uint8List>>());
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<BiometricAuthFailedFailure>(),
+    );
+    expect(session.isAuthenticated, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('prompt success without wrap material is not configured', () async {
+    final (userId, _) = await unlockAccount();
+    session.clear();
+
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(result, isA<FailureResult<Uint8List>>());
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<BiometricNotConfiguredFailure>(),
+    );
+  }, timeout: kdfTimeout);
+
+  test('prompt success with corrupt wrap is not configured', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    storage.values[FastUnlockStorageKeys.biometricMaterial(userId)] = '{';
+    session.clear();
+
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(result, isA<FailureResult<Uint8List>>());
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<BiometricNotConfiguredFailure>(),
+    );
+  }, timeout: kdfTimeout);
+
+  test('prompt success with unwrap crypto failure stays locked', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    storage.values[FastUnlockStorageKeys.biometricMaterial(userId)] = jsonEncode(
+      {
+        'wrapKey': base64Encode(Uint8List(SecurityConstants.vaultKeyLength)),
+        'wrapped': {
+          'version': SecurityConstants.wrappedKeyVersion,
+          'nonce': base64Encode(Uint8List(SecurityConstants.nonceLength)),
+          'ciphertext': base64Encode(
+            Uint8List(SecurityConstants.vaultKeyLength),
+          ),
+          'authenticationTag': base64Encode(
+            Uint8List(SecurityConstants.authenticationTagLength),
+          ),
+        },
+      },
+    );
+    session.clear();
+
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(result, isA<FailureResult<Uint8List>>());
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<AuthenticationFailure>(),
+    );
+    expect(session.isAuthenticated, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('unwrap uses the selected account wrap material', () async {
+    final (firstId, firstKey) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+
+    final second = _expectSuccess(
+      await auth.createAccount(
+        username: 'رضا',
+        masterPassword: masterPassword,
+      ),
+    );
+    _expectSuccess(
+      await auth.authenticate(
+        userId: second.id,
+        masterPassword: masterPassword,
+      ),
+    );
+    final otherKey = Uint8List.fromList(session.vaultKey!);
+    session.clear();
+
+    final unwrapped = _expectSuccess(
+      await biometric.unwrapVaultKey(
+        userId: firstId,
+        localizedReason: reason,
+      ),
+    );
+    expect(unwrapped, firstKey);
+    expect(unwrapped, isNot(otherKey));
+  }, timeout: kdfTimeout);
+
+  test('diagnostic logs do not contain secrets', () async {
+    final (userId, vaultKey) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    final payload =
+        storage.values[FastUnlockStorageKeys.biometricMaterial(userId)]!;
+    final json = jsonDecode(payload) as Map<String, dynamic>;
+    session.clear();
+    _expectSuccess(
+      await biometric.unwrapVaultKey(userId: userId, localizedReason: reason),
+    );
+
+    final joined = diagnosticLogs.join('\n');
+    expect(joined, isNot(contains(masterPassword)));
+    expect(joined, isNot(contains(base64Encode(vaultKey))));
+    expect(joined, isNot(contains(json['wrapKey'] as String)));
+    expect(joined, isNot(contains(payload)));
+    expect(joined, isNot(contains('123456')));
   }, timeout: kdfTimeout);
 
   test('disable deletes biometric wrap material', () async {

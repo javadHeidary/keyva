@@ -83,7 +83,7 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
       localizedReason: _biometricUnlockReason,
     );
     if (unwrapped is FailureResult<Uint8List>) {
-      if (unwrapped.failure is BiometricCancelledFailure) {
+      if (_isBiometricPromptFailure(unwrapped.failure)) {
         return FailureResult(unwrapped.failure);
       }
       return _failClosed(unwrapped.failure);
@@ -146,5 +146,12 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
     await _vaultSession.lock();
     await _auth.logout();
     return FailureResult(failure);
+  }
+
+  static bool _isBiometricPromptFailure(AppFailure failure) {
+    return failure is BiometricCancelledFailure ||
+        failure is BiometricUnavailableFailure ||
+        failure is BiometricAuthFailedFailure ||
+        failure is BiometricNotConfiguredFailure;
   }
 }

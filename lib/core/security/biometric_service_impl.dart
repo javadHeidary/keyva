@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data';
+import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
@@ -21,17 +22,20 @@ class BiometricServiceImpl implements BiometricService {
     required SecureStorageService storage,
     required UserDataSource users,
     required SessionService session,
+    void Function(String message)? diagnosticLog,
   }) : _gateway = gateway,
        _keys = keys,
        _storage = storage,
        _users = users,
-       _session = session;
+       _session = session,
+       _diagnosticLog = diagnosticLog;
 
   final BiometricGateway _gateway;
   final KeyManagementService _keys;
   final SecureStorageService _storage;
   final UserDataSource _users;
   final SessionService _session;
+  final void Function(String message)? _diagnosticLog;
 
   @override
   Future<bool> isAvailable() => _gateway.isAvailable();
@@ -52,7 +56,8 @@ class BiometricServiceImpl implements BiometricService {
   @override
   Future<Result<void>> enable({required String localizedReason}) async {
     if (!await isAvailable()) {
-      return const FailureResult(AuthenticationFailure());
+      _diag('enable available=false');
+      return const FailureResult(BiometricUnavailableFailure());
     }
     final vaultKey = _session.vaultKey;
     final userId = _session.current?.userId;
@@ -61,11 +66,10 @@ class BiometricServiceImpl implements BiometricService {
     }
 
     final prompt = await _gateway.authenticate(localizedReason: localizedReason);
-    if (prompt == BiometricPromptResult.cancelled) {
-      return const FailureResult(BiometricCancelledFailure());
-    }
-    if (prompt != BiometricPromptResult.success) {
-      return const FailureResult(AuthenticationFailure());
+    _diag('enable promptResult=$prompt userIdLength=${userId.length}');
+    final promptFailure = _failureForPrompt(prompt);
+    if (promptFailure != null) {
+      return FailureResult(promptFailure);
     }
 
     final wrapKey = _keys.generateVaultKey();
@@ -122,45 +126,52 @@ class BiometricServiceImpl implements BiometricService {
     required String userId,
     required String localizedReason,
   }) async {
-    if (!await isAvailable()) {
-      return const FailureResult(AuthenticationFailure());
+    final available = await isAvailable();
+    _diag('unwrap available=$available userIdLength=${userId.length}');
+    if (!available) {
+      return const FailureResult(BiometricUnavailableFailure());
     }
 
     final prompt = await _gateway.authenticate(localizedReason: localizedReason);
-    if (prompt == BiometricPromptResult.cancelled) {
-      return const FailureResult(BiometricCancelledFailure());
-    }
-    if (prompt != BiometricPromptResult.success) {
-      return const FailureResult(AuthenticationFailure());
+    _diag('unwrap promptResult=$prompt');
+    final promptFailure = _failureForPrompt(prompt);
+    if (promptFailure != null) {
+      return FailureResult(promptFailure);
     }
 
     final stored = await _storage.read(
       FastUnlockStorageKeys.biometricMaterial(userId),
     );
     if (stored is FailureResult<String?>) {
+      _diag('unwrap hasWrapMaterial=false reason=storage_read_failed');
       return const FailureResult(AuthenticationFailure());
     }
     final raw = (stored as Success<String?>).data;
     if (raw == null || raw.isEmpty) {
-      return const FailureResult(AuthenticationFailure());
+      _diag('unwrap hasWrapMaterial=false');
+      return const FailureResult(BiometricNotConfiguredFailure());
     }
+    _diag('unwrap hasWrapMaterial=true');
 
     late final Uint8List wrapKey;
     late final WrappedVaultKey wrappedVaultKey;
     try {
       final json = jsonDecode(raw);
       if (json is! Map) {
-        return const FailureResult(AuthenticationFailure());
+        _diag('unwrap hasWrapMaterial=true parse=invalid');
+        return const FailureResult(BiometricNotConfiguredFailure());
       }
       wrapKey = Uint8List.fromList(base64Decode(json['wrapKey'] as String));
       final wrapped = WrappedKeyCodec.wrappedVaultKeyFromJson(json['wrapped']);
       if (wrapped == null) {
         wrapKey.fillRange(0, wrapKey.length, 0);
-        return const FailureResult(AuthenticationFailure());
+        _diag('unwrap hasWrapMaterial=true parse=invalid');
+        return const FailureResult(BiometricNotConfiguredFailure());
       }
       wrappedVaultKey = wrapped;
     } catch (_) {
-      return const FailureResult(AuthenticationFailure());
+      _diag('unwrap hasWrapMaterial=true parse=invalid');
+      return const FailureResult(BiometricNotConfiguredFailure());
     }
 
     final unwrapped = await _keys.unwrapVaultKey(
@@ -169,9 +180,24 @@ class BiometricServiceImpl implements BiometricService {
     );
     wrapKey.fillRange(0, wrapKey.length, 0);
     if (unwrapped is FailureResult<Uint8List>) {
+      _diag('unwrap crypto=failed');
       return const FailureResult(AuthenticationFailure());
     }
+    _diag('unwrap crypto=success');
     return unwrapped;
+  }
+
+  AppFailure? _failureForPrompt(BiometricPromptResult prompt) {
+    switch (prompt) {
+      case BiometricPromptResult.success:
+        return null;
+      case BiometricPromptResult.cancelled:
+        return const BiometricCancelledFailure();
+      case BiometricPromptResult.unavailable:
+        return const BiometricUnavailableFailure();
+      case BiometricPromptResult.failed:
+        return const BiometricAuthFailedFailure();
+    }
   }
 
   Future<Result<void>> _setBiometricEnabled(String userId, bool enabled) async {
@@ -191,5 +217,12 @@ class BiometricServiceImpl implements BiometricService {
         ),
       ),
     );
+  }
+
+  void _diag(String message) {
+    _diagnosticLog?.call(message);
+    if (kDebugMode) {
+      developer.log(message, name: 'KeyvaBiometric');
+    }
   }
 }

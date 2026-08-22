@@ -6,6 +6,12 @@ String vaultUserMessage(String? errorMessage) {
   switch (errorMessage) {
     case 'Unable to unlock your vault.':
       return 'باز کردن گاوصندوق ممکن نشد.';
+    case 'Biometric authentication is unavailable.':
+      return 'احراز هویت بیومتریک روی این دستگاه در دسترس نیست.';
+    case 'Biometric authentication failed.':
+      return 'احراز هویت بیومتریک ناموفق بود.';
+    case 'Biometric unlock is not set up for this account.':
+      return 'باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.';
     case 'Vault data is invalid':
       return 'اطلاعات وارد شده معتبر نیست.';
     case 'Cryptographic operation failed':

@@ -9,6 +9,7 @@ import 'package:keyva/core/database/hive_user_data_source.dart';
 import 'package:keyva/core/database/hive_vault_data_source.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
@@ -33,6 +34,7 @@ void main() {
   late BiometricServiceImpl biometric;
   late VaultUnlockServiceImpl unlock;
   late VaultSessionImpl vaultSession;
+  late FakeBiometricGateway gateway;
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
   const masterPassword = 'correct-master-password';
@@ -61,8 +63,9 @@ void main() {
       session: session,
       database: database!,
     );
+    gateway = FakeBiometricGateway();
     biometric = BiometricServiceImpl(
-      gateway: FakeBiometricGateway(),
+      gateway: gateway,
       keys: keys,
       storage: storage,
       users: users,
@@ -123,7 +126,69 @@ void main() {
 
     _expectSuccess(await unlock.unlockWithBiometric(userId: userId));
     expect(session.isAuthenticated, isTrue);
+    expect(session.current!.userId, userId);
     expect(vaultSession.isUnlocked, isTrue);
+  }, timeout: kdfTimeout);
+
+  test('unlockWithBiometric unavailable stays locked', () async {
+    final userId = await seedUnlockedVault();
+    _expectSuccess(await biometric.enable(localizedReason: 'enable'));
+    _expectSuccess(await unlock.lock());
+    gateway.available = false;
+
+    final result = await unlock.unlockWithBiometric(userId: userId);
+    expect(result, isA<FailureResult<void>>());
+    expect(
+      (result as FailureResult<void>).failure,
+      isA<BiometricUnavailableFailure>(),
+    );
+    expect(session.isAuthenticated, isFalse);
+    expect(vaultSession.isUnlocked, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('unlockWithBiometric failed stays locked', () async {
+    final userId = await seedUnlockedVault();
+    _expectSuccess(await biometric.enable(localizedReason: 'enable'));
+    _expectSuccess(await unlock.lock());
+    gateway.result = BiometricPromptResult.failed;
+
+    final result = await unlock.unlockWithBiometric(userId: userId);
+    expect(result, isA<FailureResult<void>>());
+    expect(
+      (result as FailureResult<void>).failure,
+      isA<BiometricAuthFailedFailure>(),
+    );
+    expect(session.isAuthenticated, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('unlockWithBiometric without wrap material is not configured', () async {
+    final userId = await seedUnlockedVault();
+    _expectSuccess(await unlock.lock());
+
+    final result = await unlock.unlockWithBiometric(userId: userId);
+    expect(result, isA<FailureResult<void>>());
+    expect(
+      (result as FailureResult<void>).failure,
+      isA<BiometricNotConfiguredFailure>(),
+    );
+    expect(session.isAuthenticated, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('biometric success with unwrap failure fails closed', () async {
+    final userId = await seedUnlockedVault();
+    _expectSuccess(await biometric.enable(localizedReason: 'enable'));
+    storage.values[FastUnlockStorageKeys.biometricMaterial(userId)] =
+        '{"wrapKey":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=","wrapped":{"version":1,"nonce":"AAAAAAAAAAAAAAAA","ciphertext":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=","authenticationTag":"AAAAAAAAAAAAAAAAAAAAAA=="}}';
+    _expectSuccess(await unlock.lock());
+
+    final result = await unlock.unlockWithBiometric(userId: userId);
+    expect(result, isA<FailureResult<void>>());
+    expect(
+      (result as FailureResult<void>).failure,
+      isA<AuthenticationFailure>(),
+    );
+    expect(session.isAuthenticated, isFalse);
+    expect(vaultSession.isUnlocked, isFalse);
   }, timeout: kdfTimeout);
 
   test('lock zeros the VaultKey and keeps PIN material', () async {

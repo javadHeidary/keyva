@@ -34,6 +34,24 @@ final class BiometricCancelledFailure extends AppFailure {
   });
 }
 
+final class BiometricUnavailableFailure extends AppFailure {
+  const BiometricUnavailableFailure({
+    super.message = 'Biometric authentication is unavailable.',
+  });
+}
+
+final class BiometricAuthFailedFailure extends AppFailure {
+  const BiometricAuthFailedFailure({
+    super.message = 'Biometric authentication failed.',
+  });
+}
+
+final class BiometricNotConfiguredFailure extends AppFailure {
+  const BiometricNotConfiguredFailure({
+    super.message = 'Biometric unlock is not set up for this account.',
+  });
+}
+
 final class ValidationFailure extends AppFailure {
   const ValidationFailure({
     super.message = 'Vault data is invalid',

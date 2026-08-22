@@ -326,7 +326,7 @@ void main() {
     final biometric = FakeBiometricService()
       ..available = true
       ..enabled = true;
-    unlock.unlockFailure = const AuthenticationFailure();
+    unlock.unlockFailure = const BiometricAuthFailedFailure();
     login = LoginController(
       unlock: unlock,
       auth: auth,
@@ -343,6 +343,87 @@ void main() {
 
     expect(session.isAuthenticated, isFalse);
     expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(find.text('احراز هویت بیومتریک ناموفق بود.'), findsOneWidget);
+  });
+
+  testWidgets('unavailable biometric shows a Persian message', (tester) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    unlock.unlockFailure = const BiometricUnavailableFailure();
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(session.isAuthenticated, isFalse);
+    expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(
+      find.text('احراز هویت بیومتریک روی این دستگاه در دسترس نیست.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('not configured biometric shows a Persian message', (
+    tester,
+  ) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    unlock.unlockFailure = const BiometricNotConfiguredFailure();
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(session.isAuthenticated, isFalse);
+    expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(
+      find.text('باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('vault unlock failure after biometric stays generic', (
+    tester,
+  ) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    unlock.unlockFailure = const AuthenticationFailure();
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(session.isAuthenticated, isFalse);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
   });
 

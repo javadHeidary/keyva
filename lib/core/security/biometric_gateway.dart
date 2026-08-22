@@ -1,4 +1,4 @@
-enum BiometricPromptResult { success, cancelled, failed }
+enum BiometricPromptResult { success, cancelled, failed, unavailable }
 
 abstract interface class BiometricGateway {
   Future<bool> isAvailable();
