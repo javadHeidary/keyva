@@ -1,12 +1,18 @@
+import 'dart:developer' as developer;
 import 'dart:typed_data';
 
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/encrypted_payload.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
+import 'package:keyva/core/database/models/user_record.dart';
+import 'package:keyva/core/database/user_data_source.dart';
+import 'package:keyva/core/database/vault_data_source.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/backup_password_policy.dart';
+import 'package:keyva/core/security/master_password_policy.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/backup/model/backup_envelope.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
 import 'package:keyva/feature/backup/serialization/backup_envelope_codec.dart';
@@ -15,6 +21,7 @@ import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 import 'package:keyva/feature/vault/service/vault_data_service.dart';
 import 'package:keyva/feature/vault/service/vault_operation_service.dart';
+import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 class BackupServiceImpl implements BackupService {
   BackupServiceImpl({
@@ -23,17 +30,29 @@ class BackupServiceImpl implements BackupService {
     required VaultSerializer serializer,
     required CryptoService crypto,
     required KeyManagementService keys,
+    AuthRepository? auth,
+    VaultUnlockService? unlock,
+    UserDataSource? users,
+    VaultDataSource? vaults,
   }) : _operations = operations,
        _vaultData = vaultData,
        _serializer = serializer,
        _crypto = crypto,
-       _keys = keys;
+       _keys = keys,
+       _auth = auth,
+       _unlock = unlock,
+       _users = users,
+       _vaults = vaults;
 
   final VaultOperationService _operations;
   final VaultDataService _vaultData;
   final VaultSerializer _serializer;
   final CryptoService _crypto;
   final KeyManagementService _keys;
+  final AuthRepository? _auth;
+  final VaultUnlockService? _unlock;
+  final UserDataSource? _users;
+  final VaultDataSource? _vaults;
 
   @override
   Future<Result<Uint8List>> createBackup({
@@ -77,7 +96,7 @@ class BackupServiceImpl implements BackupService {
     }
     final payload = (encrypted as Success<EncryptedPayload>).data;
 
-    return BackupEnvelopeCodec.encode(
+    final encoded = BackupEnvelopeCodec.encode(
       BackupEnvelope(
         formatVersion: SecurityConstants.backupFormatVersion,
         kdfSalt: salt,
@@ -87,6 +106,10 @@ class BackupServiceImpl implements BackupService {
         authenticationTag: payload.authenticationTag,
       ),
     );
+    if (encoded is Success<Uint8List>) {
+      _log('backup created');
+    }
+    return encoded;
   }
 
   @override
@@ -95,6 +118,7 @@ class BackupServiceImpl implements BackupService {
     if (decoded is FailureResult<BackupEnvelope>) {
       return FailureResult(decoded.failure);
     }
+    _log('backup file parsed version=${SecurityConstants.backupFormatVersion}');
     return const Success<void>(null);
   }
 
@@ -108,6 +132,7 @@ class BackupServiceImpl implements BackupService {
       return FailureResult(decoded.failure);
     }
     final envelope = (decoded as Success<BackupEnvelope>).data;
+    _log('decrypt started version=${envelope.formatVersion}');
 
     final derived = await _crypto.deriveKey(
       masterPassword: backupPassword,
@@ -115,6 +140,7 @@ class BackupServiceImpl implements BackupService {
       parameters: envelope.kdfParameters,
     );
     if (derived is FailureResult<Uint8List>) {
+      _log('decrypt failed');
       return const FailureResult(BackupIntegrityFailure());
     }
     final backupKey = (derived as Success<Uint8List>).data;
@@ -130,6 +156,7 @@ class BackupServiceImpl implements BackupService {
     );
     backupKey.fillRange(0, backupKey.length, 0);
     if (decrypted is FailureResult<Uint8List>) {
+      _log('decrypt failed');
       if (decrypted.failure is VaultDecryptionFailure) {
         return const FailureResult(WrongBackupPasswordFailure());
       }
@@ -140,6 +167,7 @@ class BackupServiceImpl implements BackupService {
       (decrypted as Success<Uint8List>).data,
     );
     if (deserialized is FailureResult<VaultData>) {
+      _log('restore validation failed');
       return const FailureResult(BackupPayloadValidationFailure());
     }
     final vault = (deserialized as Success<VaultData>).data;
@@ -160,6 +188,74 @@ class BackupServiceImpl implements BackupService {
       }
       return const FailureResult(BackupRestorePersistenceFailure());
     }
+    _log('restore committed');
     return replaced;
+  }
+
+  @override
+  Future<Result<void>> restoreIntoNewAccount({
+    required String username,
+    required String masterPassword,
+    required VaultData vault,
+  }) async {
+    final auth = _auth;
+    final unlock = _unlock;
+    if (auth == null || unlock == null) {
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
+
+    final trimmedName = username.trim();
+    if (trimmedName.length < 3 || !MasterPasswordPolicy.isValid(masterPassword)) {
+      return const FailureResult(ValidationFailure());
+    }
+
+    final serialized = await _serializer.serialize(vault);
+    if (serialized is FailureResult<Uint8List>) {
+      _log('restore validation failed');
+      return const FailureResult(BackupPayloadValidationFailure());
+    }
+
+    final created = await auth.createAccount(
+      username: trimmedName,
+      masterPassword: masterPassword,
+    );
+    if (created is FailureResult<UserRecord>) {
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
+    final user = (created as Success<UserRecord>).data;
+
+    final unlocked = await unlock.unlock(
+      userId: user.id,
+      masterPassword: masterPassword,
+    );
+    if (unlocked is FailureResult<void>) {
+      await _rollbackNewAccount(user.id);
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
+
+    final replaced = await _vaultData.replaceVault(vault);
+    if (replaced is FailureResult<void>) {
+      await _rollbackNewAccount(user.id);
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
+
+    _log('restore committed');
+    return const Success<void>(null);
+  }
+
+  Future<void> _rollbackNewAccount(String userId) async {
+    try {
+      await _unlock?.lock();
+    } catch (_) {}
+    try {
+      await _vaults?.delete(userId);
+    } catch (_) {}
+    try {
+      await _users?.delete(userId);
+    } catch (_) {}
+  }
+
+  static void _log(String message) {
+    developer.log(message, name: 'KeyvaBackup');
   }
 }

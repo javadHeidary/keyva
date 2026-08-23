@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/backup_password_policy.dart';
+import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/backup/model/backup_file_result.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
@@ -16,11 +18,14 @@ import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
+enum RestoreMode { replaceExisting, createAccount }
+
 class RestoreViewModel extends GetxController {
   RestoreViewModel({
     required BackupService backup,
     required BackupFileService files,
     required SessionService session,
+    this.mode = RestoreMode.replaceExisting,
   }) : _backup = backup,
        _files = files,
        _session = session;
@@ -28,22 +33,62 @@ class RestoreViewModel extends GetxController {
   final BackupService _backup;
   final BackupFileService _files;
   final SessionService _session;
+  final RestoreMode mode;
 
   final isBusy = false.obs;
+  final errorMessage = ''.obs;
+  final isPasswordVisible = false.obs;
+  final isConfirmPasswordVisible = false.obs;
+  final dialogCountdown = 3.obs;
+  final canConfirmDialog = false.obs;
+
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final setupFormKey = GlobalKey<FormState>();
 
   Uint8List? _selectedBytes;
   VaultData? _pendingVault;
   BackupPreview? _pendingPreview;
 
+  bool get createsNewAccount => mode == RestoreMode.createAccount;
+
   bool get hasPendingRestore => _pendingVault != null;
 
   BackupPreview? get pendingPreview => _pendingPreview;
+
+  bool get _canOperateWithoutSession => createsNewAccount;
+
+  bool get _sessionReady => _session.isAuthenticated || _canOperateWithoutSession;
+
+  void togglePasswordVisibility() {
+    isPasswordVisible.value = !isPasswordVisible.value;
+  }
+
+  void toggleConfirmPasswordVisibility() {
+    isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
+  }
+
+  void startWarningDialogCountdown() {
+    dialogCountdown.value = 3;
+    canConfirmDialog.value = false;
+    _runCountdown();
+  }
+
+  Future<void> _runCountdown() async {
+    while (dialogCountdown.value > 0) {
+      await Future.delayed(const Duration(seconds: 1));
+      if (isClosed) return;
+      dialogCountdown.value--;
+    }
+    canConfirmDialog.value = true;
+  }
 
   Future<bool> pickBackup(BuildContext context) async {
     if (isBusy.value) {
       return false;
     }
-    if (!_session.isAuthenticated) {
+    if (!_sessionReady) {
       AppToast.error(
         context,
         title: vaultUserMessage(const AuthenticationFailure().message),
@@ -55,6 +100,7 @@ class RestoreViewModel extends GetxController {
     try {
       _selectedBytes = null;
       _pendingVault = null;
+      _pendingPreview = null;
       final picked = await _files.pick();
       if (!context.mounted) {
         return false;
@@ -93,7 +139,7 @@ class RestoreViewModel extends GetxController {
     if (bytes == null) {
       return null;
     }
-    if (!_session.isAuthenticated) {
+    if (!_sessionReady) {
       AppToast.error(
         context,
         title: vaultUserMessage(const AuthenticationFailure().message),
@@ -116,7 +162,7 @@ class RestoreViewModel extends GetxController {
       if (!context.mounted) {
         return null;
       }
-      if (!_session.isAuthenticated) {
+      if (!_sessionReady) {
         _clearPending();
         AppToast.error(
           context,
@@ -141,7 +187,7 @@ class RestoreViewModel extends GetxController {
   }
 
   Future<void> confirmRestore(BuildContext context) async {
-    if (isBusy.value) {
+    if (isBusy.value || createsNewAccount) {
       return;
     }
     final vault = _pendingVault;
@@ -186,6 +232,57 @@ class RestoreViewModel extends GetxController {
     }
   }
 
+  Future<void> completeNewAccountRestore(BuildContext context) async {
+    if (isBusy.value || !createsNewAccount) {
+      return;
+    }
+    final vault = _pendingVault;
+    if (vault == null) {
+      return;
+    }
+    errorMessage.value = '';
+    final form = setupFormKey.currentState;
+    if (form != null && !form.validate()) {
+      return;
+    }
+    final usernameError = restoreUsernameError(usernameController.text);
+    if (usernameError != null) {
+      errorMessage.value = usernameError;
+      return;
+    }
+    final passwordError = restoreMasterPasswordError(passwordController.text);
+    if (passwordError != null) {
+      errorMessage.value = passwordError;
+      return;
+    }
+    if (passwordController.text != confirmPasswordController.text) {
+      errorMessage.value = 'تکرار رمز عبور یکسان نیست';
+      return;
+    }
+
+    isBusy.value = true;
+    try {
+      final restored = await _backup.restoreIntoNewAccount(
+        username: usernameController.text.trim(),
+        masterPassword: passwordController.text,
+        vault: vault,
+      );
+      if (restored is FailureResult<void>) {
+        if (!context.mounted) {
+          return;
+        }
+        errorMessage.value = vaultUserMessage(restored.failure.message);
+        return;
+      }
+      _clearPending();
+      Get.offAllNamed(AppRoutes.shell);
+    } finally {
+      passwordController.clear();
+      confirmPasswordController.clear();
+      isBusy.value = false;
+    }
+  }
+
   void cancelRestore() {
     _clearPending();
   }
@@ -210,7 +307,25 @@ class RestoreViewModel extends GetxController {
 
   @override
   void onClose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
     _clearPending();
     super.onClose();
   }
+}
+
+String? restoreUsernameError(String? value) {
+  final username = value?.trim() ?? '';
+  if (username.isEmpty) {
+    return 'نام کاربری الزامی است';
+  }
+  if (username.length < 3) {
+    return 'نام کاربری باید حداقل ۳ کاراکتر باشد';
+  }
+  return null;
+}
+
+String? restoreMasterPasswordError(String? value) {
+  return MasterPasswordPolicy.fieldError(value);
 }

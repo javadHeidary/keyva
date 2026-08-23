@@ -13,4 +13,6 @@ abstract interface class UserDataSource {
   Future<Result<List<UserRecord>>> list();
 
   Future<Result<void>> update(UserRecord user);
+
+  Future<Result<void>> delete(String id);
 }

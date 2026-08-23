@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
@@ -8,15 +9,17 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
 import 'package:keyva/feature/backup/widget/create_backup_dialog.dart';
 import 'package:keyva/feature/backup/widget/restore_backup_password_dialog.dart';
+import 'package:keyva/feature/backup/widget/restore_confirm_dialog.dart';
 import 'package:keyva/feature/settings/widget/settings_group_card.dart';
 import 'package:keyva/feature/settings/widget/settings_row.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
-import 'package:keyva/shared/widget/app_dialog_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
 
 class BackupRestoreView extends StatelessWidget {
-  const BackupRestoreView({super.key});
+  const BackupRestoreView({super.key, this.createAccountMode = false});
+
+  final bool createAccountMode;
 
   @override
   Widget build(BuildContext context) {
@@ -50,31 +53,35 @@ class BackupRestoreView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const AppTitleItemWidget(title: 'پشتیبان‌گیری'),
-                    Text(
-                      'یک فایل رمزنگاری‌شده از اطلاعات Vault ایجاد کنید.',
-                      textAlign: TextAlign.right,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: colors.textSecondary,
-                      ),
-                    ),
-                    SizedBox(height: AppSpacing.sm.h),
-                    SettingsGroupCard(
-                      children: [
-                        KeyedSubtree(
-                          key: const Key('backup-restore-create'),
-                          child: SettingsRow.nav(
-                            title: 'ایجاد پشتیبان',
-                            icon: AppIcon.backup,
-                            onTap: () => showCreateBackupDialog(context),
-                          ),
+                    if (!createAccountMode) ...[
+                      const AppTitleItemWidget(title: 'پشتیبان‌گیری'),
+                      Text(
+                        'یک فایل رمزنگاری‌شده از اطلاعات Vault ایجاد کنید.',
+                        textAlign: TextAlign.right,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: colors.textSecondary,
                         ),
-                      ],
-                    ),
-                    SizedBox(height: AppSpacing.sectionGap.h),
+                      ),
+                      SizedBox(height: AppSpacing.sm.h),
+                      SettingsGroupCard(
+                        children: [
+                          KeyedSubtree(
+                            key: const Key('backup-restore-create'),
+                            child: SettingsRow.nav(
+                              title: 'ایجاد پشتیبان',
+                              icon: AppIcon.backup,
+                              onTap: () => showCreateBackupDialog(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: AppSpacing.sectionGap.h),
+                    ],
                     const AppTitleItemWidget(title: 'بازیابی پشتیبان'),
                     Text(
-                      'اطمینان حاصل کنید که فایل پشتیبان متعلق به Keyva است.',
+                      createAccountMode
+                          ? 'فایل پشتیبان را انتخاب کنید. سپس برای این دستگاه یک رمز اصلی جدید می‌سازید.'
+                          : 'اطمینان حاصل کنید که فایل پشتیبان متعلق به Keyva است.',
                       textAlign: TextAlign.right,
                       style: AppTypography.bodySmall.copyWith(
                         color: colors.textSecondary,
@@ -126,26 +133,26 @@ class BackupRestoreView extends StatelessWidget {
       return;
     }
 
-    var confirmed = false;
-    await AppDialogWidget.show(
+    final confirmed = await showRestoreConfirmDialog(
       context,
-      type: AppDialogType.warning,
-      title: 'هشدار',
-      description: preview.confirmationDescription,
-      buttonText: 'جایگزینی',
-      barrierDismissible: true,
-      onConfirm: () {
-        confirmed = true;
-      },
+      title: restore.createsNewAccount ? 'بازیابی پشتیبان' : 'هشدار',
+      description: restore.createsNewAccount
+          ? preview.newAccountDescription
+          : preview.confirmationDescription,
+      confirmText: restore.createsNewAccount ? 'ادامه' : 'جایگزینی',
     );
     if (!context.mounted) {
       restore.cancelRestore();
       return;
     }
-    if (confirmed) {
-      await restore.confirmRestore(context);
+    if (!confirmed) {
+      restore.cancelRestore();
       return;
     }
-    restore.cancelRestore();
+    if (restore.createsNewAccount) {
+      Get.toNamed(AppRoutes.authRestoreSetup);
+      return;
+    }
+    await restore.confirmRestore(context);
   }
 }

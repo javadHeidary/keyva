@@ -73,4 +73,14 @@ class HiveUserDataSource implements UserDataSource {
       return FailureResult(HiveErrorMapper.map(error));
     }
   }
+
+  @override
+  Future<Result<void>> delete(String id) async {
+    try {
+      await _database.users.delete(id);
+      return const Success<void>(null);
+    } catch (error) {
+      return FailureResult(HiveErrorMapper.map(error));
+    }
+  }
 }

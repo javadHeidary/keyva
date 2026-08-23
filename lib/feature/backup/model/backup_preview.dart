@@ -31,9 +31,15 @@ class BackupPreview {
 
   String get confirmationDescription {
     return '${countLines.join('\n')}\n\n'
-        'بازیابی پشتیبان اطلاعات فعلی Vault را با اطلاعات فایل جایگزین '
+        'این کار اطلاعات فعلی Vault را با اطلاعات فایل پشتیبان جایگزین '
         'می‌کند.\n\nقبل از ادامه مطمئن شوید که از اطلاعات فعلی نسخه '
         'پشتیبان دارید.';
+  }
+
+  String get newAccountDescription {
+    return '${countLines.join('\n')}\n\n'
+        'یک حساب جدید از روی این پشتیبان ساخته می‌شود.\n'
+        'رمز فایل پشتیبان، رمز اصلی حساب نخواهد شد.';
   }
 }
 

@@ -42,6 +42,10 @@ class OnboardingController extends GetxController {
     }
   }
 
+  void openRestore() {
+    Get.toNamed(AppRoutes.authRestore);
+  }
+
   @override
   void onClose() {
     pageController.dispose();

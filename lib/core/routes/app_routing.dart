@@ -10,6 +10,7 @@ import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
 import 'package:keyva/feature/backup/bindings/backup_bindings.dart';
 import 'package:keyva/feature/backup/view/backup_restore_view.dart';
+import 'package:keyva/feature/backup/view/restore_account_setup_view.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/category/view/category_create_view.dart';
 import 'package:keyva/feature/category/view/category_edit_view.dart';
@@ -52,6 +53,8 @@ class AppRoutes {
   static const String authAccounts = '/auth/accounts';
   static const String authUnlock = '/auth/unlock';
   static const String authRegister = '/authRegister';
+  static const String authRestore = '/auth/restore';
+  static const String authRestoreSetup = '/auth/restore/setup';
   static const String widgetBuilderTest = '/widgetBuilderTest';
   static const String shell = '/shell';
 
@@ -118,7 +121,7 @@ class AppRoutes {
     GetPage(
       name: authLogin,
       page: () => const AccountSelectionView(),
-      binding: AuthBindings(),
+      binding: AccountSelectionBindings(),
       middlewares: _unlockedRedirect,
       transition: _pageTransition,
       curve: _pageCurve,
@@ -128,7 +131,7 @@ class AppRoutes {
     GetPage(
       name: authAccounts,
       page: () => const AccountSelectionView(),
-      binding: AuthBindings(),
+      binding: AccountSelectionBindings(),
       middlewares: _unlockedRedirect,
       transition: _pageTransition,
       curve: _pageCurve,
@@ -138,7 +141,7 @@ class AppRoutes {
     GetPage(
       name: authUnlock,
       page: () => const AuthLoginView(),
-      binding: AuthBindings(),
+      binding: UnlockBindings(),
       middlewares: _unlockedRedirect,
       transition: _pageTransition,
       curve: _pageCurve,
@@ -148,7 +151,26 @@ class AppRoutes {
     GetPage(
       name: authRegister,
       page: () => const AuthRegisterView(),
-      binding: AuthBindings(),
+      binding: RegisterBindings(),
+      middlewares: _unlockedRedirect,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: authRestore,
+      page: () => const BackupRestoreView(createAccountMode: true),
+      binding: BackupBindings(createAccountMode: true),
+      middlewares: _unlockedRedirect,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: authRestoreSetup,
+      page: () => const RestoreAccountSetupView(),
       middlewares: _unlockedRedirect,
       transition: _pageTransition,
       curve: _pageCurve,

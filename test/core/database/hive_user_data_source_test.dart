@@ -115,6 +115,16 @@ void main() {
     expect(listed.map((user) => user.username), containsAll(['علی', 'رضا']));
     expect(database!.vaults.isEmpty, isTrue);
   });
+
+  test('delete removes the user and leaves other users unchanged', () async {
+    await users.create(_user(id: 'user-1'));
+    await users.create(_user(id: 'user-2', username: 'رضا'));
+
+    expect(await users.delete('user-1'), isA<Success<void>>());
+    expect(_expectSuccess(await users.exists('user-1')), isFalse);
+    expect(_expectSuccess(await users.exists('user-2')), isTrue);
+    expect(await users.delete('missing'), isA<Success<void>>());
+  });
 }
 
 UserRecord _user({required String id, String username = 'علی'}) {

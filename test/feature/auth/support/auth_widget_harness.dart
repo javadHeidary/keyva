@@ -101,4 +101,6 @@ Future<void> pumpAuthFrame(WidgetTester tester) async {
 Future<void> pumpAuthSettle(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
 }

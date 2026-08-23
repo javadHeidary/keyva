@@ -15,4 +15,10 @@ abstract interface class BackupService {
   });
 
   Future<Result<void>> restoreVault(VaultData vault);
+
+  Future<Result<void>> restoreIntoNewAccount({
+    required String username,
+    required String masterPassword,
+    required VaultData vault,
+  });
 }

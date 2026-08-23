@@ -13,6 +13,7 @@ class FakeBackupService implements BackupService {
   AppFailure? validateFailure;
   AppFailure? decryptFailure;
   AppFailure? restoreFailure;
+  AppFailure? restoreNewAccountFailure;
   BackupRestorePlan? plan;
   VaultData? restored;
   Completer<void>? restoreGate;
@@ -20,7 +21,10 @@ class FakeBackupService implements BackupService {
   int validateCount = 0;
   int decryptCount = 0;
   int restoreCount = 0;
+  int restoreNewAccountCount = 0;
   String? lastPassword;
+  String? lastNewAccountUsername;
+  String? lastNewAccountMasterPassword;
 
   @override
   Future<Result<Uint8List>> createBackup({required String backupPassword}) async {
@@ -70,6 +74,23 @@ class FakeBackupService implements BackupService {
       await gate.future;
     }
     final failure = restoreFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    return const Success<void>(null);
+  }
+
+  @override
+  Future<Result<void>> restoreIntoNewAccount({
+    required String username,
+    required String masterPassword,
+    required VaultData vault,
+  }) async {
+    restoreNewAccountCount++;
+    lastNewAccountUsername = username;
+    lastNewAccountMasterPassword = masterPassword;
+    restored = vault;
+    final failure = restoreNewAccountFailure;
     if (failure != null) {
       return FailureResult(failure);
     }

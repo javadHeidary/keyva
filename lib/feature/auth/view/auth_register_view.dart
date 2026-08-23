@@ -150,6 +150,8 @@ class AuthRegisterView extends GetView<RegisterController> {
                 }),
                 SizedBox(height: AppSpacing.sectionGap.h + AppSpacing.xs.h),
                 const _LoginText(),
+                SizedBox(height: AppSpacing.md.h),
+                const _RestoreText(),
                 SizedBox(height: AppSpacing.xxxl.h),
               ],
             ),
@@ -237,6 +239,50 @@ class _LoginTextState extends State<_LoginText> {
         children: [
           TextSpan(
             text: 'ورود',
+            style: AppTypography.titleMedium.copyWith(color: colors.primary),
+            recognizer: _recognizer,
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+}
+
+class _RestoreText extends StatefulWidget {
+  const _RestoreText();
+
+  @override
+  State<_RestoreText> createState() => _RestoreTextState();
+}
+
+class _RestoreTextState extends State<_RestoreText> {
+  late final TapGestureRecognizer _recognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _recognizer = TapGestureRecognizer()
+      ..onTap = () => Get.toNamed(AppRoutes.authRestore);
+  }
+
+  @override
+  void dispose() {
+    _recognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Text.rich(
+      TextSpan(
+        text: 'فایل پشتیبان دارید؟ ',
+        style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
+        children: [
+          TextSpan(
+            text: 'بازیابی',
             style: AppTypography.titleMedium.copyWith(color: colors.primary),
             recognizer: _recognizer,
           ),

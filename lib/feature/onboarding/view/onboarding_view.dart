@@ -72,40 +72,69 @@ class OnboardingView extends GetView<OnboardingController> {
 
             Padding(
               padding: EdgeInsets.fromLTRB(24.s, 0, 24.s, 32.s),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Obx(() {
-                    return Row(
-                      children: List.generate(controller.slides.length, (
-                        index,
-                      ) {
-                        final isActive = controller.currentPage.value == index;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          margin: EdgeInsets.only(right: 6.s),
-                          width: isActive ? 18.w : 8.w,
-                          height: 8.h,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? context.colors.primary
-                                : context.colors.strengthBarBg,
-                            borderRadius: BorderRadius.circular(AppRadius.ssm),
-                          ),
-                        );
-                      }),
-                    );
-                  }),
-
                   Obx(() {
                     final isLast =
                         controller.currentPage.value ==
                         controller.slides.length - 1;
-                    return FloatingActionButton(
-                      onPressed: controller.nextPage,
-                      child: Icon(isLast ? Icons.check : Icons.arrow_forward),
+                    if (!isLast) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.md.h),
+                      child: TextButton(
+                        key: const Key('onboarding-restore'),
+                        onPressed: controller.openRestore,
+                        child: Text(
+                          'بازیابی پشتیبان',
+                          style: AppTypography.titleMedium.copyWith(
+                            color: context.colors.primary,
+                          ),
+                        ),
+                      ),
                     );
                   }),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Obx(() {
+                        return Row(
+                          children: List.generate(controller.slides.length, (
+                            index,
+                          ) {
+                            final isActive =
+                                controller.currentPage.value == index;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              margin: EdgeInsets.only(right: 6.s),
+                              width: isActive ? 18.w : 8.w,
+                              height: 8.h,
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? context.colors.primary
+                                    : context.colors.strengthBarBg,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.ssm,
+                                ),
+                              ),
+                            );
+                          }),
+                        );
+                      }),
+                      Obx(() {
+                        final isLast =
+                            controller.currentPage.value ==
+                            controller.slides.length - 1;
+                        return FloatingActionButton(
+                          onPressed: controller.nextPage,
+                          child: Icon(
+                            isLast ? Icons.check : Icons.arrow_forward,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ],
               ),
             ),

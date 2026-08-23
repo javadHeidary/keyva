@@ -192,6 +192,21 @@ void main() {
     expect(haystack.contains(note), isFalse);
     expect(haystack.contains(cardNumber), isFalse);
     expect(haystack.contains(cvv), isFalse);
+    final object = jsonDecode(utf8.decode(bytes)) as Map;
+    expect(object.containsKey('wrappedVaultKey'), isFalse);
+    expect(object.containsKey('masterPassword'), isFalse);
+    expect(object.containsKey('vaultKey'), isFalse);
+    expect(
+      object.keys,
+      unorderedEquals(<String>[
+        'formatVersion',
+        'kdfSalt',
+        'kdfParameters',
+        'nonce',
+        'ciphertext',
+        'authenticationTag',
+      ]),
+    );
   });
 
   test('wrong backup password does not change the vault', () async {
@@ -309,6 +324,29 @@ void main() {
     _expectSuccess(await backup.restoreVault(plan.vault));
     expect(identical(session.vaultKey, sessionKey), isTrue);
     expect(session.vaultKey, originalValue);
+  });
+
+  test('decryptBackup works without an authenticated session', () async {
+    await unlock(sampleVault());
+    final bytes = _expectSuccess(
+      await backup.createBackup(backupPassword: backupPassword),
+    );
+    session.clear();
+    await vaultSession.lock();
+
+    final plan = _expectSuccess(
+      await backup.decryptBackup(bytes: bytes, backupPassword: backupPassword),
+    );
+    expect(plan.vault, sampleVault());
+    expect(vaults.saveCount, 0);
+
+    final restored = await backup.restoreVault(plan.vault);
+    expect(restored, isA<FailureResult<void>>());
+    expect(
+      (restored as FailureResult<void>).failure,
+      isA<AuthenticationFailure>(),
+    );
+    expect(vaults.saveCount, 0);
   });
 }
 

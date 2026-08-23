@@ -13,7 +13,7 @@ Related code:
 - [`test/feature/backup/`](../../test/feature/backup/)
 - [`test/core/security/backup_password_policy_test.dart`](../../test/core/security/backup_password_policy_test.dart)
 
-It extends Tasks 01–13. It does **not** add cloud backup, CSV/plaintext export, merge restore, or a locked-screen restore UI.
+It extends Tasks 01–13. It does **not** add cloud backup, CSV/plaintext export, or merge restore.
 
 ---
 
@@ -21,18 +21,16 @@ It extends Tasks 01–13. It does **not** add cloud backup, CSV/plaintext export
 
 Task 14 adds a portable `.keyva` backup that is encrypted with a **Backup Password**, independent of the Master Password and Vault Key.
 
-Restore replaces the current `VaultData` only after full validation and confirmation. Persistence goes through the existing vault encryption path. Local authentication is unchanged.
+Two restore entry points share the same decrypt core:
 
 ```text
-Settings
- ↓
-BackupRestoreView
- ↓
-BackupViewModel / RestoreViewModel
- ↓
-BackupService
- ├─ VaultOperationService.getVault / VaultDataService.replaceVault
- └─ BackupFileService (file_picker only)
+Logged-out Restore UI (/auth/restore)
+  → decryptBackup
+  → restoreIntoNewAccount (createAccount + unlock + replaceVault)
+
+Logged-in Restore UI (/settings/backup)
+  → decryptBackup
+  → restoreVault → replaceVault
 ```
 
 ---
@@ -48,7 +46,7 @@ Reasons:
 - [`VaultRepository.saveVaultData`](../../lib/feature/vault/repository/vault_repository_impl.dart) already encrypts with the current session Vault Key.
 - The file remains restorable into another compatible Keyva account because it is not bound to the original Vault Key.
 
-Cross-device **format** portability is a property of the envelope. Task 14 restore UI is **unlocked-only** (`SessionGuard`). There is no locked-screen / new-device restore flow.
+Cross-device **format** portability is a property of the envelope. Restore into an existing account stays unlocked-only. Restore without an account uses `/auth/restore` (no `SessionGuard`) and creates a **new** local account with a new Master Password and Vault Key.
 
 This deliberately differs from [`documents/architecture/06_backup_and_restore.md`](../architecture/06_backup_and_restore.md), which shipped wrapped-key + Master Password restore and no Backup Password.
 
@@ -148,55 +146,63 @@ Cancellation of the save dialog is a normal result, not an `AppFailure`.
 
 ## Restore flow
 
-Fail-closed. The current Vault is not mutated until `replaceVault()`.
+Fail-closed. Decrypt and validate fully in memory before any persist. Logged-in restore does not mutate the current Vault until `replaceVault()`. Logged-out restore does not create an account until decrypt succeeds and the user sets a new Master Password.
 
-1. `BackupFileService.pick`
-2. UTF-8 / JSON parse
-3. Envelope object shape
-4. Exact required/allowed keys
-5. `formatVersion == 1`
-6. Base64 fields
-7. KDF parameter validation
-8. Ask for Backup Password
-9. Derive Backup Key and decrypt
-10. `VaultSerializer.deserialize`
-11. `VaultData` validation
-12. Show restore preview (item counts only)
-13. Destructive confirmation
-14. `VaultDataService.replaceVault()`
-15. `VaultHomeViewModel.refreshVault` + `SearchViewModel.reloadFromVault`
+Shared steps:
+
+1. `BackupFileService.pick` (in-memory bytes, or path fallback)
+2. Envelope validation (`formatVersion == 1`)
+3. Backup Password → Argon2id → AES-GCM decrypt
+4. `VaultSerializer.deserialize` + `VaultData` validation
+5. Preview (item counts only)
+
+### Scenario A — no account / new device
+
+Entry: onboarding, register, or account selection → `/auth/restore`.
 
 ```text
-.keyva
+decryptBackup
  ↓
-BackupFileService.pick
+preview (new account copy)
  ↓
-BackupService.validateEnvelope / decryptBackup
+RestoreAccountSetup (username + new Master Password)
  ↓
-Preview dialog (login / bank card / secure note / category counts)
+AuthRepository.createAccount
  ↓
-User confirmation
+VaultUnlockService.unlock
+ ↓
+VaultDataService.replaceVault
+ ↓
+shell / Home
+```
+
+The Backup Password is used only to decrypt. It does not become the Master Password. The restored account gets a new `userId` and a new Vault Key wrapped by the new Master Password.
+
+If persist fails after `createAccount`, restore locks the session and deletes the just-created `UserRecord` and vault row.
+
+### Scenario B — logged-in replace
+
+Entry: Settings → Backup & Restore.
+
+```text
+preview + replacement confirmation (جایگزینی / انصراف)
  ↓
 VaultDataService.replaceVault
  ↓
 VaultRepository.saveVaultData (current Vault Key)
- ↓
-Hive put
  ↓
 If VaultSession is still unlocked → VaultSession.unlock(restored)
  ↓
 VaultHomeViewModel.refreshVault + search reset
 ```
 
-The confirmation dialog shows Persian count lines from `BackupPreview.confirmationDescription`. It does **not** show passwords, CVV, PAN, notes, or Backup Password.
-
-Policy: **replace, no merge**.
-
 ---
 
 ## Restore replacement policy
 
-`replaceVault(VaultData)` is the **only** new Vault mutation API.
+`replaceVault(VaultData)` remains the persist API for an already unlocked account.
+
+`restoreIntoNewAccount` is the additional commit API for Scenario A. It reuses `createAccount` + `unlock` + `replaceVault`. It does not write Hive from the backup layer except through those existing services, plus rollback `UserDataSource.delete` / `VaultDataSource.delete` if persist fails.
 
 Sequence:
 
@@ -213,16 +219,18 @@ Sequence:
 
 ## Session behavior
 
-Backup & Restore require `SessionGuard` (authenticated/unlocked). Existing `AppLockController` / `VaultUnlockService.lock()` is reused. There is no custom backup lifecycle.
+Create backup and Scenario B restore require an authenticated session. Scenario A restore (`RestoreMode.createAccount`) does not.
 
-If the session becomes locked during create/restore:
+If the session becomes locked during logged-in create/restore:
 
 - ViewModels abort when `SessionService.isAuthenticated` is false
 - `RestoreViewModel` drops `_pendingVault` on lock, cancel, and `onClose`
 - lock **before** `saveVaultData` → Hive still has the previous Vault; `VaultSession` stays locked; no success UI
 - lock **after** a successful `saveVaultData` (race below) → Hive may already contain the restored `VaultRecord`; `replaceVault` does **not** rehydrate plaintext into `VaultSession`
 
-After a successful restore the session stays Unlocked with the **same** in-memory Vault Key.
+After a successful logged-in restore the session stays Unlocked with the **same** in-memory Vault Key.
+
+After a successful new-account restore the session is the newly created account, with a **new** Vault Key wrapped by the new Master Password.
 
 ### Race: `saveVaultData()` then `VaultSession.unlock()`
 
@@ -264,7 +272,7 @@ Safest staged write: validate and decrypt fully in memory, then overwrite the ex
 `file_picker` is referenced **only** by [`BackupFileServiceImpl`](../../lib/feature/backup/service/backup_file_service_impl.dart).
 
 - Export: `FilePicker.platform.saveFile` with backup bytes (user-chosen location; not a silent private-directory write).
-- Import: `pickFiles(withData: true)`.
+- Import: `pickFiles(withData: true, type: FileType.any)`. If `bytes` is null/empty, read the picked `path`.
 - Cancel → `BackupFilePickCancelled` / `BackupFileExportCancelled` (not an `AppFailure`).
 
 Widget tests use `FakeBackupFileService`. They do not depend on `file_picker`.
@@ -295,10 +303,13 @@ Raw Hive/crypto exceptions are never shown.
 | [`test/core/security/backup_password_policy_test.dart`](../../test/core/security/backup_password_policy_test.dart) | Reuses Master Password min length |
 | `backup_envelope_codec_test.dart` | Round-trip, extra keys, unsupported version, bad KDF, truncated JSON |
 | `backup_file_names_test.dart` | `keyva_backup_YYYY-MM-DD.keyva` |
-| `backup_service_test.dart` | Round-trip `VaultData` equality; sentinel plaintext absent from raw bytes; wrong password; corruption; unsupported version; empty vault; persist failure leaves persisted Vault A + session A + Vault Key |
+| `backup_service_test.dart` | Round-trip; no plaintext / wrapping metadata in bytes; wrong password; corruption; unsupported version; empty vault; persist failure; decrypt without session |
+| `backup_file_service_test.dart` | In-memory bytes; path fallback; unreadable path; cancelled picker |
 | `backup_restore_lock_test.dart` | Hive: persist Vault A, fail save, Hive still A; lock before save keeps Hive A; lock after save does not rehydrate `VaultSession` |
-| `backup_restore_auth_test.dart` | After restore: same Vault Key object/value; PIN unwrap; biometric unwrap; Master Password unlock |
-| `backup_restore_view_test.dart` | Settings row; hub copy; password validation; confirm mismatch; cancel export; preview counts without secrets; lock before/during restore; confirmation; restore persist failure |
+| `backup_restore_auth_test.dart` | After logged-in restore: same Vault Key; PIN unwrap; biometric unwrap; Master Password unlock |
+| `backup_restore_new_account_test.dart` | No-account restore; backup password ≠ master password; old master not required; persist failure rolls back the new account |
+| `backup_restore_multi_account_test.dart` | Restore into B leaves A unchanged |
+| `backup_restore_view_test.dart` | Settings row; hub copy; password validation; confirm mismatch; cancel export; preview counts without secrets; replacement cancel; lock races; persist failure; logged-out hub; new-account commit uses new master password |
 | `backup_restore_home_test.dart` | Home shows Vault A, restore Vault B, Home and Search show Vault B |
 
 Crypto tests use `FastKeyManagementService` so Argon2id stays cheap. Production still uses default KDF costs.
@@ -315,17 +326,15 @@ Security tests inspect raw backup bytes for sentinels (`TEST_USERNAME`, `TEST_SE
 - Platform save/pick UI varies; cancellation is handled, destination path is chosen by the OS.
 - Prototype `LoginVaultStore` / `CategoryCatalogController` remain separate from encrypted `VaultData`. Live Home UI is `VaultHomeViewModel`.
 - Dart does not guarantee memory zeroization of the Backup Key.
-- Locked-device / new-account restore UI is not implemented.
+- New-account restore creates a new `userId`; it does not preserve the original account identity from the backup (the envelope does not contain `UserRecord`).
 - The prototype Settings backup dialog (`backup_restore_dialog.dart`) is removed. `SettingsRepository` has no `exportBackup` / `importBackup` stubs.
 
 ---
 
 ## Files changed
 
-New: backup feature (`BackupService`, `BackupFileService`, envelope codec, ViewModels, hub view, dialogs, bindings), `BackupPasswordPolicy`, backup `AppFailure` types, Task 14 tests, this note.
+Backup feature now includes logged-out restore (`/auth/restore`, `restoreIntoNewAccount`, `RestoreAccountSetupView`) and path-fallback file picking.
 
-Extended: `VaultDataService.replaceVault` (save, then unlock only if still unlocked), GetIt, `AppRoutes.backupRestore`, Settings backup row, `vault_user_message`, `SearchViewModel.reloadFromVault`, `pubspec.yaml` (`file_picker`).
-
-Removed: Settings prototype backup dialog; unused `SettingsRepository.exportBackup` / `importBackup`.
+Extended: `UserDataSource.delete` (rollback only), GetIt backup wiring, onboarding/register/account-selection restore entry points, replacement confirm with Cancel.
 
 Hive adapters, Vault encryption format, PIN/biometric wrap format, Argon2id parameters, and `SessionService` public API were not redesigned.

@@ -146,6 +146,10 @@ void initDependencies(HiveDatabase database) {
       serializer: getIt<VaultSerializer>(),
       crypto: getIt<CryptoService>(),
       keys: getIt<KeyManagementService>(),
+      auth: getIt<AuthRepository>(),
+      unlock: getIt<VaultUnlockService>(),
+      users: getIt<UserDataSource>(),
+      vaults: getIt<VaultDataSource>(),
     ),
   );
   getIt.registerFactory<VaultHomeViewModel>(

@@ -53,10 +53,26 @@ class AccountSelectionView extends GetView<AccountSelectionViewModel> {
           context,
           key: const Key('auth-accounts-empty'),
           message: 'حسابی روی این دستگاه وجود ندارد.',
-          action: AppButtonWidget(
-            key: const Key('auth-accounts-register'),
-            title: 'ثبت‌نام',
-            onPressed: controller.openRegister,
+          action: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppButtonWidget(
+                key: const Key('auth-accounts-register'),
+                title: 'ثبت‌نام',
+                onPressed: controller.openRegister,
+              ),
+              SizedBox(height: AppSpacing.md.h),
+              TextButton(
+                key: const Key('auth-accounts-restore'),
+                onPressed: controller.openRestore,
+                child: Text(
+                  'بازیابی پشتیبان',
+                  style: AppTypography.titleMedium.copyWith(
+                    color: context.colors.primary,
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       case AccountSelectionStatus.loaded:
@@ -76,6 +92,8 @@ class AccountSelectionView extends GetView<AccountSelectionViewModel> {
               ),
             ),
             _RegisterHint(onRegister: controller.openRegister),
+            SizedBox(height: AppSpacing.md.h),
+            _RestoreHint(onRestore: controller.openRestore),
           ],
         );
     }
@@ -196,6 +214,56 @@ class _RegisterHintState extends State<_RegisterHint> {
           children: [
             TextSpan(
               text: 'ثبت‌نام',
+              style: AppTypography.titleMedium.copyWith(
+                color: context.colors.primary,
+              ),
+              recognizer: _recognizer,
+            ),
+          ],
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+class _RestoreHint extends StatefulWidget {
+  const _RestoreHint({required this.onRestore});
+
+  final VoidCallback onRestore;
+
+  @override
+  State<_RestoreHint> createState() => _RestoreHintState();
+}
+
+class _RestoreHintState extends State<_RestoreHint> {
+  late final TapGestureRecognizer _recognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _recognizer = TapGestureRecognizer()..onTap = widget.onRestore;
+  }
+
+  @override
+  void dispose() {
+    _recognizer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.center,
+      child: Text.rich(
+        TextSpan(
+          text: 'فایل پشتیبان دارید؟ ',
+          style: AppTypography.bodyMedium.copyWith(
+            color: context.colors.textTertiary,
+          ),
+          children: [
+            TextSpan(
+              text: 'بازیابی',
               style: AppTypography.titleMedium.copyWith(
                 color: context.colors.primary,
               ),

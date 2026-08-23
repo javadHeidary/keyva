@@ -4,7 +4,6 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_typography.dart';
-// اگر اکستنشن عددی را در فایل جدا گذاشتی، اینجا import کن:
 // import '../../core/theme/responsive_extensions.dart';
 
 class ThemeDemoPage extends StatefulWidget {

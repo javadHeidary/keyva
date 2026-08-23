@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
@@ -447,5 +448,153 @@ void main() {
     await pumpAuthSettle(tester);
     expect(find.text('بازیابی اطلاعات انجام نشد.'), findsOneWidget);
     AppToast.dismiss();
+  });
+
+  testWidgets('restore cancel leaves the vault unmutated', (tester) async {
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.plan = BackupRestorePlan(
+      vault: emptyVault,
+      preview: BackupPreview.fromVault(emptyVault),
+    );
+    await pumpHub(tester);
+    await tester.tap(find.byKey(const Key('backup-restore-restore')));
+    await pumpAuthSettle(tester);
+    await tester.enterText(
+      find.byKey(const Key('backup-restore-password')),
+      'backup-pass',
+    );
+    await tester.tap(find.byKey(const Key('backup-restore-submit')));
+    await pumpAuthSettle(tester);
+    expect(find.byKey(const Key('backup-restore-cancel')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('backup-restore-cancel')));
+    await pumpAuthSettle(tester);
+    expect(backup.restoreCount, 0);
+    expect(restoreVm.hasPendingRestore, isFalse);
+  });
+
+  testWidgets('logged-out restore hub hides create and does not require a session',
+      (tester) async {
+    session.clear();
+    restoreVm = RestoreViewModel(
+      backup: backup,
+      files: files,
+      session: session,
+      mode: RestoreMode.createAccount,
+    );
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    final vault = populatedVault();
+    backup.plan = BackupRestorePlan(
+      vault: vault,
+      preview: BackupPreview.fromVault(vault),
+    );
+    setupAuthWidgetSurface(tester);
+    Get.put(backupVm);
+    Get.put(restoreVm);
+    await tester.pumpWidget(
+      GetMaterialApp(
+        theme: AppTheme.light,
+        locale: const Locale('fa', 'IR'),
+        home: const BackupRestoreView(createAccountMode: true),
+        getPages: [
+          GetPage(
+            name: '/auth/restore/setup',
+            page: () => const Scaffold(
+              key: Key('restore-setup-page'),
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ],
+        builder: (context, child) {
+          AppResponsive.init(context);
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: child!,
+          );
+        },
+      ),
+    );
+    await pumpAuthSettle(tester);
+    expect(find.byKey(const Key('backup-restore-create')), findsNothing);
+    await tester.tap(find.byKey(const Key('backup-restore-restore')));
+    await pumpAuthSettle(tester);
+    await tester.enterText(
+      find.byKey(const Key('backup-restore-password')),
+      'backup-pass',
+    );
+    await tester.tap(find.byKey(const Key('backup-restore-submit')));
+    await pumpAuthSettle(tester);
+    expect(find.text('بازیابی پشتیبان'), findsWidgets);
+    expect(find.text('جایگزینی'), findsNothing);
+    expect(find.text('ادامه'), findsOneWidget);
+    expect(find.text('must-not-appear'), findsNothing);
+    await tester.tap(find.text('ادامه'));
+    await pumpAuthSettle(tester);
+    expect(backup.restoreCount, 0);
+    expect(backup.restoreNewAccountCount, 0);
+    expect(restoreVm.hasPendingRestore, isTrue);
+  });
+
+  testWidgets('new-account restore commits with a new master password',
+      (tester) async {
+    session.clear();
+    restoreVm = RestoreViewModel(
+      backup: backup,
+      files: files,
+      session: session,
+      mode: RestoreMode.createAccount,
+    );
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.plan = BackupRestorePlan(
+      vault: emptyVault,
+      preview: BackupPreview.fromVault(emptyVault),
+    );
+    setupAuthWidgetSurface(tester);
+    Get.put(restoreVm);
+    await tester.pumpWidget(
+      GetMaterialApp(
+        theme: AppTheme.light,
+        locale: const Locale('fa', 'IR'),
+        home: Builder(
+          builder: (context) {
+            return TextButton(
+              key: const Key('run-restore'),
+              onPressed: () async {
+                await restoreVm.pickBackup(context);
+                await restoreVm.decryptSelectedBackup(
+                  password: 'backup-pass',
+                  context: context,
+                );
+                restoreVm.usernameController.text = 'restored';
+                restoreVm.passwordController.text = 'new-master-password';
+                restoreVm.confirmPasswordController.text = 'new-master-password';
+                await restoreVm.completeNewAccountRestore(context);
+              },
+              child: const Text('run'),
+            );
+          },
+        ),
+        getPages: [
+          GetPage(
+            name: AppRoutes.shell,
+            page: () => const Scaffold(
+              key: Key('shell-page'),
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ],
+        builder: (context, child) {
+          AppResponsive.init(context);
+          return child!;
+        },
+      ),
+    );
+    await tester.tap(find.byKey(const Key('run-restore')));
+    await pumpAuthSettle(tester);
+    expect(backup.restoreNewAccountCount, 1);
+    expect(backup.lastNewAccountUsername, 'restored');
+    expect(backup.lastNewAccountMasterPassword, 'new-master-password');
+    expect(backup.lastPassword, 'backup-pass');
+    expect(backup.lastNewAccountMasterPassword, isNot(backup.lastPassword));
+    expect(backup.restoreCount, 0);
   });
 }

@@ -268,6 +268,9 @@ class _RejectingUpdateUsers implements UserDataSource {
   Future<Result<void>> update(UserRecord user) async {
     return const FailureResult(DatabaseFailure());
   }
+
+  @override
+  Future<Result<void>> delete(String id) => _inner.delete(id);
 }
 
 class _FailingWrapKeys implements KeyManagementService {

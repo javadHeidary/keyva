@@ -48,6 +48,8 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(find.byKey(const Key('auth-accounts-empty')), findsOneWidget);
+    expect(find.byKey(const Key('auth-accounts-register')), findsOneWidget);
+    expect(find.byKey(const Key('auth-accounts-restore')), findsOneWidget);
     expect(find.byKey(const Key('auth-accounts-list')), findsNothing);
     expect(session.isAuthenticated, isFalse);
   });
@@ -80,6 +82,7 @@ void main() {
     expect(find.byKey(const Key('auth-accounts-list')), findsOneWidget);
     expect(find.text('علی'), findsOneWidget);
     expect(find.text('رضا'), findsOneWidget);
+    expect(find.textContaining('بازیابی'), findsOneWidget);
     expect(find.textContaining('wrappedVaultKey'), findsNothing);
     expect(find.textContaining('kdfSalt'), findsNothing);
     expect(session.isAuthenticated, isFalse);

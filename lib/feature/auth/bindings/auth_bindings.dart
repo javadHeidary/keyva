@@ -1,5 +1,4 @@
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/get_instance.dart';
+import 'package:get/get.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
@@ -9,31 +8,44 @@ import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
-class AuthBindings extends Bindings {
+class AccountSelectionBindings extends Bindings {
   @override
   void dependencies() {
-    if (!Get.isRegistered<AccountSelectionViewModel>()) {
-      Get.lazyPut(
-        () => AccountSelectionViewModel(auth: getIt<AuthRepository>()),
-      );
-    }
-    if (!Get.isRegistered<LoginController>()) {
-      Get.lazyPut(
-        () => LoginController(
-          unlock: getIt<VaultUnlockService>(),
-          auth: getIt<AuthRepository>(),
-          pin: getIt<PinService>(),
-          biometric: getIt<BiometricService>(),
-        ),
-      );
-    }
-    if (!Get.isRegistered<RegisterController>()) {
-      Get.lazyPut(
-        () => RegisterController(
-          auth: getIt<AuthRepository>(),
-          unlock: getIt<VaultUnlockService>(),
-        ),
-      );
-    }
+    _replace<AccountSelectionViewModel>(
+      () => AccountSelectionViewModel(auth: getIt<AuthRepository>()),
+    );
   }
+}
+
+class UnlockBindings extends Bindings {
+  @override
+  void dependencies() {
+    _replace<LoginController>(
+      () => LoginController(
+        unlock: getIt<VaultUnlockService>(),
+        auth: getIt<AuthRepository>(),
+        pin: getIt<PinService>(),
+        biometric: getIt<BiometricService>(),
+      ),
+    );
+  }
+}
+
+class RegisterBindings extends Bindings {
+  @override
+  void dependencies() {
+    _replace<RegisterController>(
+      () => RegisterController(
+        auth: getIt<AuthRepository>(),
+        unlock: getIt<VaultUnlockService>(),
+      ),
+    );
+  }
+}
+
+void _replace<T>(T Function() create) {
+  if (Get.isRegistered<T>()) {
+    Get.delete<T>(force: true);
+  }
+  Get.put<T>(create());
 }

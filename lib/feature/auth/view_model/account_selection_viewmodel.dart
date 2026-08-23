@@ -39,7 +39,12 @@ class AccountSelectionViewModel extends GetxController {
       return;
     }
     if (list.length == 1) {
-      selectAccount(list.first.id);
+      final userId = list.first.id;
+      await Future<void>.delayed(Duration.zero);
+      if (isClosed) {
+        return;
+      }
+      selectAccount(userId);
       return;
     }
     status.value = AccountSelectionStatus.loaded;
@@ -51,5 +56,9 @@ class AccountSelectionViewModel extends GetxController {
 
   void openRegister() {
     Get.toNamed(AppRoutes.authRegister);
+  }
+
+  void openRestore() {
+    Get.toNamed(AppRoutes.authRestore);
   }
 }
