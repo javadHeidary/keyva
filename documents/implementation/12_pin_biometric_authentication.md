@@ -51,7 +51,7 @@ Policy lives in [`SecurityConstants`](../../lib/core/constants/security_constant
 
 Credential derivation reuses `CryptoService.deriveKey` (Argon2id) with a **dedicated PIN salt**, then `KeyManagementService.wrapVaultKey`. The vault KDF parameters on `UserRecord` are not modified.
 
-Failed attempts are a non-secret counter in `app_settings` (`HiveSettingsKeys.pinFailedAttempts`). After 5 failures the PIN path is locked until a successful Master Password unlock calls `PinService.resetFailedAttempts`.
+Failed attempts are a non-secret counter in `app_settings` (`HiveSettingsKeys.pinFailedAttempts` and `pinLockoutStartedAt`). After 3 failures the PIN path is locked for 15 minutes, or until a successful Master Password unlock calls `PinService.resetFailedAttempts`.
 
 The plaintext PIN is never written to Hive or Secure Storage.
 
@@ -64,6 +64,8 @@ The plaintext PIN is never written to Hive or Secure Storage.
 Enable (unlocked session): OS prompt → random wrap key → wrap Vault Key → store wrap key + wrapped key in Secure Storage → `biometricEnabled = true`.
 
 Unlock: OS prompt → read wrap key → unwrap Vault Key → same session/vault path.
+
+Failed authentications (`BiometricAuthFailedFailure`) use the same 3-attempt / 15-minute limiter as PIN, persisted as `biometricFailedAttempts:$userId` and `biometricLockoutStartedAt:$userId`. Cancel, unavailable, and not-configured results do not increment the counter. A successful Master Password unlock resets biometric attempts.
 
 Cancel is `BiometricCancelledFailure` and stays locked without a crypto-style error. Unavailable devices hide the Settings toggle.
 
@@ -81,7 +83,7 @@ PIN (enabled + not locked out)
 Master Password (always)
 ```
 
-Master Password remains reachable from PIN/biometric via `ورود با رمز اصلی`. PIN lockout switches the form to Master Password and shows the generic unlock error.
+Master Password remains reachable from PIN/biometric via `ورود با رمز اصلی`. After 3 PIN or biometric failures the Unlock screen shows a lockout dialog and switches to Master Password.
 
 ---
 
@@ -104,10 +106,11 @@ Setup requires an unlocked session (`SessionGuard` + in-memory Vault Key). There
 | File | Scenarios |
 |---|---|
 | `pin_policy_test.dart` | 4–6 digits, reject non-digits |
-| `pin_service_test.dart` | enable/unwrap/lockout/reset/change/disable; no plaintext PIN in storage |
-| `biometric_service_test.dart` | unavailable, enable, unwrap, cancel, disable |
-| `vault_unlock_pin_biometric_test.dart` | PIN/biometric unlock session; lock keeps PIN material |
-| `auth_login_view_test.dart` | PIN field, generic wrong-PIN error, MP fallback, lockout |
+| `unlock_attempt_limiter_test.dart` | 3 failures, 15-minute reset, persistence, per-user PIN/biometric isolation |
+| `pin_service_test.dart` | enable/unwrap/lockout after 3/reset/change/disable; no plaintext PIN in storage |
+| `biometric_service_test.dart` | unavailable, enable, unwrap, cancel, lockout, 15-minute reset |
+| `vault_unlock_pin_biometric_test.dart` | PIN/biometric unlock session; Master Password resets both attempt counters |
+| `auth_login_view_test.dart` | PIN field, remaining attempts, MP fallback, lockout dialog |
 | `settings_security_view_test.dart` | PIN dialog validation, enable, disable confirm, hide biometric |
 
 Widget tests use fakes. PIN/biometric service tests use real AES-GCM wrap with a faster Argon2id configuration (`FastKeyManagementService`) so they can run beside Task 02–11 tests without timing out. Production still uses `KeyManagementService.defaultKdfParameters()`.
@@ -115,7 +118,8 @@ Widget tests use fakes. PIN/biometric service tests use real AES-GCM wrap with a
 ### Real-device notes
 
 - Android: enroll a fingerprint, enable PIN + biometric in Settings, lock, unlock with each method, then confirm Master Password still works.
-- After 5 wrong PINs, the Unlock screen should offer Master Password; a correct Master Password should restore PIN.
+- After 3 wrong PINs or biometric failures, the Unlock screen should require Master Password; a correct Master Password should restore both methods.
+- After 15 minutes without Master Password, PIN and biometric attempts reset.
 - Lock and Logout must return to Unlock without deleting the account.
 - Face ID on iOS should show the `NSFaceIDUsageDescription` prompt once.
 

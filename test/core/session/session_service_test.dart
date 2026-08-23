@@ -52,4 +52,21 @@ void main() {
     expect(session.vaultKey, isNull);
     expect(vaultKey, Uint8List(SecurityConstants.vaultKeyLength));
   });
+
+  test('updateUsername changes the display name and keeps the vault key', () {
+    final vaultKey = Uint8List.fromList(
+      List<int>.generate(SecurityConstants.vaultKeyLength, (i) => i + 1),
+    );
+
+    session.setAuthenticated(
+      userId: 'user-1',
+      username: 'علی',
+      vaultKey: vaultKey,
+    );
+    session.updateUsername('رضا');
+
+    expect(session.current!.userId, 'user-1');
+    expect(session.current!.username, 'رضا');
+    expect(session.vaultKey, vaultKey);
+  });
 }

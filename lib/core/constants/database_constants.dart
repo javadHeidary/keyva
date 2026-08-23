@@ -7,9 +7,19 @@ abstract final class HiveBoxNames {
 abstract final class HiveSettingsKeys {
   static const databaseVersion = 'databaseVersion';
   static const activeUserId = 'activeUserId';
+  static const themePreference = 'themePreference';
 
   static String pinFailedAttempts(String userId) =>
       'pinFailedAttempts:$userId';
+
+  static String pinLockoutStartedAt(String userId) =>
+      'pinLockoutStartedAt:$userId';
+
+  static String biometricFailedAttempts(String userId) =>
+      'biometricFailedAttempts:$userId';
+
+  static String biometricLockoutStartedAt(String userId) =>
+      'biometricLockoutStartedAt:$userId';
 }
 
 abstract final class DatabaseConfig {

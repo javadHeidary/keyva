@@ -54,6 +54,7 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
       return FailureResult(authenticated.failure);
     }
     await _pin?.resetFailedAttempts(userId);
+    await _biometric?.resetFailedAttempts(userId);
     return _openVault();
   }
 
@@ -157,6 +158,7 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
     return failure is BiometricCancelledFailure ||
         failure is BiometricUnavailableFailure ||
         failure is BiometricAuthFailedFailure ||
-        failure is BiometricNotConfiguredFailure;
+        failure is BiometricNotConfiguredFailure ||
+        failure is BiometricLockedOutFailure;
   }
 }

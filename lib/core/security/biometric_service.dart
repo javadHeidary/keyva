@@ -7,6 +7,10 @@ abstract interface class BiometricService {
 
   Future<Result<bool>> isEnabled(String userId);
 
+  Future<Result<bool>> isLockedOut(String userId);
+
+  Future<Result<int>> remainingAttempts(String userId);
+
   Future<Result<void>> enable({required String localizedReason});
 
   Future<Result<void>> disable();
@@ -15,4 +19,6 @@ abstract interface class BiometricService {
     required String userId,
     required String localizedReason,
   });
+
+  Future<Result<void>> resetFailedAttempts(String userId);
 }

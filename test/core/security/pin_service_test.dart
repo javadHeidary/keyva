@@ -11,6 +11,7 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 
@@ -25,6 +26,7 @@ void main() {
   late AuthRepositoryImpl auth;
   late PinServiceImpl pin;
   late HiveUserDataSource users;
+  late DateTime now;
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
   const masterPassword = 'correct-master-password';
@@ -45,13 +47,14 @@ void main() {
       session: session,
       database: database!,
     );
+    now = DateTime.utc(2026, 8, 23, 12);
     pin = PinServiceImpl(
       crypto: crypto,
       keys: keys,
       storage: storage,
       users: users,
       session: session,
-      database: database!,
+      attempts: UnlockAttemptLimiter(database: database!, clock: () => now),
     );
   });
 
@@ -123,25 +126,78 @@ void main() {
     expect(unwrapped, vaultKey);
   }, timeout: kdfTimeout);
 
-  test('wrong PIN fails closed, increments, and locks after 5 attempts', () async {
+  test('wrong PIN fails closed, increments, and locks after 3 attempts', () async {
     final (userId, _) = await unlockAccount();
     _expectSuccess(await pin.enable(pinCode));
     session.clear();
 
-    for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
-      final result = await pin.unwrapVaultKey(userId: userId, pin: '000000');
-      expect(result, isA<FailureResult<Uint8List>>());
-      expect(
-        (result as FailureResult<Uint8List>).failure,
-        isA<AuthenticationFailure>(),
-      );
-      expect(result.failure.message, isNot(contains('000000')));
-      expect(result.failure.message, isNot(contains(pinCode)));
-    }
+    expect(_expectSuccess(await pin.remainingAttempts(userId)), 3);
 
+    final first = await pin.unwrapVaultKey(userId: userId, pin: '000000');
+    expect(first, isA<FailureResult<Uint8List>>());
+    expect(_expectSuccess(await pin.remainingAttempts(userId)), 2);
+    expect(_expectSuccess(await pin.isLockedOut(userId)), isFalse);
+
+    final second = await pin.unwrapVaultKey(userId: userId, pin: '000000');
+    expect(second, isA<FailureResult<Uint8List>>());
+    expect(_expectSuccess(await pin.remainingAttempts(userId)), 1);
+
+    final third = await pin.unwrapVaultKey(userId: userId, pin: '000000');
+    expect(third, isA<FailureResult<Uint8List>>());
+    expect(
+      (third as FailureResult<Uint8List>).failure,
+      isA<AuthenticationFailure>(),
+    );
+    expect(third.failure.message, isNot(contains('000000')));
+    expect(third.failure.message, isNot(contains(pinCode)));
     expect(_expectSuccess(await pin.isLockedOut(userId)), isTrue);
+    expect(_expectSuccess(await pin.remainingAttempts(userId)), 0);
+
     final locked = await pin.unwrapVaultKey(userId: userId, pin: pinCode);
     expect(locked, isA<FailureResult<Uint8List>>());
+    expect(_expectSuccess(await pin.isLockedOut(userId)), isTrue);
+  }, timeout: kdfTimeout);
+
+  test('PIN lockout persists across a new PinService on the same database', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await pin.enable(pinCode));
+    session.clear();
+    for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
+      await pin.unwrapVaultKey(userId: userId, pin: '000000');
+    }
+
+    final restored = PinServiceImpl(
+      crypto: CryptoServiceImpl(),
+      keys: FastKeyManagementService(
+        KeyManagementServiceImpl(CryptoServiceImpl()),
+      ),
+      storage: storage,
+      users: users,
+      session: session,
+      attempts: UnlockAttemptLimiter(database: database!, clock: () => now),
+    );
+    expect(_expectSuccess(await restored.isLockedOut(userId)), isTrue);
+    expect(
+      await restored.unwrapVaultKey(userId: userId, pin: pinCode),
+      isA<FailureResult<Uint8List>>(),
+    );
+  }, timeout: kdfTimeout);
+
+  test('PIN attempts reset after 15 minutes without Master Password', () async {
+    final (userId, vaultKey) = await unlockAccount();
+    _expectSuccess(await pin.enable(pinCode));
+    session.clear();
+    for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
+      await pin.unwrapVaultKey(userId: userId, pin: '000000');
+    }
+    expect(_expectSuccess(await pin.isLockedOut(userId)), isTrue);
+
+    now = now.add(SecurityConstants.unlockAttemptLockout);
+    expect(_expectSuccess(await pin.isLockedOut(userId)), isFalse);
+    final unwrapped = _expectSuccess(
+      await pin.unwrapVaultKey(userId: userId, pin: pinCode),
+    );
+    expect(unwrapped, vaultKey);
   }, timeout: kdfTimeout);
 
   test('resetFailedAttempts after Master Password unlock restores PIN', () async {

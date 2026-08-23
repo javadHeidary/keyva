@@ -6,6 +6,7 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
@@ -202,6 +203,21 @@ void main() {
             widget is AppEmptyWidget && widget.layout == AppEmptyLayout.page,
       ),
       findsNothing,
+    );
+  });
+
+  testWidgets('account header shows the persisted name and avatar', (
+    tester,
+  ) async {
+    operations.vault = emptyVault();
+    home.updateAccountProfile(name: 'رضا', avatarId: 'star');
+
+    await pumpHome(tester);
+
+    expect(find.text('رضا'), findsOneWidget);
+    expect(
+      find.byIcon(SettingsAvatarIcons.iconForId('star')),
+      findsOneWidget,
     );
   });
 

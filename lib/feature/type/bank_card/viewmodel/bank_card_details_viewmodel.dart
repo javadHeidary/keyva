@@ -8,6 +8,7 @@ import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/shared/utils/jalali_date_formatter.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 class BankCardDetailsViewModel extends GetxController {
@@ -37,7 +38,7 @@ class BankCardDetailsViewModel extends GetxController {
   String get createdAtLabel {
     final card = item;
     if (card == null) return '';
-    return formatBankCardCreatedAt(card.createdAt);
+    return formatJalaliDate(card.createdAt);
   }
 
   String get formattedCardNumber {

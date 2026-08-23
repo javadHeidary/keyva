@@ -10,6 +10,7 @@ import 'package:keyva/core/database/hive_vault_data_source.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/backup/service/backup_service_impl.dart';
@@ -67,7 +68,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
-      database: database!,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     biometric = BiometricServiceImpl(
       gateway: gateway,
@@ -75,6 +76,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     final serializer = VaultSerializerImpl();
     final repository = VaultRepositoryImpl(

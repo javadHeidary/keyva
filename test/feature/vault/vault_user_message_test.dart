@@ -30,6 +30,13 @@ void main() {
     );
   });
 
+  test('maps biometric lockout', () {
+    expect(
+      vaultUserMessage('Biometric unlock is locked. Use your master password.'),
+      'محدودیت تلاش بیومتریک تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.',
+    );
+  });
+
   test('does not show raw platform exceptions', () {
     expect(
       vaultUserMessage('PlatformException(no_fragment_activity, ...)'),

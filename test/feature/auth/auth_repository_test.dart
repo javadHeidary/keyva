@@ -331,6 +331,55 @@ void main() {
       isFalse,
     );
   });
+
+  test('updateProfile persists username and avatar and refreshes the session', () async {
+    await users.create(_storedUser(id: 'user-1', username: 'علی'));
+    session.setAuthenticated(
+      userId: 'user-1',
+      username: 'علی',
+      vaultKey: Uint8List(32),
+    );
+
+    expect(
+      _expectSuccess(await auth.currentUser()).avatarId,
+      UserRecord.defaultAvatarId,
+    );
+
+    _expectSuccess(
+      await auth.updateProfile(username: 'رضا', avatarId: 'shield'),
+    );
+
+    final loaded = _expectSuccess(await users.findById('user-1'))!;
+    expect(loaded.username, 'رضا');
+    expect(loaded.avatarId, 'shield');
+    expect(session.current!.username, 'رضا');
+    expect(session.vaultKey, isNotNull);
+
+    final current = _expectSuccess(await auth.currentUser());
+    expect(current.username, 'رضا');
+    expect(current.avatarId, 'shield');
+  });
+
+  test('updateProfile rejects an empty username', () async {
+    await users.create(_storedUser(id: 'user-1'));
+    session.setAuthenticated(
+      userId: 'user-1',
+      username: 'علی',
+      vaultKey: Uint8List(32),
+    );
+
+    final result = await auth.updateProfile(username: '  ', avatarId: 'star');
+    expect(result, isA<FailureResult<void>>());
+    expect((result as FailureResult<void>).failure, isA<ValidationFailure>());
+    expect(_expectSuccess(await users.findById('user-1'))!.username, 'علی');
+  });
+
+  test('updateProfile requires an authenticated session', () async {
+    await users.create(_storedUser(id: 'user-1'));
+    _expectAuthenticationFailure(
+      await auth.updateProfile(username: 'رضا', avatarId: 'shield'),
+    );
+  });
 }
 
 UserRecord _storedUser({required String id, String username = 'علی'}) {

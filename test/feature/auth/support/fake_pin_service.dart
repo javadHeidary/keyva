@@ -7,6 +7,7 @@ import 'package:keyva/core/security/pin_service.dart';
 class FakePinService implements PinService {
   bool enabled = false;
   bool lockedOut = false;
+  int remaining = 3;
   AppFailure? unwrapFailure;
   AppFailure? enableFailure;
   String? lastEnabledPin;
@@ -22,6 +23,10 @@ class FakePinService implements PinService {
 
   @override
   Future<Result<bool>> isLockedOut(String userId) async => Success(lockedOut);
+
+  @override
+  Future<Result<int>> remainingAttempts(String userId) async =>
+      Success(lockedOut ? 0 : remaining);
 
   @override
   Future<Result<void>> enable(String pin) async {
@@ -69,6 +74,7 @@ class FakePinService implements PinService {
   Future<Result<void>> resetFailedAttempts(String userId) async {
     resetCount++;
     lockedOut = false;
+    remaining = 3;
     return const Success<void>(null);
   }
 }

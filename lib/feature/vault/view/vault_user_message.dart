@@ -12,6 +12,8 @@ String vaultUserMessage(String? errorMessage) {
       return 'احراز هویت بیومتریک ناموفق بود.';
     case 'Biometric unlock is not set up for this account.':
       return 'باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.';
+    case 'Biometric unlock is locked. Use your master password.':
+      return 'محدودیت تلاش بیومتریک تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
     case 'Vault data is invalid':
       return 'اطلاعات وارد شده معتبر نیست.';
     case 'Cryptographic operation failed':

@@ -1,11 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:keyva/core/constants/database_constants.dart';
-import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
-import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/models/kdf_parameters.dart';
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
@@ -16,6 +13,7 @@ import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/security/secure_storage_service.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/security/wrapped_key_codec.dart';
 import 'package:keyva/core/session/session_service.dart';
 
@@ -26,20 +24,20 @@ class PinServiceImpl implements PinService {
     required SecureStorageService storage,
     required UserDataSource users,
     required SessionService session,
-    required HiveDatabase database,
+    required UnlockAttemptLimiter attempts,
   }) : _crypto = crypto,
        _keys = keys,
        _storage = storage,
        _users = users,
        _session = session,
-       _database = database;
+       _attempts = attempts;
 
   final CryptoService _crypto;
   final KeyManagementService _keys;
   final SecureStorageService _storage;
   final UserDataSource _users;
   final SessionService _session;
-  final HiveDatabase _database;
+  final UnlockAttemptLimiter _attempts;
 
   @override
   Future<Result<bool>> isEnabled(String userId) async {
@@ -52,7 +50,14 @@ class PinServiceImpl implements PinService {
 
   @override
   Future<Result<bool>> isLockedOut(String userId) async {
-    return Success(_failedAttempts(userId) >= SecurityConstants.pinMaxFailedAttempts);
+    return Success(await _attempts.isLockedOut(UnlockAttemptMethod.pin, userId));
+  }
+
+  @override
+  Future<Result<int>> remainingAttempts(String userId) async {
+    return Success(
+      await _attempts.remainingAttempts(UnlockAttemptMethod.pin, userId),
+    );
   }
 
   @override
@@ -139,7 +144,7 @@ class PinServiceImpl implements PinService {
       parameters: material.parameters,
     );
     if (derived is FailureResult<Uint8List>) {
-      await _recordFailedAttempt(userId);
+      await _attempts.recordFailure(UnlockAttemptMethod.pin, userId);
       return const FailureResult(AuthenticationFailure());
     }
     final derivedKey = (derived as Success<Uint8List>).data;
@@ -150,7 +155,7 @@ class PinServiceImpl implements PinService {
     );
     derivedKey.fillRange(0, derivedKey.length, 0);
     if (unwrapped is FailureResult<Uint8List>) {
-      await _recordFailedAttempt(userId);
+      await _attempts.recordFailure(UnlockAttemptMethod.pin, userId);
       return const FailureResult(AuthenticationFailure());
     }
 
@@ -160,14 +165,8 @@ class PinServiceImpl implements PinService {
 
   @override
   Future<Result<void>> resetFailedAttempts(String userId) async {
-    try {
-      await _database.appSettings.delete(
-        HiveSettingsKeys.pinFailedAttempts(userId),
-      );
-      return const Success<void>(null);
-    } catch (_) {
-      return const Success<void>(null);
-    }
+    await _attempts.reset(UnlockAttemptMethod.pin, userId);
+    return const Success<void>(null);
   }
 
   Future<Result<void>> _wrapAndStore({
@@ -266,27 +265,6 @@ class PinServiceImpl implements PinService {
       return null;
     }
     return _session.vaultKey;
-  }
-
-  int _failedAttempts(String userId) {
-    try {
-      final value = _database.appSettings.get(
-        HiveSettingsKeys.pinFailedAttempts(userId),
-      );
-      if (value is int && value > 0) {
-        return value;
-      }
-    } catch (_) {}
-    return 0;
-  }
-
-  Future<void> _recordFailedAttempt(String userId) async {
-    try {
-      await _database.appSettings.put(
-        HiveSettingsKeys.pinFailedAttempts(userId),
-        _failedAttempts(userId) + 1,
-      );
-    } catch (_) {}
   }
 }
 

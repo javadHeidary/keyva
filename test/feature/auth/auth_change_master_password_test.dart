@@ -17,6 +17,7 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
@@ -167,7 +168,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
-      database: database!,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     _expectSuccess(await pin.enable('123456'));
     _expectSuccess(

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service_impl.dart';
 import 'package:keyva/core/database/hive_database.dart';
@@ -12,6 +13,7 @@ import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
@@ -59,7 +61,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
-      database: database!,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     gateway = FakeBiometricGateway();
     biometric = BiometricServiceImpl(
@@ -68,6 +70,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     unlock = VaultUnlockServiceImpl(
       auth: auth,
@@ -203,6 +206,70 @@ void main() {
     final result = await unlock.unlockWithBiometric(userId: first.id);
     expect(result, isA<FailureResult<void>>());
     expect(session.isAuthenticated, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('PIN lockout on one account does not lock another account', () async {
+    final first = _expectSuccess(
+      await auth.createAccount(username: 'علی', masterPassword: sharedPassword),
+    );
+    final second = _expectSuccess(
+      await auth.createAccount(username: 'رضا', masterPassword: sharedPassword),
+    );
+
+    _expectSuccess(
+      await unlock.unlock(userId: first.id, masterPassword: sharedPassword),
+    );
+    _expectSuccess(await pin.enable(sharedPin));
+    _expectSuccess(await unlock.lock());
+
+    _expectSuccess(
+      await unlock.unlock(userId: second.id, masterPassword: sharedPassword),
+    );
+    _expectSuccess(await pin.enable(sharedPin));
+    _expectSuccess(await unlock.lock());
+
+    for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
+      await unlock.unlockWithPin(userId: first.id, pin: '000000');
+    }
+    expect(_expectSuccess(await pin.isLockedOut(first.id)), isTrue);
+    expect(_expectSuccess(await pin.isLockedOut(second.id)), isFalse);
+
+    _expectSuccess(
+      await unlock.unlockWithPin(userId: second.id, pin: sharedPin),
+    );
+    expect(session.current!.userId, second.id);
+  }, timeout: kdfTimeout);
+
+  test('biometric lockout on one account does not lock another account', () async {
+    final first = _expectSuccess(
+      await auth.createAccount(username: 'علی', masterPassword: sharedPassword),
+    );
+    final second = _expectSuccess(
+      await auth.createAccount(username: 'رضا', masterPassword: sharedPassword),
+    );
+
+    _expectSuccess(
+      await unlock.unlock(userId: first.id, masterPassword: sharedPassword),
+    );
+    _expectSuccess(await biometric.enable(localizedReason: 'enable-a'));
+    _expectSuccess(await unlock.lock());
+
+    _expectSuccess(
+      await unlock.unlock(userId: second.id, masterPassword: sharedPassword),
+    );
+    _expectSuccess(await biometric.enable(localizedReason: 'enable-b'));
+    _expectSuccess(await unlock.lock());
+
+    gateway.result = BiometricPromptResult.failed;
+    for (var i = 0; i < SecurityConstants.biometricMaxFailedAttempts; i++) {
+      await unlock.unlockWithBiometric(userId: first.id);
+    }
+    expect(_expectSuccess(await biometric.isLockedOut(first.id)), isTrue);
+    expect(_expectSuccess(await biometric.isLockedOut(second.id)), isFalse);
+
+    gateway.result = BiometricPromptResult.success;
+    _expectSuccess(await unlock.unlockWithBiometric(userId: second.id));
+    expect(session.current!.userId, second.id);
   }, timeout: kdfTimeout);
 }
 

@@ -118,6 +118,59 @@ class FakeAuthRepository implements AuthRepository {
     return const Success(null);
   }
 
+  UserRecord? storedUser;
+  AppFailure? currentUserFailure;
+  AppFailure? updateProfileFailure;
+  int updateProfileCount = 0;
+  String? lastUpdatedUsername;
+  String? lastUpdatedAvatarId;
+
+  @override
+  Future<Result<UserRecord>> currentUser() async {
+    final failure = currentUserFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    final user = storedUser;
+    if (user == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    return Success(user);
+  }
+
+  @override
+  Future<Result<void>> updateProfile({
+    required String username,
+    required String avatarId,
+  }) async {
+    updateProfileCount++;
+    lastUpdatedUsername = username;
+    lastUpdatedAvatarId = avatarId;
+    final failure = updateProfileFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    final trimmedName = username.trim();
+    if (trimmedName.isEmpty) {
+      return const FailureResult(ValidationFailure());
+    }
+    final resolvedAvatar = avatarId.trim().isEmpty
+        ? UserRecord.defaultAvatarId
+        : avatarId.trim();
+    storedUser = (storedUser ?? _fakeUser(username: trimmedName)).copyWith(
+      username: trimmedName,
+      avatarId: resolvedAvatar,
+    );
+    accounts = [
+      for (final account in accounts)
+        if (account.id == storedUser!.id)
+          AccountSummary(id: account.id, username: trimmedName)
+        else
+          account,
+    ];
+    return const Success(null);
+  }
+
   @override
   Future<Result<bool>> hasAnyAccount() async {
     return Success(anyAccount);

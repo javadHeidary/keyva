@@ -13,13 +13,6 @@ final _noteLinkPattern = RegExp(
   r'https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|\+?[0-9][0-9\s\-()]{7,}[0-9]',
 );
 
-String formatNoteCreatedAt(DateTime dateTime) {
-  final y = dateTime.year.toString().padLeft(4, '0');
-  final m = dateTime.month.toString().padLeft(2, '0');
-  final d = dateTime.day.toString().padLeft(2, '0');
-  return '$y/$m/$d';
-}
-
 String previewNoteBody(String body, {int maxLength = 40}) {
   final line = body.split('\n').first.trim();
   if (line.isEmpty) return 'یادداشت';

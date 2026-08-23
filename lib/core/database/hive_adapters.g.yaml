@@ -5,7 +5,7 @@ nextTypeId: 5
 types:
   UserRecord:
     typeId: 0
-    nextIndex: 8
+    nextIndex: 9
     fields:
       id:
         index: 0
@@ -23,6 +23,8 @@ types:
         index: 6
       securitySettings:
         index: 7
+      avatarId:
+        index: 8
   KdfParameters:
     typeId: 1
     nextIndex: 5

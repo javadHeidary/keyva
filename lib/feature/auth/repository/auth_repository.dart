@@ -32,6 +32,13 @@ abstract interface class AuthRepository {
 
   Future<Result<void>> setPreventScreenshots(bool enabled);
 
+  Future<Result<UserRecord>> currentUser();
+
+  Future<Result<void>> updateProfile({
+    required String username,
+    required String avatarId,
+  });
+
   Future<Result<bool>> hasAnyAccount();
 
   Future<Result<List<AccountSummary>>> getAccounts();

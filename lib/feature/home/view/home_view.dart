@@ -11,6 +11,7 @@ import 'package:keyva/feature/category/controller/category_catalog_controller.da
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/feature/vault/view/vault_error_view.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
@@ -154,7 +155,16 @@ class _AccountHeader extends GetView<HomeController> {
                 borderRadius: BorderRadius.circular(AppRadius.medium),
               ),
               alignment: Alignment.center,
-              child: Icon(AppIcon.accountCircle),
+              child: Obx(
+                () => KeyedSubtree(
+                  key: const Key('home-account-avatar'),
+                  child: SettingsAvatarIcons.avatarWidget(
+                    controller.accountAvatarId.value,
+                    color: colors.textPrimary,
+                    size: 22.s,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

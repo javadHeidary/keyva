@@ -11,6 +11,7 @@ import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 Future<void> main() async {
@@ -18,6 +19,7 @@ Future<void> main() async {
   final database = await HiveDatabase.initialize();
   initDependencies(database);
   await getIt<ScreenProtectionService>().applyPersisted();
+  final themePreference = await getIt<SettingsRepository>().loadThemePreference();
   Get.put(
     AppLockController(
       session: getIt<SessionService>(),
@@ -26,11 +28,13 @@ Future<void> main() async {
     ),
     permanent: true,
   );
-  runApp(const KeyvaApp());
+  runApp(KeyvaApp(themeMode: themePreference.themeMode));
 }
 
 class KeyvaApp extends StatelessWidget {
-  const KeyvaApp({super.key});
+  const KeyvaApp({super.key, this.themeMode = ThemeMode.system});
+
+  final ThemeMode themeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +51,7 @@ class KeyvaApp extends StatelessWidget {
       ],
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
       builder: (context, child) {

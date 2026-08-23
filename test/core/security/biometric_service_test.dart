@@ -13,6 +13,7 @@ import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 
@@ -30,6 +31,7 @@ void main() {
   late BiometricServiceImpl biometric;
   late HiveUserDataSource users;
   late List<String> diagnosticLogs;
+  late DateTime now;
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
   const masterPassword = 'correct-master-password';
@@ -52,12 +54,14 @@ void main() {
       session: session,
       database: database!,
     );
+    now = DateTime.utc(2026, 8, 23, 12);
     biometric = BiometricServiceImpl(
       gateway: gateway,
       keys: keys,
       storage: storage,
       users: users,
       session: session,
+      attempts: UnlockAttemptLimiter(database: database!, clock: () => now),
       diagnosticLog: diagnosticLogs.add,
     );
   });
@@ -171,6 +175,121 @@ void main() {
       isA<BiometricAuthFailedFailure>(),
     );
     expect(session.isAuthenticated, isFalse);
+    expect(_expectSuccess(await biometric.remainingAttempts(userId)), 2);
+  }, timeout: kdfTimeout);
+
+  test('biometric locks after 3 failed authentications', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+    gateway.result = BiometricPromptResult.failed;
+    final promptsBefore = gateway.authenticateCount;
+
+    for (var i = 0; i < SecurityConstants.biometricMaxFailedAttempts; i++) {
+      final result = await biometric.unwrapVaultKey(
+        userId: userId,
+        localizedReason: reason,
+      );
+      expect(
+        (result as FailureResult<Uint8List>).failure,
+        isA<BiometricAuthFailedFailure>(),
+      );
+    }
+
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isTrue);
+    expect(_expectSuccess(await biometric.remainingAttempts(userId)), 0);
+
+    final locked = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(
+      (locked as FailureResult<Uint8List>).failure,
+      isA<BiometricLockedOutFailure>(),
+    );
+    expect(
+      gateway.authenticateCount,
+      promptsBefore + SecurityConstants.biometricMaxFailedAttempts,
+    );
+  }, timeout: kdfTimeout);
+
+  test('cancelled biometric does not increment failed attempts', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+    gateway.result = BiometricPromptResult.failed;
+    await biometric.unwrapVaultKey(userId: userId, localizedReason: reason);
+    expect(_expectSuccess(await biometric.remainingAttempts(userId)), 2);
+
+    gateway.result = BiometricPromptResult.cancelled;
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<BiometricCancelledFailure>(),
+    );
+    expect(_expectSuccess(await biometric.remainingAttempts(userId)), 2);
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isFalse);
+  }, timeout: kdfTimeout);
+
+  test('unavailable biometric does not increment failed attempts', () async {
+    final (userId, _) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+    gateway.result = BiometricPromptResult.failed;
+    await biometric.unwrapVaultKey(userId: userId, localizedReason: reason);
+    expect(_expectSuccess(await biometric.remainingAttempts(userId)), 2);
+
+    gateway.available = false;
+    final result = await biometric.unwrapVaultKey(
+      userId: userId,
+      localizedReason: reason,
+    );
+    expect(
+      (result as FailureResult<Uint8List>).failure,
+      isA<BiometricUnavailableFailure>(),
+    );
+    expect(_expectSuccess(await biometric.remainingAttempts(userId)), 2);
+  }, timeout: kdfTimeout);
+
+  test('biometric attempts reset after 15 minutes', () async {
+    final (userId, vaultKey) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+    gateway.result = BiometricPromptResult.failed;
+    for (var i = 0; i < SecurityConstants.biometricMaxFailedAttempts; i++) {
+      await biometric.unwrapVaultKey(userId: userId, localizedReason: reason);
+    }
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isTrue);
+
+    now = now.add(SecurityConstants.unlockAttemptLockout);
+    gateway.result = BiometricPromptResult.success;
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isFalse);
+    final unwrapped = _expectSuccess(
+      await biometric.unwrapVaultKey(userId: userId, localizedReason: reason),
+    );
+    expect(unwrapped, vaultKey);
+  }, timeout: kdfTimeout);
+
+  test('resetFailedAttempts restores biometric after lockout', () async {
+    final (userId, vaultKey) = await unlockAccount();
+    _expectSuccess(await biometric.enable(localizedReason: reason));
+    session.clear();
+    gateway.result = BiometricPromptResult.failed;
+    for (var i = 0; i < SecurityConstants.biometricMaxFailedAttempts; i++) {
+      await biometric.unwrapVaultKey(userId: userId, localizedReason: reason);
+    }
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isTrue);
+
+    _expectSuccess(await biometric.resetFailedAttempts(userId));
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isFalse);
+    gateway.result = BiometricPromptResult.success;
+    final unwrapped = _expectSuccess(
+      await biometric.unwrapVaultKey(userId: userId, localizedReason: reason),
+    );
+    expect(unwrapped, vaultKey);
   }, timeout: kdfTimeout);
 
   test('prompt success without wrap material is not configured', () async {

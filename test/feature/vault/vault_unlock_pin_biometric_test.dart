@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service_impl.dart';
 import 'package:keyva/core/database/hive_database.dart';
@@ -13,6 +14,7 @@ import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/pin_service_impl.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
@@ -61,7 +63,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
-      database: database!,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     gateway = FakeBiometricGateway();
     biometric = BiometricServiceImpl(
@@ -70,6 +72,7 @@ void main() {
       storage: storage,
       users: users,
       session: session,
+      attempts: UnlockAttemptLimiter(database: database!),
     );
     vaultSession = VaultSessionImpl();
     unlock = VaultUnlockServiceImpl(
@@ -217,6 +220,30 @@ void main() {
     );
     expect(session.isAuthenticated, isFalse);
     expect(vaultSession.isUnlocked, isFalse);
+  }, timeout: kdfTimeout);
+
+  test('Master Password unlock resets PIN and biometric attempts', () async {
+    final userId = await seedUnlockedVault();
+    _expectSuccess(await pin.enable(pinCode));
+    _expectSuccess(await biometric.enable(localizedReason: 'enable'));
+    _expectSuccess(await unlock.lock());
+
+    for (var i = 0; i < SecurityConstants.pinMaxFailedAttempts; i++) {
+      await unlock.unlockWithPin(userId: userId, pin: '000000');
+    }
+    gateway.result = BiometricPromptResult.failed;
+    for (var i = 0; i < SecurityConstants.biometricMaxFailedAttempts; i++) {
+      await unlock.unlockWithBiometric(userId: userId);
+    }
+    expect(_expectSuccess(await pin.isLockedOut(userId)), isTrue);
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isTrue);
+
+    gateway.result = BiometricPromptResult.success;
+    _expectSuccess(
+      await unlock.unlock(userId: userId, masterPassword: masterPassword),
+    );
+    expect(_expectSuccess(await pin.isLockedOut(userId)), isFalse);
+    expect(_expectSuccess(await biometric.isLockedOut(userId)), isFalse);
   }, timeout: kdfTimeout);
 }
 

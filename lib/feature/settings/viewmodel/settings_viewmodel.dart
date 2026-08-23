@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/database/models/security_settings.dart';
+import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
@@ -114,8 +115,34 @@ class SettingsViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _syncProfileFromHome();
+    loadThemePreference();
+    loadProfile();
     loadSecuritySettings();
+  }
+
+  Future<void> loadThemePreference() async {
+    final repository = _repository;
+    if (repository == null) {
+      return;
+    }
+    themePreference.value = await repository.loadThemePreference();
+  }
+
+  Future<void> loadProfile() async {
+    final auth = _auth;
+    if (auth != null) {
+      final loaded = await auth.currentUser();
+      if (loaded is Success<UserRecord>) {
+        final value = UserProfile(
+          name: loaded.data.username,
+          avatarId: loaded.data.avatarId,
+        );
+        profile.value = value;
+        _applyProfileToHome(value);
+        return;
+      }
+    }
+    _syncProfileFromHome();
   }
 
   Future<void> loadSecuritySettings() async {
@@ -169,20 +196,38 @@ class SettingsViewModel extends GetxController {
     }
   }
 
-  void updateProfile(UserProfile value) {
-    profile.value = value;
+  void _applyProfileToHome(UserProfile value) {
     if (Get.isRegistered<HomeController>()) {
       final home = Get.find<HomeController>();
       home.updateAccountProfile(name: value.name, avatarId: value.avatarId);
     }
-    // TODO: delegate to _repository?.saveProfile(value)
   }
 
-  void setThemePreference(ThemePreference? value) {
+  Future<bool> updateProfile(UserProfile value) async {
+    final trimmed = value.copyWith(name: value.name.trim());
+    if (trimmed.name.isEmpty) {
+      return false;
+    }
+    final auth = _auth;
+    if (auth != null) {
+      final saved = await auth.updateProfile(
+        username: trimmed.name,
+        avatarId: trimmed.avatarId,
+      );
+      if (saved is FailureResult<void>) {
+        return false;
+      }
+    }
+    profile.value = trimmed;
+    _applyProfileToHome(trimmed);
+    return true;
+  }
+
+  Future<void> setThemePreference(ThemePreference? value) async {
     if (value == null) return;
     themePreference.value = value;
     Get.changeThemeMode(value.themeMode);
-    // TODO: delegate to _repository?.saveThemePreference(value)
+    await _repository?.saveThemePreference(value);
   }
 
   Future<void> onBiometricToggle(bool enabled, BuildContext context) async {

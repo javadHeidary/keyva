@@ -79,16 +79,18 @@ Future<void> showAccountEditBottomSheet(BuildContext context) {
               SizedBox(height: AppSpacing.xl.h),
               AppButtonWidget(
                 title: 'ذخیره',
-                onPressed: () {
+                onPressed: () async {
                   final name = nameController.text.trim();
                   if (name.isEmpty) return;
-                  controller.updateProfile(
+                  final saved = await controller.updateProfile(
                     controller.profile.value.copyWith(
                       name: name,
                       avatarId: selectedAvatarId.value,
                     ),
                   );
-                  Navigator.of(sheetContext).pop();
+                  if (saved && sheetContext.mounted) {
+                    Navigator.of(sheetContext).pop();
+                  }
                 },
               ),
             ],

@@ -25,13 +25,14 @@ class UserRecordAdapter extends TypeAdapter<UserRecord> {
       kdfParameters: fields[5] as KdfParameters,
       wrappedVaultKey: fields[6] as WrappedVaultKey,
       securitySettings: fields[7] as SecuritySettings,
+      avatarId: fields[8] as String? ?? UserRecord.defaultAvatarId,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserRecord obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class UserRecordAdapter extends TypeAdapter<UserRecord> {
       ..writeByte(6)
       ..write(obj.wrappedVaultKey)
       ..writeByte(7)
-      ..write(obj.securitySettings);
+      ..write(obj.securitySettings)
+      ..writeByte(8)
+      ..write(obj.avatarId);
   }
 
   @override

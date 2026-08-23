@@ -14,7 +14,10 @@ class UserRecord {
     required this.kdfParameters,
     required this.wrappedVaultKey,
     required this.securitySettings,
+    this.avatarId = defaultAvatarId,
   });
+
+  static const defaultAvatarId = 'person';
 
   final String id;
   final String username;
@@ -24,6 +27,7 @@ class UserRecord {
   final KdfParameters kdfParameters;
   final WrappedVaultKey wrappedVaultKey;
   final SecuritySettings securitySettings;
+  final String avatarId;
 
   UserRecord copyWith({
     String? id,
@@ -34,6 +38,7 @@ class UserRecord {
     KdfParameters? kdfParameters,
     WrappedVaultKey? wrappedVaultKey,
     SecuritySettings? securitySettings,
+    String? avatarId,
   }) {
     return UserRecord(
       id: id ?? this.id,
@@ -44,6 +49,7 @@ class UserRecord {
       kdfParameters: kdfParameters ?? this.kdfParameters,
       wrappedVaultKey: wrappedVaultKey ?? this.wrappedVaultKey,
       securitySettings: securitySettings ?? this.securitySettings,
+      avatarId: avatarId ?? this.avatarId,
     );
   }
 }

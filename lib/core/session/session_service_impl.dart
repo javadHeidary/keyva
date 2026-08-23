@@ -28,6 +28,18 @@ class SessionServiceImpl implements SessionService {
   }
 
   @override
+  void updateUsername(String username) {
+    final current = _current;
+    if (current == null) {
+      return;
+    }
+    _current = AuthenticatedSession(
+      userId: current.userId,
+      username: username,
+    );
+  }
+
+  @override
   void clear() {
     _clearVaultKey();
     _current = null;

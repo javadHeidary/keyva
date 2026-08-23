@@ -15,5 +15,7 @@ abstract interface class SessionService {
     required Uint8List vaultKey,
   });
 
+  void updateUsername(String username);
+
   void clear();
 }

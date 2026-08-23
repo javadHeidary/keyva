@@ -12,6 +12,7 @@ import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/secure_storage_service.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/security/wrapped_key_codec.dart';
 import 'package:keyva/core/session/session_service.dart';
 
@@ -22,12 +23,14 @@ class BiometricServiceImpl implements BiometricService {
     required SecureStorageService storage,
     required UserDataSource users,
     required SessionService session,
+    required UnlockAttemptLimiter attempts,
     void Function(String message)? diagnosticLog,
   }) : _gateway = gateway,
        _keys = keys,
        _storage = storage,
        _users = users,
        _session = session,
+       _attempts = attempts,
        _diagnosticLog = diagnosticLog;
 
   final BiometricGateway _gateway;
@@ -35,6 +38,7 @@ class BiometricServiceImpl implements BiometricService {
   final SecureStorageService _storage;
   final UserDataSource _users;
   final SessionService _session;
+  final UnlockAttemptLimiter _attempts;
   final void Function(String message)? _diagnosticLog;
 
   @override
@@ -51,6 +55,20 @@ class BiometricServiceImpl implements BiometricService {
       return const FailureResult(AuthenticationFailure());
     }
     return Success(user.securitySettings.biometricEnabled);
+  }
+
+  @override
+  Future<Result<bool>> isLockedOut(String userId) async {
+    return Success(
+      await _attempts.isLockedOut(UnlockAttemptMethod.biometric, userId),
+    );
+  }
+
+  @override
+  Future<Result<int>> remainingAttempts(String userId) async {
+    return Success(
+      await _attempts.remainingAttempts(UnlockAttemptMethod.biometric, userId),
+    );
   }
 
   @override
@@ -103,6 +121,7 @@ class BiometricServiceImpl implements BiometricService {
       await _storage.delete(FastUnlockStorageKeys.biometricMaterial(userId));
       return flagged;
     }
+    await resetFailedAttempts(userId);
     return const Success<void>(null);
   }
 
@@ -118,7 +137,12 @@ class BiometricServiceImpl implements BiometricService {
     if (deleted is FailureResult<void>) {
       return deleted;
     }
-    return _setBiometricEnabled(userId, false);
+    final flagged = await _setBiometricEnabled(userId, false);
+    if (flagged is FailureResult<void>) {
+      return flagged;
+    }
+    await resetFailedAttempts(userId);
+    return flagged;
   }
 
   @override
@@ -126,6 +150,11 @@ class BiometricServiceImpl implements BiometricService {
     required String userId,
     required String localizedReason,
   }) async {
+    final locked = await isLockedOut(userId);
+    if (locked is Success<bool> && locked.data) {
+      return const FailureResult(BiometricLockedOutFailure());
+    }
+
     final available = await isAvailable();
     _diag('unwrap available=$available userIdLength=${userId.length}');
     if (!available) {
@@ -136,6 +165,9 @@ class BiometricServiceImpl implements BiometricService {
     _diag('unwrap promptResult=$prompt');
     final promptFailure = _failureForPrompt(prompt);
     if (promptFailure != null) {
+      if (promptFailure is BiometricAuthFailedFailure) {
+        await _attempts.recordFailure(UnlockAttemptMethod.biometric, userId);
+      }
       return FailureResult(promptFailure);
     }
 
@@ -184,7 +216,14 @@ class BiometricServiceImpl implements BiometricService {
       return const FailureResult(AuthenticationFailure());
     }
     _diag('unwrap crypto=success');
+    await resetFailedAttempts(userId);
     return unwrapped;
+  }
+
+  @override
+  Future<Result<void>> resetFailedAttempts(String userId) async {
+    await _attempts.reset(UnlockAttemptMethod.biometric, userId);
+    return const Success<void>(null);
   }
 
   AppFailure? _failureForPrompt(BiometricPromptResult prompt) {

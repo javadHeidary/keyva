@@ -7,6 +7,8 @@ abstract interface class PinService {
 
   Future<Result<bool>> isLockedOut(String userId);
 
+  Future<Result<int>> remainingAttempts(String userId);
+
   Future<Result<void>> enable(String pin);
 
   Future<Result<void>> change({

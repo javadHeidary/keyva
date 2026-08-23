@@ -16,4 +16,16 @@ enum ThemePreference {
     ThemePreference.dark => ThemeMode.dark,
     ThemePreference.system => ThemeMode.system,
   };
+
+  static ThemePreference fromStorage(Object? value) {
+    if (value is! String) {
+      return ThemePreference.system;
+    }
+    for (final preference in ThemePreference.values) {
+      if (preference.name == value) {
+        return preference;
+      }
+    }
+    return ThemePreference.system;
+  }
 }

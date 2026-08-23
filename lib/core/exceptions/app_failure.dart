@@ -52,6 +52,12 @@ final class BiometricNotConfiguredFailure extends AppFailure {
   });
 }
 
+final class BiometricLockedOutFailure extends AppFailure {
+  const BiometricLockedOutFailure({
+    super.message = 'Biometric unlock is locked. Use your master password.',
+  });
+}
+
 final class ValidationFailure extends AppFailure {
   const ValidationFailure({
     super.message = 'Vault data is invalid',

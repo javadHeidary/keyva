@@ -16,7 +16,15 @@ import 'package:keyva/shared/widget/login_section_card_widget.dart';
 class NoteDetailsView extends GetView<NoteDetailsViewModel> {
   const NoteDetailsView({super.key});
 
-  static const _notesMaxHeight = 280;
+  static const descriptionKey = Key('vault-note-description');
+  static const _cardGap = AppSpacing.md;
+
+  static double descriptionMinHeight() {
+    final style = AppTypography.bodyMedium;
+    final fontSize = style.fontSize ?? 14;
+    final height = style.height ?? 1.5;
+    return (fontSize * height * 5).s;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +65,12 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      LoginDetailCredentialCard(
+                        icon: AppIcon.folder,
+                        label: 'دسته‌بندی',
+                        value: controller.categoryLabel,
+                      ),
+                      SizedBox(height: _cardGap.h),
                       Row(
                         children: [
                           Expanded(
@@ -84,10 +98,12 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                         padding: EdgeInsets.all(AppSpacing.lg.s),
                         children: [
                           ConstrainedBox(
+                            key: descriptionKey,
                             constraints: BoxConstraints(
-                              maxHeight: _notesMaxHeight.h,
+                              minHeight: descriptionMinHeight(),
                             ),
-                            child: SingleChildScrollView(
+                            child: Align(
+                              alignment: AlignmentDirectional.topStart,
                               child: NoteBodyTextWidget(
                                 text: note.content,
                                 onLinkTap: (type, value) => controller
@@ -96,6 +112,13 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                             ),
                           ),
                         ],
+                      ),
+                      SizedBox(height: _cardGap.h),
+                      LoginDetailCredentialCard(
+                        icon: AppIcon.calendar,
+                        label: 'تاریخ ایجاد',
+                        value: controller.createdAtLabel,
+                        useFaNumValue: true,
                       ),
                     ],
                   ),

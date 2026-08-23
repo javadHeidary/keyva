@@ -12,7 +12,9 @@ abstract final class SecurityConstants {
   static const vaultEncryptionVersion = 1;
   static const pinMinLength = 6;
   static const pinMaxLength = 6;
-  static const pinMaxFailedAttempts = 5;
+  static const pinMaxFailedAttempts = 3;
+  static const biometricMaxFailedAttempts = 3;
+  static const unlockAttemptLockout = Duration(minutes: 15);
   static const masterPasswordMinLength = 8;
   static const backupFormatVersion = 1;
 }

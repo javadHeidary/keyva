@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/di/injection_container.dart';
+import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
@@ -21,11 +24,14 @@ class HomeController extends GetxController {
   HomeController({
     VaultHomeViewModel? vault,
     VaultUnlockService? unlock,
+    AuthRepository? auth,
   }) : _vaultOverride = vault,
-       _unlockOverride = unlock;
+       _unlockOverride = unlock,
+       _authOverride = auth;
 
   final VaultHomeViewModel? _vaultOverride;
   final VaultUnlockService? _unlockOverride;
+  final AuthRepository? _authOverride;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final createFabKey = GlobalKey<ExpandableFabState>();
   final selectedType = Rxn<VaultItemType>();
@@ -42,6 +48,16 @@ class HomeController extends GetxController {
   VaultUnlockService get _unlock =>
       _unlockOverride ?? getIt<VaultUnlockService>();
 
+  AuthRepository? get _auth {
+    if (_authOverride != null) {
+      return _authOverride;
+    }
+    if (getIt.isRegistered<AuthRepository>()) {
+      return getIt<AuthRepository>();
+    }
+    return null;
+  }
+
   VaultUiStatus get vaultStatus => vault.status.value;
 
   String get vaultErrorMessage => vaultUserMessage(vault.errorMessage.value);
@@ -53,6 +69,20 @@ class HomeController extends GetxController {
   void updateAccountProfile({required String name, required String avatarId}) {
     accountOwnerName.value = name;
     accountAvatarId.value = avatarId;
+  }
+
+  Future<void> loadAccountProfile() async {
+    final auth = _auth;
+    if (auth == null) {
+      return;
+    }
+    final loaded = await auth.currentUser();
+    if (loaded is Success<UserRecord>) {
+      updateAccountProfile(
+        name: loaded.data.username,
+        avatarId: loaded.data.avatarId,
+      );
+    }
   }
 
   void openSettings() {
@@ -165,6 +195,7 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     selectedCategoryId.value = CategoryConstants.filterAllId;
+    loadAccountProfile();
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/view/bank_card_details_view.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
@@ -11,11 +12,13 @@ import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dar
 import 'package:keyva/feature/type/note/view/note_details_view.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/utils/jalali_date_formatter.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/fake_vault_operation_service.dart';
@@ -111,6 +114,7 @@ void main() {
     expect(find.text('keep-this-password'), findsNothing);
     expect(find.text('•' * 'keep-this-password'.length), findsOneWidget);
     expect(find.text('ویرایش'), findsOneWidget);
+    expect(find.text(formatJalaliDate(updatedAt)), findsOneWidget);
   });
 
   testWidgets('bank card detail displays data and hides cvv by default', (
@@ -130,6 +134,8 @@ void main() {
     expect(find.text('Nima Karimi'), findsOneWidget);
     expect(find.text('321'), findsNothing);
     expect(find.text('•' * 3), findsOneWidget);
+    expect(find.text('تاریخ ایجاد'), findsOneWidget);
+    expect(find.text(formatJalaliDate(createdAt)), findsOneWidget);
   });
 
   testWidgets('bank card detail shows bank name without a copy action', (
@@ -257,7 +263,9 @@ void main() {
     expect(monthDx, greaterThan(yearDx));
   });
 
-  testWidgets('secure note detail displays title and content', (tester) async {
+  testWidgets('secure note detail displays title, category, content and date', (
+    tester,
+  ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
     Get.put(NoteDetailsViewModel(noteId: 'note-1'));
@@ -269,8 +277,119 @@ void main() {
     expect(find.byKey(const Key('vault-note-details')), findsOneWidget);
     expect(find.text('Gate'), findsWidgets);
     expect(find.text('building-code-42'), findsOneWidget);
-    expect(find.text('تاریخ ایجاد'), findsNothing);
-    expect(find.text('دسته‌بندی'), findsNothing);
+    expect(find.text('دسته‌بندی'), findsOneWidget);
+    expect(find.text(CategoryConstants.withoutCategoryLabel), findsOneWidget);
+    expect(find.text('تاریخ ایجاد'), findsOneWidget);
+    expect(find.text(formatJalaliDate(createdAt)), findsOneWidget);
+  });
+
+  testWidgets('secure note detail shows named category', (tester) async {
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: const [],
+      bankCards: const [],
+      secureNotes: [
+        SecureNoteItem(
+          id: 'note-1',
+          title: 'Gate',
+          content: 'building-code-42',
+          categoryId: 'cat-work',
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+        ),
+      ],
+      categories: [
+        CategoryItem(
+          id: 'cat-work',
+          name: 'Work',
+          icon: 'briefcase',
+          createdAt: createdAt,
+        ),
+      ],
+    );
+    await vault.loadVault();
+    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(vaultTestApp(home: const NoteDetailsView()));
+    await pumpVaultFrame(tester);
+
+    expect(find.text('دسته‌بندی'), findsOneWidget);
+    expect(find.text('Work'), findsOneWidget);
+    expect(find.text(CategoryConstants.withoutCategoryLabel), findsNothing);
+  });
+
+  testWidgets('short note description uses at least five lines of height', (
+    tester,
+  ) async {
+    operations.vault = populatedVault();
+    await vault.loadVault();
+    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(vaultTestApp(home: const NoteDetailsView()));
+    await pumpVaultFrame(tester);
+
+    final size = tester.getSize(find.byKey(NoteDetailsView.descriptionKey));
+    expect(
+      size.height,
+      greaterThanOrEqualTo(NoteDetailsView.descriptionMinHeight()),
+    );
+  });
+
+  testWidgets('long note description grows without clipping or inner scroll', (
+    tester,
+  ) async {
+    const longContent =
+        'خط اول یادداشت\n'
+        'خط دوم یادداشت\n'
+        'خط سوم یادداشت\n'
+        'خط چهارم یادداشت\n'
+        'خط پنجم یادداشت\n'
+        'خط ششم یادداشت\n'
+        'خط هفتم یادداشت\n'
+        'خط هشتم یادداشت که باید کامل دیده شود';
+
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: const [],
+      bankCards: const [],
+      secureNotes: [
+        SecureNoteItem(
+          id: 'note-1',
+          title: 'Gate',
+          content: longContent,
+          categoryId: null,
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+        ),
+      ],
+      categories: const [],
+    );
+    await vault.loadVault();
+    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+
+    setupVaultWidgetSurface(tester);
+    tester.view.physicalSize = const Size(1080, 3600);
+    await tester.pumpWidget(vaultTestApp(home: const NoteDetailsView()));
+    await pumpVaultFrame(tester);
+
+    expect(find.text(longContent), findsOneWidget);
+    expect(
+      find.textContaining('خط هشتم یادداشت که باید کامل دیده شود'),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(NoteDetailsView.descriptionKey),
+        matching: find.byType(SingleChildScrollView),
+      ),
+      findsNothing,
+    );
+
+    final size = tester.getSize(find.byKey(NoteDetailsView.descriptionKey));
+    expect(size.height, greaterThan(NoteDetailsView.descriptionMinHeight()));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('login detail title updates after vault refresh', (tester) async {

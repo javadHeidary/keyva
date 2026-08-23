@@ -266,6 +266,43 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Result<UserRecord>> currentUser() {
+    return _loadCurrentUser();
+  }
+
+  @override
+  Future<Result<void>> updateProfile({
+    required String username,
+    required String avatarId,
+  }) async {
+    final trimmedName = username.trim();
+    if (trimmedName.isEmpty) {
+      return const FailureResult(ValidationFailure());
+    }
+    final trimmedAvatar = avatarId.trim();
+    final resolvedAvatar = trimmedAvatar.isEmpty
+        ? UserRecord.defaultAvatarId
+        : trimmedAvatar;
+    final loaded = await _loadCurrentUser();
+    if (loaded is FailureResult<UserRecord>) {
+      return FailureResult(loaded.failure);
+    }
+    final user = (loaded as Success<UserRecord>).data;
+    final updated = await _users.update(
+      user.copyWith(
+        username: trimmedName,
+        avatarId: resolvedAvatar,
+        updatedAt: DateTime.now(),
+      ),
+    );
+    if (updated is FailureResult<void>) {
+      return updated;
+    }
+    _session.updateUsername(trimmedName);
+    return const Success(null);
+  }
+
+  @override
   Future<Result<UserRecord>> openSession({
     required String userId,
     required Uint8List vaultKey,

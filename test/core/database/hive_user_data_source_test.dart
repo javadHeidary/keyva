@@ -42,6 +42,7 @@ void main() {
     expect(found, isNotNull);
     expect(found!.id, 'user-1');
     expect(found.username, 'علی');
+    expect(found.avatarId, UserRecord.defaultAvatarId);
     expect(found.kdfSalt, record.kdfSalt);
     expect(found.kdfParameters.algorithm, SecurityConstants.kdfAlgorithm);
     expect(found.wrappedVaultKey.version, SecurityConstants.wrappedKeyVersion);
@@ -59,12 +60,13 @@ void main() {
   test('update replaces stored metadata for an existing user', () async {
     await users.create(_user(id: 'user-1', username: 'اول'));
 
-    final updated = _user(id: 'user-1', username: 'دوم');
+    final updated = _user(id: 'user-1', username: 'دوم', avatarId: 'shield');
     final result = await users.update(updated);
     expect(result, isA<Success<void>>());
 
     final loaded = _expectSuccess(await users.findById('user-1'));
     expect(loaded!.username, 'دوم');
+    expect(loaded.avatarId, 'shield');
   });
 
   test('create fails closed when the user id already exists', () async {
@@ -127,7 +129,11 @@ void main() {
   });
 }
 
-UserRecord _user({required String id, String username = 'علی'}) {
+UserRecord _user({
+  required String id,
+  String username = 'علی',
+  String avatarId = UserRecord.defaultAvatarId,
+}) {
   return UserRecord(
     id: id,
     username: username,
@@ -148,6 +154,7 @@ UserRecord _user({required String id, String username = 'علی'}) {
       authenticationTag: Uint8List.fromList(List<int>.filled(16, 4)),
     ),
     securitySettings: SecuritySettings.initial(),
+    avatarId: avatarId,
   );
 }
 

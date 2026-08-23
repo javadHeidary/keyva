@@ -7,6 +7,7 @@ import 'package:keyva/feature/type/note/util/note_util.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/shared/utils/jalali_date_formatter.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -26,6 +27,17 @@ class NoteDetailsViewModel extends GetxController {
   }
 
   String get headerTitle => item?.title ?? 'جزئیات یادداشت';
+
+  String get categoryLabel => vaultCategoryLabel(
+    _vaultHome?.vault.value,
+    item?.categoryId,
+  );
+
+  String get createdAtLabel {
+    final note = item;
+    if (note == null) return '';
+    return formatJalaliDate(note.createdAt);
+  }
 
   @override
   void onInit() {

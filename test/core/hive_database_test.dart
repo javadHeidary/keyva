@@ -13,6 +13,7 @@ import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 import 'package:keyva/feature/vault/service/vault_data_service.dart';
@@ -85,6 +86,7 @@ void main() {
       expect(getIt.isRegistered<BiometricService>(), isTrue);
       expect(getIt.isRegistered<VaultSerializer>(), isTrue);
       expect(getIt.isRegistered<AuthRepository>(), isTrue);
+      expect(getIt.isRegistered<SettingsRepository>(), isTrue);
       expect(getIt.isRegistered<VaultRepository>(), isTrue);
       expect(getIt.isRegistered<VaultSession>(), isTrue);
       expect(getIt.isRegistered<VaultUnlockService>(), isTrue);

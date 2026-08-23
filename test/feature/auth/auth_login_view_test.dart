@@ -189,8 +189,10 @@ void main() {
     expect(find.byKey(const Key('auth-login-use-master-password')), findsOneWidget);
   });
 
-  testWidgets('wrong PIN shows a generic Persian error', (tester) async {
-    final pin = FakePinService()..enabled = true;
+  testWidgets('wrong PIN shows remaining attempts', (tester) async {
+    final pin = FakePinService()
+      ..enabled = true
+      ..remaining = 2;
     unlock.unlockFailure = const AuthenticationFailure();
     login = LoginController(unlock: unlock, auth: auth, pin: pin);
     setupAuthWidgetSurface(tester);
@@ -206,9 +208,11 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(unlock.pinUnlockCount, 1);
-    expect(unlock.lastPin, '123456');
     expect(session.isAuthenticated, isFalse);
-    expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
+    expect(
+      find.text('کد PIN نادرست است. ۲ تلاش باقی مانده است.'),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(login.pinController.text, isEmpty);
   });
@@ -248,6 +252,32 @@ void main() {
     expect(find.byKey(const Key('auth-login-pin')), findsNothing);
     expect(find.byKey(const Key('auth-unlock-method-pin')), findsNothing);
     expect(find.byKey(const Key('auth-login-use-pin')), findsNothing);
+  });
+
+  testWidgets('third PIN failure shows lockout dialog and Master Password', (
+    tester,
+  ) async {
+    final pin = FakePinService()..enabled = true;
+    unlock.unlockFailure = const AuthenticationFailure();
+    login = LoginController(unlock: unlock, auth: auth, pin: pin);
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-method-pin')));
+    await pumpAuthFrame(tester);
+    pin.lockedOut = true;
+    pin.remaining = 0;
+    await tester.enterText(find.byKey(const Key('auth-login-pin')), '123456');
+    await tester.tap(find.byKey(const Key('auth-login-pin-submit')));
+    await pumpAuthSettle(tester);
+
+    expect(find.text(LoginController.pinLockoutMessage), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-pin')), findsNothing);
+    expect(find.byKey(const Key('auth-unlock-method-pin')), findsNothing);
   });
 
   testWidgets('biometric option appears only when enabled and available', (
@@ -322,10 +352,11 @@ void main() {
     expect(find.byKey(const Key('auth-login-error')), findsNothing);
   });
 
-  testWidgets('failed biometric does not unlock', (tester) async {
+  testWidgets('failed biometric shows remaining attempts', (tester) async {
     final biometric = FakeBiometricService()
       ..available = true
-      ..enabled = true;
+      ..enabled = true
+      ..remaining = 2;
     unlock.unlockFailure = const BiometricAuthFailedFailure();
     login = LoginController(
       unlock: unlock,
@@ -343,7 +374,36 @@ void main() {
 
     expect(session.isAuthenticated, isFalse);
     expect(find.byKey(const Key('shell-page')), findsNothing);
-    expect(find.text('احراز هویت بیومتریک ناموفق بود.'), findsOneWidget);
+    expect(
+      find.text('احراز هویت بیومتریک ناموفق بود. ۲ تلاش باقی مانده است.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('third biometric failure shows lockout dialog', (tester) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true;
+    unlock.unlockFailure = const BiometricAuthFailedFailure();
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    biometric.lockedOut = true;
+    biometric.remaining = 0;
+    await tester.tap(find.byKey(const Key('auth-unlock-method-biometric')));
+    await pumpAuthSettle(tester);
+
+    expect(find.text(LoginController.biometricLockoutMessage), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+    expect(find.byKey(const Key('auth-unlock-method-biometric')), findsNothing);
   });
 
   testWidgets('unavailable biometric shows a Persian message', (tester) async {
@@ -425,6 +485,26 @@ void main() {
 
     expect(session.isAuthenticated, isFalse);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
+  });
+
+  testWidgets('biometric lockout hides the biometric option', (tester) async {
+    final biometric = FakeBiometricService()
+      ..available = true
+      ..enabled = true
+      ..lockedOut = true;
+    login = LoginController(
+      unlock: unlock,
+      auth: auth,
+      biometric: biometric,
+    );
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+    expect(find.byKey(const Key('auth-unlock-method-biometric')), findsNothing);
   });
 
   testWidgets('PIN shorter than 6 digits is rejected before unlock', (

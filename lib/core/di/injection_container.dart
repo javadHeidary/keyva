@@ -20,10 +20,13 @@ import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/security/screen_protection_service_impl.dart';
 import 'package:keyva/core/security/secure_storage_service.dart';
 import 'package:keyva/core/security/secure_storage_service_impl.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
+import 'package:keyva/feature/settings/model/settings_repository.dart';
+import 'package:keyva/feature/settings/repository/settings_repository_impl.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
@@ -77,6 +80,9 @@ void initDependencies(HiveDatabase database) {
       database: getIt<HiveDatabase>(),
     ),
   );
+  getIt.registerLazySingleton<UnlockAttemptLimiter>(
+    () => UnlockAttemptLimiter(database: getIt<HiveDatabase>()),
+  );
   getIt.registerLazySingleton<PinService>(
     () => PinServiceImpl(
       crypto: getIt<CryptoService>(),
@@ -84,7 +90,7 @@ void initDependencies(HiveDatabase database) {
       storage: getIt<SecureStorageService>(),
       users: getIt<UserDataSource>(),
       session: getIt<SessionService>(),
-      database: getIt<HiveDatabase>(),
+      attempts: getIt<UnlockAttemptLimiter>(),
     ),
   );
   getIt.registerLazySingleton<BiometricService>(
@@ -94,6 +100,7 @@ void initDependencies(HiveDatabase database) {
       storage: getIt<SecureStorageService>(),
       users: getIt<UserDataSource>(),
       session: getIt<SessionService>(),
+      attempts: getIt<UnlockAttemptLimiter>(),
     ),
   );
   getIt.registerLazySingleton<VaultSerializer>(VaultSerializerImpl.new);
@@ -105,6 +112,9 @@ void initDependencies(HiveDatabase database) {
       session: getIt<SessionService>(),
       database: getIt<HiveDatabase>(),
     ),
+  );
+  getIt.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(getIt<HiveDatabase>()),
   );
   getIt.registerLazySingleton<VaultRepository>(
     () => VaultRepositoryImpl(

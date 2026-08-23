@@ -10,6 +10,7 @@ import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
+import 'package:keyva/shared/widget/app_dialog_widget.dart';
 
 enum UnlockMethod { masterPassword, pin, biometric }
 
@@ -23,6 +24,11 @@ class LoginController extends GetxController {
        _auth = auth,
        _pin = pin,
        _biometric = biometric;
+
+  static const pinLockoutMessage =
+      'محدودیت تلاش PIN تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
+  static const biometricLockoutMessage =
+      'محدودیت تلاش بیومتریک تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
 
   final VaultUnlockService _unlock;
   final AuthRepository _auth;
@@ -42,6 +48,7 @@ class LoginController extends GetxController {
   final pinLockedOut = false.obs;
   final biometricEnabled = false.obs;
   final biometricAvailable = false.obs;
+  final biometricLockedOut = false.obs;
   final selectedUserId = ''.obs;
   final selectedUsername = ''.obs;
   final canSwitchAccount = false.obs;
@@ -49,7 +56,9 @@ class LoginController extends GetxController {
   bool get pinAvailable => pinEnabled.value && !pinLockedOut.value;
 
   bool get biometricOptionAvailable =>
-      biometricEnabled.value && biometricAvailable.value;
+      biometricEnabled.value &&
+      biometricAvailable.value &&
+      !biometricLockedOut.value;
 
   @override
   void onInit() {
@@ -93,6 +102,8 @@ class LoginController extends GetxController {
       biometricAvailable.value = await _biometric.isAvailable();
       final enabled = await _biometric.isEnabled(userId);
       biometricEnabled.value = enabled is Success<bool> && enabled.data;
+      final locked = await _biometric.isLockedOut(userId);
+      biometricLockedOut.value = locked is Success<bool> && locked.data;
     }
     _showPickerOrMasterPassword();
   }
@@ -195,12 +206,7 @@ class LoginController extends GetxController {
     try {
       final unlocked = await _unlock.unlockWithPin(userId: userId, pin: pin);
       if (unlocked is FailureResult<void>) {
-        final locked = await _pin?.isLockedOut(userId);
-        pinLockedOut.value = locked is Success<bool> && locked.data;
-        if (pinLockedOut.value) {
-          chooseMasterPassword();
-        }
-        errorMessage.value = vaultUserMessage(unlocked.failure.message);
+        await _handlePinFailure(userId, unlocked.failure);
         return;
       }
       Get.offAllNamed(AppRoutes.shell);
@@ -227,13 +233,94 @@ class LoginController extends GetxController {
         if (unlocked.failure is BiometricCancelledFailure) {
           return;
         }
-        errorMessage.value = vaultUserMessage(unlocked.failure.message);
+        await _handleBiometricFailure(userId, unlocked.failure);
         return;
       }
       Get.offAllNamed(AppRoutes.shell);
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> _handlePinFailure(String userId, AppFailure failure) async {
+    final wasLocked = pinLockedOut.value;
+    final locked = await _pin?.isLockedOut(userId);
+    pinLockedOut.value = locked is Success<bool> && locked.data;
+    if (pinLockedOut.value) {
+      if (!wasLocked) {
+        _showLockoutDialog(
+          title: 'ورود با PIN مسدود شد',
+          description: pinLockoutMessage,
+        );
+      }
+      chooseMasterPassword();
+      return;
+    }
+    final remaining = await _pin?.remainingAttempts(userId);
+    if (remaining is Success<int> && remaining.data > 0) {
+      errorMessage.value = _pinRemainingMessage(remaining.data);
+      return;
+    }
+    errorMessage.value = vaultUserMessage(failure.message);
+  }
+
+  Future<void> _handleBiometricFailure(
+    String userId,
+    AppFailure failure,
+  ) async {
+    final wasLocked = biometricLockedOut.value;
+    final locked = await _biometric?.isLockedOut(userId);
+    biometricLockedOut.value = locked is Success<bool> && locked.data;
+    if (biometricLockedOut.value) {
+      if (!wasLocked) {
+        _showLockoutDialog(
+          title: 'ورود با بیومتریک مسدود شد',
+          description: biometricLockoutMessage,
+        );
+      }
+      chooseMasterPassword();
+      return;
+    }
+    if (failure is BiometricAuthFailedFailure) {
+      final remaining = await _biometric?.remainingAttempts(userId);
+      if (remaining is Success<int> && remaining.data > 0) {
+        errorMessage.value = _biometricRemainingMessage(remaining.data);
+        return;
+      }
+    }
+    errorMessage.value = vaultUserMessage(failure.message);
+  }
+
+  void _showLockoutDialog({
+    required String title,
+    required String description,
+  }) {
+    final context = Get.context;
+    if (context == null) {
+      return;
+    }
+    AppDialogWidget.show(
+      context,
+      type: AppDialogType.warning,
+      title: title,
+      description: description,
+    );
+  }
+
+  String _pinRemainingMessage(int remaining) {
+    return 'کد PIN نادرست است. ${_persianCount(remaining)} تلاش باقی مانده است.';
+  }
+
+  String _biometricRemainingMessage(int remaining) {
+    return 'احراز هویت بیومتریک ناموفق بود. ${_persianCount(remaining)} تلاش باقی مانده است.';
+  }
+
+  String _persianCount(int value) {
+    const digits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return value.toString().split('').map((char) {
+      final digit = int.tryParse(char);
+      return digit == null ? char : digits[digit];
+    }).join();
   }
 
   String? _argumentUserId() {

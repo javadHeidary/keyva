@@ -61,7 +61,7 @@ The unlock screen starts with a method picker when PIN or biometric can be used.
 
 `SecurityConstants.pinMinLength` and `pinMaxLength` are both `6`. `PinPolicy` is the only validation source (`PinPolicy.userMessage` = `پین کد باید ۶ رقم باشد.`). Login, settings setup/change, and `PinService.enable` / `change` share it.
 
-Lockout remains Task 12: 5 failed attempts per `userId` (`pinFailedAttempts:$userId`). There is no second lockout system.
+Lockout is per `userId` for both PIN and biometric: 3 failed attempts, then a 15-minute window (`pinFailedAttempts:$userId` / `biometricFailedAttempts:$userId`). Successful Master Password unlock resets both counters immediately.
 
 ## Account-scoped Vault Key
 
