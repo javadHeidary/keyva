@@ -58,6 +58,10 @@ class BankCardDetailsViewModel extends GetxController {
     return item?.bankName ?? '';
   }
 
+  String get expiryMonth => splitBankCardExpiry(item?.expiryDate ?? '').month;
+
+  String get expiryYear => splitBankCardExpiry(item?.expiryDate ?? '').year;
+
   @override
   void onInit() {
     super.onInit();

@@ -136,37 +136,42 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         ),
                       ),
                       SizedBox(height: _cardGap.h),
+                      LoginDetailCredentialCard(
+                        key: const Key('vault-bank-card-bank-name'),
+                        icon: bankInfo == null ? AppIcon.building : null,
+                        leading: bankInfo?.logoBuilder(
+                          width: 44.s,
+                          height: 44.s,
+                        ),
+                        label: 'بانک',
+                        value: controller.displayBankTitle,
+                      ),
+                      SizedBox(height: _cardGap.h),
                       AppSectionCardWidget(
                         padding: EdgeInsets.all(AppSpacing.md.s),
                         children: [
                           SplitDateInfoWidget(
-                            leftLabel: 'بانک',
-                            leftValue: controller.displayBankTitle,
-                            rightLabel: 'تاریخ انقضا',
-                            rightValue: card.expiryDate,
-                            icon: bankInfo != null
-                                ? bankInfo.logoBuilder(
-                                    width: 18.s,
-                                    height: 18.s,
-                                  )
-                                : Icon(
-                                    AppIcon.building,
-                                    size: AppSizes.iconSm.s,
-                                    color: colors.textSecondary,
-                                  ),
+                            leftLabel: 'ماه',
+                            leftValue: controller.expiryMonth,
+                            rightLabel: 'سال',
+                            rightValue: controller.expiryYear,
+                            leftCopyKey: const Key(
+                              'vault-bank-card-copy-month',
+                            ),
+                            rightCopyKey: const Key(
+                              'vault-bank-card-copy-year',
+                            ),
                             onLeftCopy: () => controller.copyValue(
                               context,
-                              controller.displayBankTitle,
+                              controller.expiryMonth,
                               'کپی',
-
-                              'نام بانک کپی شد',
+                              'ماه کپی شد',
                             ),
                             onRightCopy: () => controller.copyValue(
                               context,
-                              card.expiryDate,
+                              controller.expiryYear,
                               'کپی',
-
-                              'تاریخ انقضا کپی شد',
+                              'سال کپی شد',
                             ),
                           ),
                         ],

@@ -10,6 +10,7 @@ import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
+import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_loading_widger.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
@@ -27,39 +28,19 @@ class AppSearchWidget extends GetView<SearchViewModel> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.lg.s,
-                AppSpacing.sm.h,
-                AppSpacing.lg.s,
-                AppSpacing.sm.h,
+            AppHeaderWidget(
+              leading: Icon(
+                AppIcon.arrowBack,
+                size: AppSizes.iconLg.s,
+                color: colors.textPrimary,
               ),
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: Get.back,
-                    borderRadius: BorderRadius.circular(AppRadius.extra),
-                    child: SizedBox(
-                      width: 40.s,
-                      height: 40.s,
-                      child: Icon(
-                        AppIcon.arrowBack,
-                        size: AppSizes.iconLg.s,
-                        color: colors.textPrimary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: AppSpacing.sm.s),
-                  Expanded(
-                    child: AppSearchHeaderWidget(
-                      key: const Key('vault-search-field'),
-                      controller: controller.searchController,
-                      focusNode: controller.searchFocusNode,
-                      hintText: controller.hintText,
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
+              onLeadingTap: Get.back,
+              titleWidget: AppSearchHeaderWidget(
+                key: const Key('vault-search-field'),
+                controller: controller.searchController,
+                focusNode: controller.searchFocusNode,
+                hintText: controller.hintText,
+                padding: EdgeInsets.zero,
               ),
             ),
             Expanded(child: Obx(() => _buildBody(context))),
@@ -77,8 +58,7 @@ class AppSearchWidget extends GetView<SearchViewModel> {
     final results = controller.results;
     if (results.isEmpty) {
       final query = controller.searchQuery.value.trim();
-      final showIdle =
-          query.isEmpty || controller.isVaultContentEmpty;
+      final showIdle = query.isEmpty || controller.isVaultContentEmpty;
       return Center(
         child: showIdle
             ? AppEmptyWidget.searchIdle(typeLabel: controller.typeLabel)

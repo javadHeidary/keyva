@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
+import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 
 abstract interface class BackupService {
@@ -12,13 +13,18 @@ abstract interface class BackupService {
   Future<Result<BackupRestorePlan>> decryptBackup({
     required Uint8List bytes,
     required String backupPassword,
+    RestoreProgressCallback? onProgress,
   });
 
-  Future<Result<void>> restoreVault(VaultData vault);
+  Future<Result<void>> restoreVault(
+    VaultData vault, {
+    RestoreProgressCallback? onProgress,
+  });
 
   Future<Result<void>> restoreIntoNewAccount({
     required String username,
     required String masterPassword,
     required VaultData vault,
+    RestoreProgressCallback? onProgress,
   });
 }

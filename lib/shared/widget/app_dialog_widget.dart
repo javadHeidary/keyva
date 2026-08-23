@@ -15,6 +15,7 @@ class AppDialogWidget extends StatelessWidget {
   final String buttonText;
   final VoidCallback? onConfirm;
   final Widget? customIcon;
+  final Key? buttonKey;
 
   const AppDialogWidget({
     super.key,
@@ -24,29 +25,34 @@ class AppDialogWidget extends StatelessWidget {
     this.buttonText = 'متوجه شدم',
     this.onConfirm,
     this.customIcon,
+    this.buttonKey,
   });
 
   static Future<void> show(
     BuildContext context, {
+    Key? key,
+    Key? buttonKey,
     AppDialogType type = AppDialogType.info,
     required String title,
     required String description,
     String buttonText = 'متوجه شدم',
     VoidCallback? onConfirm,
     Widget? customIcon,
-    bool barrierDismissible = true,
+    bool barrierDismissible = false,
   }) {
     return showDialog(
       context: context,
       barrierDismissible: barrierDismissible,
       barrierColor: context.colors.overlay,
       builder: (context) => AppDialogWidget(
+        key: key,
         type: type,
         title: title,
         description: description,
         buttonText: buttonText,
         onConfirm: onConfirm,
         customIcon: customIcon,
+        buttonKey: buttonKey,
       ),
     );
   }
@@ -113,6 +119,7 @@ class AppDialogWidget extends StatelessWidget {
               width: double.infinity,
               height: AppSizes.primaryButtonHeight.s,
               child: ElevatedButton(
+                key: buttonKey,
                 onPressed: () {
                   Navigator.of(context).pop();
                   onConfirm?.call();

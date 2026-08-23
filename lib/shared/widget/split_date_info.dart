@@ -16,6 +16,8 @@ class SplitDateInfoWidget extends StatelessWidget {
     this.icon,
     this.onLeftCopy,
     this.onRightCopy,
+    this.leftCopyKey,
+    this.rightCopyKey,
   });
 
   final String leftLabel;
@@ -25,6 +27,8 @@ class SplitDateInfoWidget extends StatelessWidget {
   final Widget? icon;
   final VoidCallback? onLeftCopy;
   final VoidCallback? onRightCopy;
+  final Key? leftCopyKey;
+  final Key? rightCopyKey;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +55,7 @@ class SplitDateInfoWidget extends StatelessWidget {
               label: leftLabel,
               value: leftValue,
               onCopy: onLeftCopy,
+              copyKey: leftCopyKey,
             ),
           ),
           Container(
@@ -64,6 +69,7 @@ class SplitDateInfoWidget extends StatelessWidget {
               label: rightLabel,
               value: rightValue,
               onCopy: onRightCopy,
+              copyKey: rightCopyKey,
             ),
           ),
         ],
@@ -73,15 +79,24 @@ class SplitDateInfoWidget extends StatelessWidget {
 }
 
 class _DateSection extends StatelessWidget {
-  const _DateSection({required this.label, required this.value, this.onCopy});
+  const _DateSection({
+    required this.label,
+    required this.value,
+    this.onCopy,
+    this.copyKey,
+  });
 
   final String label;
   final String value;
   final VoidCallback? onCopy;
+  final Key? copyKey;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final valueStyle = AppTypography.withFaNum(
+      AppTypography.titleSmall.copyWith(color: colors.textPrimary),
+    );
 
     return Column(
       children: [
@@ -98,15 +113,15 @@ class _DateSection extends StatelessWidget {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTypography.titleSmall.copyWith(
-                  color: colors.textPrimary,
-                ),
+                style: valueStyle,
               ),
             ),
             if (onCopy != null) ...[
               SizedBox(width: AppSpacing.xs.s),
               GestureDetector(
+                key: copyKey,
                 onTap: onCopy,
+                behavior: HitTestBehavior.opaque,
                 child: Icon(
                   Icons.copy_rounded,
                   size: AppSizes.iconSm.s,

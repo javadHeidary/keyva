@@ -14,6 +14,7 @@ class AppHeaderWidget extends StatelessWidget {
   const AppHeaderWidget({
     super.key,
     this.title,
+    this.titleWidget,
     this.leading,
     this.trailing,
     this.trailingActions,
@@ -25,6 +26,8 @@ class AppHeaderWidget extends StatelessWidget {
   });
 
   final String? title;
+
+  final Widget? titleWidget;
 
   final Widget? leading;
 
@@ -63,17 +66,19 @@ class AppHeaderWidget extends StatelessWidget {
             SizedBox(width: 40.s),
 
           Expanded(
-            child: title != null
-                ? Text(
-                    title!,
-                    textAlign: titleAlign,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.titleLarge.copyWith(
-                      color: colors.textPrimary,
-                    ),
-                  )
-                : const SizedBox.shrink(),
+            child:
+                titleWidget ??
+                (title != null
+                    ? Text(
+                        title!,
+                        textAlign: titleAlign,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.titleLarge.copyWith(
+                          color: colors.textPrimary,
+                        ),
+                      )
+                    : const SizedBox.shrink()),
           ),
 
           if (trailingActions != null && trailingActions!.isNotEmpty)
@@ -91,7 +96,7 @@ class AppHeaderWidget extends StatelessWidget {
             )
           else if (trailing != null)
             _HeaderIconButton(onTap: onTrailingTap, child: trailing!)
-          else
+          else if (titleWidget == null)
             SizedBox(width: 40.s),
         ],
       ),

@@ -12,9 +12,12 @@ import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
 import 'package:keyva/feature/backup/model/backup_file_result.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
+import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/view/backup_restore_view.dart';
 import 'package:keyva/feature/backup/viewmodel/backup_viewmodel.dart';
 import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
+import 'package:keyva/feature/backup/widget/restore_new_account_success_dialog.dart';
+import 'package:keyva/feature/backup/widget/restore_progress_overlay.dart';
 import 'package:keyva/feature/settings/view/settings_view.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
@@ -597,4 +600,287 @@ void main() {
     expect(backup.lastNewAccountMasterPassword, isNot(backup.lastPassword));
     expect(backup.restoreCount, 0);
   });
+
+  testWidgets('restore confirm ignores outside tap', (tester) async {
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.plan = BackupRestorePlan(
+      vault: emptyVault,
+      preview: BackupPreview.fromVault(emptyVault),
+    );
+    await pumpHub(tester);
+    await _reachConfirmDialog(tester);
+    expect(find.text('هشدار'), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pump();
+    expect(find.text('هشدار'), findsOneWidget);
+    expect(backup.restoreCount, 0);
+  });
+
+  testWidgets('blocking restore overlay ignores back and outside tap', (
+    tester,
+  ) async {
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.plan = BackupRestorePlan(
+      vault: emptyVault,
+      preview: BackupPreview.fromVault(emptyVault),
+    );
+    backup.restoreGate = Completer<void>();
+    await pumpHub(tester);
+    await _reachConfirmDialog(tester);
+    await tester.tap(find.text('جایگزینی'));
+    await tester.pump();
+    expect(find.byKey(const Key('restore-progress-overlay')), findsOneWidget);
+    expect(find.byKey(const Key('restore-progress-percent')), findsOneWidget);
+    expect(find.text(RestoreProgressMessages.stayOpen), findsOneWidget);
+    expect(restoreVm.progress.value?.percent, lessThan(100));
+
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pump();
+    expect(find.byKey(const Key('restore-progress-overlay')), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(find.byKey(const Key('restore-progress-overlay')), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('backup-restore-restore')),
+      warnIfMissed: false,
+    );
+    await tester.pump();
+    expect(backup.restoreCount, 1);
+
+    backup.restoreGate!.complete();
+    await pumpAuthSettle(tester);
+    expect(find.byKey(const Key('restore-progress-overlay')), findsNothing);
+    expect(restoreVm.progress.value, isNull);
+    expect(find.text('اطلاعات Vault جایگزین شد'), findsOneWidget);
+    AppToast.dismiss();
+  });
+
+  testWidgets('restore failure removes the overlay and keeps the hub', (
+    tester,
+  ) async {
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.plan = BackupRestorePlan(
+      vault: emptyVault,
+      preview: BackupPreview.fromVault(emptyVault),
+    );
+    backup.restoreFailure = const BackupRestorePersistenceFailure();
+    await pumpHub(tester);
+    await _reachConfirmDialog(tester);
+    await tester.tap(find.text('جایگزینی'));
+    await pumpAuthSettle(tester);
+    expect(find.byKey(const Key('restore-progress-overlay')), findsNothing);
+    expect(restoreVm.progress.value, isNull);
+    expect(find.text('بازیابی اطلاعات انجام نشد.'), findsOneWidget);
+    expect(find.byKey(const Key('backup-restore-restore')), findsOneWidget);
+    AppToast.dismiss();
+  });
+
+  testWidgets('decrypt overlay is removed after a wrong backup password', (
+    tester,
+  ) async {
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.decryptFailure = const WrongBackupPasswordFailure();
+    await pumpHub(tester);
+    await tester.tap(find.byKey(const Key('backup-restore-restore')));
+    await pumpAuthSettle(tester);
+    await tester.enterText(
+      find.byKey(const Key('backup-restore-password')),
+      'backup-pass',
+    );
+    await tester.tap(find.byKey(const Key('backup-restore-submit')));
+    await pumpAuthSettle(tester);
+    expect(find.byKey(const Key('restore-progress-overlay')), findsNothing);
+    expect(restoreVm.progress.value, isNull);
+    expect(find.byKey(const Key('backup-restore-submit')), findsOneWidget);
+    expect(find.byKey(const Key('backup-restore-password-cancel')), findsOneWidget);
+    AppToast.dismiss();
+  });
+
+  testWidgets('new-account restore reports create and persist stages', (
+    tester,
+  ) async {
+    session.clear();
+    restoreVm = RestoreViewModel(
+      backup: backup,
+      files: files,
+      session: session,
+      mode: RestoreMode.createAccount,
+    );
+    files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+    backup.plan = BackupRestorePlan(
+      vault: emptyVault,
+      preview: BackupPreview.fromVault(emptyVault),
+    );
+    backup.restoreNewAccountGate = Completer<void>();
+    setupAuthWidgetSurface(tester);
+    Get.put(restoreVm);
+    await tester.pumpWidget(
+      GetMaterialApp(
+        theme: AppTheme.light,
+        locale: const Locale('fa', 'IR'),
+        home: Builder(
+          builder: (context) {
+            return TextButton(
+              key: const Key('run-restore-progress'),
+              onPressed: () {
+                runRestoreWithProgressOverlay(
+                  context: context,
+                  restore: restoreVm,
+                  action: () async {
+                    await restoreVm.pickBackup(context);
+                    await restoreVm.decryptSelectedBackup(
+                      password: 'backup-pass',
+                      context: context,
+                    );
+                    restoreVm.usernameController.text = 'restored';
+                    restoreVm.passwordController.text = 'new-master-password';
+                    restoreVm.confirmPasswordController.text =
+                        'new-master-password';
+                    await restoreVm.completeNewAccountRestore(context);
+                  },
+                );
+              },
+              child: const Text('run'),
+            );
+          },
+        ),
+        getPages: [
+          GetPage(
+            name: AppRoutes.shell,
+            page: () => const Scaffold(
+              key: Key('shell-page'),
+              body: SizedBox.shrink(),
+            ),
+          ),
+        ],
+        builder: (context, child) {
+          AppResponsive.init(context);
+          return child!;
+        },
+      ),
+    );
+    await tester.tap(find.byKey(const Key('run-restore-progress')));
+    await tester.pump();
+    expect(find.byKey(const Key('restore-progress-overlay')), findsOneWidget);
+    expect(
+      backup.restoreNewAccountProgress.map((report) => report.stage),
+      containsAll(<RestoreProgressStage>[
+        RestoreProgressStage.preparingAccount,
+        RestoreProgressStage.creatingAccount,
+        RestoreProgressStage.unlocking,
+        RestoreProgressStage.persisting,
+      ]),
+    );
+    expect(restoreVm.progress.value?.isCompleted, isNot(true));
+    backup.restoreNewAccountGate!.complete();
+    await pumpAuthSettle(tester);
+    expect(find.byKey(const Key('restore-progress-overlay')), findsNothing);
+    expect(backup.restoreNewAccountProgress.last.stage, RestoreProgressStage.completed);
+    expect(backup.restoreNewAccountProgress.last.percent, 100);
+  });
+
+  testWidgets(
+    'new-account restore shows a success dialog after 100% and waits for Got it',
+    (tester) async {
+      session.clear();
+      restoreVm = RestoreViewModel(
+        backup: backup,
+        files: files,
+        session: session,
+        mode: RestoreMode.createAccount,
+      );
+      files.pickResult = BackupFilePicked(Uint8List.fromList([1, 2, 3]));
+      backup.plan = BackupRestorePlan(
+        vault: emptyVault,
+        preview: BackupPreview.fromVault(emptyVault),
+      );
+      setupAuthWidgetSurface(tester);
+      Get.put(restoreVm);
+      await tester.pumpWidget(
+        GetMaterialApp(
+          theme: AppTheme.light,
+          locale: const Locale('fa', 'IR'),
+          home: Builder(
+            builder: (context) {
+              return TextButton(
+                key: const Key('run-restore-success'),
+                onPressed: () async {
+                  await restoreVm.pickBackup(context);
+                  await restoreVm.decryptSelectedBackup(
+                    password: 'backup-pass',
+                    context: context,
+                  );
+                  restoreVm.usernameController.text = 'restored';
+                  restoreVm.passwordController.text = 'new-master-password';
+                  restoreVm.confirmPasswordController.text =
+                      'new-master-password';
+                  await runRestoreWithProgressOverlay(
+                    context: context,
+                    restore: restoreVm,
+                    action: () => restoreVm.completeNewAccountRestore(context),
+                  );
+                  restoreVm.presentNewAccountRestoreSuccess(context);
+                  restoreVm.presentNewAccountRestoreSuccess(context);
+                },
+                child: const Text('run'),
+              );
+            },
+          ),
+          getPages: [
+            GetPage(
+              name: AppRoutes.shell,
+              page: () => const Scaffold(
+                key: Key('shell-page'),
+                body: SizedBox.shrink(),
+              ),
+            ),
+            GetPage(
+              name: AppRoutes.home,
+              page: () => const Scaffold(
+                key: Key('home-page'),
+                body: SizedBox.shrink(),
+              ),
+            ),
+          ],
+          builder: (context, child) {
+            AppResponsive.init(context);
+            return child!;
+          },
+        ),
+      );
+      await tester.tap(find.byKey(const Key('run-restore-success')));
+      await pumpAuthSettle(tester);
+
+      expect(backup.restoreNewAccountProgress.last.percent, 100);
+      expect(backup.restoreNewAccountProgress.last.stage, RestoreProgressStage.completed);
+      expect(find.byKey(const Key('restore-progress-overlay')), findsNothing);
+      expect(restoreVm.progress.value, isNull);
+      expect(restoreVm.didCompleteNewAccountRestore, isTrue);
+      expect(find.byKey(const Key('backup-restore-success-dialog')), findsOneWidget);
+      expect(find.text(restoreNewAccountSuccessDescription), findsOneWidget);
+      expect(find.byKey(const Key('shell-page')), findsNothing);
+
+      await tester.tapAt(const Offset(8, 8));
+      await tester.pump();
+      expect(find.byKey(const Key('backup-restore-success-dialog')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('backup-restore-success-got-it')));
+      await pumpAuthSettle(tester);
+      expect(find.byKey(const Key('backup-restore-success-dialog')), findsNothing);
+      expect(find.byKey(const Key('shell-page')), findsOneWidget);
+    },
+  );
+}
+
+Future<void> _reachConfirmDialog(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('backup-restore-restore')));
+  await pumpAuthSettle(tester);
+  await tester.enterText(
+    find.byKey(const Key('backup-restore-password')),
+    'backup-pass',
+  );
+  await tester.tap(find.byKey(const Key('backup-restore-submit')));
+  await pumpAuthSettle(tester);
 }

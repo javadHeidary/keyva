@@ -13,6 +13,7 @@ Future<void> showCreateBackupDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
     barrierColor: context.colors.overlay,
+    barrierDismissible: false,
     builder: (dialogContext) => const _CreateBackupDialog(),
   );
 }
@@ -85,15 +86,33 @@ class _CreateBackupDialogState extends State<_CreateBackupDialog> {
               ),
               SizedBox(height: AppSpacing.xl.h),
               Obx(() {
-                return AppButtonWidget(
-                  key: const Key('backup-create-submit'),
-                  title: 'ایجاد و ذخیره',
-                  isLoading: controller.isBusy.value,
-                  onPressed: () => controller.createBackup(
-                    password: _passwordController.text,
-                    confirmPassword: _confirmController.text,
-                    context: context,
-                  ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppButtonWidget(
+                      key: const Key('backup-create-submit'),
+                      title: 'ایجاد و ذخیره',
+                      isLoading: controller.isBusy.value,
+                      onPressed: () => controller.createBackup(
+                        password: _passwordController.text,
+                        confirmPassword: _confirmController.text,
+                        context: context,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    TextButton(
+                      key: const Key('backup-create-cancel'),
+                      onPressed: controller.isBusy.value
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(
+                        'انصراف',
+                        style: AppTypography.button.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }),
             ],

@@ -105,6 +105,28 @@ void main() {
     expect(settings.security.value.pinEnabled, isFalse);
   });
 
+  testWidgets('PIN dialog ignores outside tap and closes with cancel', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byKey(const Key('settings-pin-toggle')),
+        matching: find.byType(Switch),
+      ),
+    );
+    await pumpAuthSettle(tester);
+    expect(find.text('تنظیم کد PIN'), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pump();
+    expect(find.text('تنظیم کد PIN'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('settings-pin-cancel')));
+    await pumpAuthSettle(tester);
+    expect(find.text('تنظیم کد PIN'), findsNothing);
+    expect(pin.enableCount, 0);
+  });
+
   testWidgets('PIN setup dialog enables PIN on matching valid values', (
     tester,
   ) async {

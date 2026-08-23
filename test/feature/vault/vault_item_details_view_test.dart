@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
@@ -6,6 +7,7 @@ import 'package:keyva/feature/type/bank_card/view/bank_card_details_view.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/view/login_details_view.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
+import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/note/view/note_details_view.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
@@ -13,6 +15,8 @@ import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/fake_vault_operation_service.dart';
 import 'support/vault_widget_harness.dart';
@@ -126,6 +130,131 @@ void main() {
     expect(find.text('Nima Karimi'), findsOneWidget);
     expect(find.text('321'), findsNothing);
     expect(find.text('•' * 3), findsOneWidget);
+  });
+
+  testWidgets('bank card detail shows bank name without a copy action', (
+    tester,
+  ) async {
+    operations.vault = populatedVault();
+    await vault.loadVault();
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+
+    setupVaultWidgetSurface(tester);
+    tester.view.physicalSize = const Size(2160, 2400);
+    await tester.pumpWidget(vaultTestApp(home: const BankCardDetailsView()));
+    await pumpVaultFrame(tester);
+
+    final bankNameFinder = find.byKey(const Key('vault-bank-card-bank-name'));
+    expect(bankNameFinder, findsOneWidget);
+
+    final vm = Get.find<BankCardDetailsViewModel>();
+    expect(vm.displayBankTitle, isNotEmpty);
+    expect(find.text(vm.displayBankTitle), findsWidgets);
+
+    final bankCard = tester.widget<LoginDetailCredentialCard>(bankNameFinder);
+    expect(bankCard.value, vm.displayBankTitle);
+    expect(bankCard.trailing, isNull);
+    expect(
+      find.descendant(
+        of: bankNameFinder,
+        matching: find.byIcon(AppIcon.copy),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: bankNameFinder,
+        matching: find.byIcon(Icons.copy_rounded),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('bank card detail renders month and year separately', (
+    tester,
+  ) async {
+    operations.vault = populatedVault();
+    await vault.loadVault();
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+
+    setupVaultWidgetSurface(tester);
+    tester.view.physicalSize = const Size(2160, 2400);
+    await tester.pumpWidget(vaultTestApp(home: const BankCardDetailsView()));
+    await pumpVaultFrame(tester);
+
+    expect(find.text('ماه'), findsOneWidget);
+    expect(find.text('سال'), findsOneWidget);
+    expect(find.text('06'), findsOneWidget);
+    expect(find.text('30'), findsOneWidget);
+    expect(find.byKey(const Key('vault-bank-card-copy-month')), findsOneWidget);
+    expect(find.byKey(const Key('vault-bank-card-copy-year')), findsOneWidget);
+  });
+
+  testWidgets('bank card detail copies month and year independently', (
+    tester,
+  ) async {
+    operations.vault = populatedVault();
+    await vault.loadVault();
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+
+    setupVaultWidgetSurface(tester);
+    tester.view.physicalSize = const Size(2160, 2400);
+    await tester.pumpWidget(vaultTestApp(home: const BankCardDetailsView()));
+    await pumpVaultFrame(tester);
+
+    final copied = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied.add((call.arguments as Map)['text'] as String);
+        }
+        return null;
+      },
+    );
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      );
+    });
+
+    final monthCopy = find.byKey(const Key('vault-bank-card-copy-month'));
+    final yearCopy = find.byKey(const Key('vault-bank-card-copy-year'));
+
+    await tester.ensureVisible(monthCopy);
+    await tester.pump();
+    await tester.tap(monthCopy);
+    await tester.pump();
+    expect(copied, ['06']);
+
+    await tester.ensureVisible(yearCopy);
+    await tester.pump();
+    await tester.tap(yearCopy);
+    await tester.pump();
+    expect(copied, ['06', '30']);
+    AppToast.dismiss();
+  });
+
+  testWidgets('bank card expiry month is on the RTL start side of year', (
+    tester,
+  ) async {
+    operations.vault = populatedVault();
+    await vault.loadVault();
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+
+    setupVaultWidgetSurface(tester);
+    tester.view.physicalSize = const Size(2160, 2400);
+    await tester.pumpWidget(vaultTestApp(home: const BankCardDetailsView()));
+    await pumpVaultFrame(tester);
+
+    final monthDx = tester
+        .getTopLeft(find.byKey(const Key('vault-bank-card-copy-month')))
+        .dx;
+    final yearDx = tester
+        .getTopLeft(find.byKey(const Key('vault-bank-card-copy-year')))
+        .dx;
+    expect(monthDx, greaterThan(yearDx));
   });
 
   testWidgets('secure note detail displays title and content', (tester) async {

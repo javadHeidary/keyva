@@ -10,8 +10,10 @@ import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/backup/model/backup_file_result.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
+import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/service/backup_file_service.dart';
 import 'package:keyva/feature/backup/service/backup_service.dart';
+import 'package:keyva/feature/backup/widget/restore_new_account_success_dialog.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
@@ -41,6 +43,7 @@ class RestoreViewModel extends GetxController {
   final isConfirmPasswordVisible = false.obs;
   final dialogCountdown = 3.obs;
   final canConfirmDialog = false.obs;
+  final progress = Rxn<RestoreProgress>();
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
@@ -50,10 +53,14 @@ class RestoreViewModel extends GetxController {
   Uint8List? _selectedBytes;
   VaultData? _pendingVault;
   BackupPreview? _pendingPreview;
+  bool _newAccountRestoreSucceeded = false;
+  bool _successDialogShown = false;
 
   bool get createsNewAccount => mode == RestoreMode.createAccount;
 
   bool get hasPendingRestore => _pendingVault != null;
+
+  bool get didCompleteNewAccountRestore => _newAccountRestoreSucceeded;
 
   BackupPreview? get pendingPreview => _pendingPreview;
 
@@ -158,6 +165,7 @@ class RestoreViewModel extends GetxController {
       final decrypted = await _backup.decryptBackup(
         bytes: bytes,
         backupPassword: password,
+        onProgress: _onProgress,
       );
       if (!context.mounted) {
         return null;
@@ -205,7 +213,10 @@ class RestoreViewModel extends GetxController {
 
     isBusy.value = true;
     try {
-      final restored = await _backup.restoreVault(vault);
+      final restored = await _backup.restoreVault(
+        vault,
+        onProgress: _onProgress,
+      );
       if (!context.mounted || !_session.isAuthenticated) {
         _clearPending();
         return;
@@ -217,11 +228,13 @@ class RestoreViewModel extends GetxController {
         );
         return;
       }
+      _onProgress(RestoreProgress.replaceRefreshing());
       _clearPending();
       await _refreshVaultUi();
       if (!context.mounted || !_session.isAuthenticated) {
         return;
       }
+      _onProgress(RestoreProgress.commitCompleted());
       AppToast.success(
         context,
         title: 'بازیابی پشتیبان',
@@ -266,6 +279,7 @@ class RestoreViewModel extends GetxController {
         username: usernameController.text.trim(),
         masterPassword: passwordController.text,
         vault: vault,
+        onProgress: _onProgress,
       );
       if (restored is FailureResult<void>) {
         if (!context.mounted) {
@@ -275,7 +289,7 @@ class RestoreViewModel extends GetxController {
         return;
       }
       _clearPending();
-      Get.offAllNamed(AppRoutes.shell);
+      _newAccountRestoreSucceeded = true;
     } finally {
       passwordController.clear();
       confirmPasswordController.clear();
@@ -285,6 +299,31 @@ class RestoreViewModel extends GetxController {
 
   void cancelRestore() {
     _clearPending();
+  }
+
+  Future<void> presentNewAccountRestoreSuccess(BuildContext context) async {
+    if (!createsNewAccount ||
+        !_newAccountRestoreSucceeded ||
+        _successDialogShown ||
+        isClosed) {
+      return;
+    }
+    _successDialogShown = true;
+    if (context.mounted) {
+      await showRestoreNewAccountSuccessDialog(context);
+    }
+    Get.offAllNamed(AppRoutes.shell);
+  }
+
+  void clearProgress() {
+    progress.value = null;
+  }
+
+  void _onProgress(RestoreProgress value) {
+    if (isClosed) {
+      return;
+    }
+    progress.value = value;
   }
 
   Future<void> _refreshVaultUi() async {
@@ -310,6 +349,7 @@ class RestoreViewModel extends GetxController {
     usernameController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    clearProgress();
     _clearPending();
     super.onClose();
   }

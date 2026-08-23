@@ -11,6 +11,7 @@ import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
+import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/service/backup_service.dart';
 import 'package:keyva/feature/backup/service/backup_service_impl.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
@@ -348,6 +349,71 @@ void main() {
     );
     expect(vaults.saveCount, 0);
   });
+
+  test('decryptBackup reports increasing stages and 100 only on success', () async {
+    await unlock(sampleVault());
+    final bytes = _expectSuccess(
+      await backup.createBackup(backupPassword: backupPassword),
+    );
+    final reports = <RestoreProgress>[];
+    final plan = _expectSuccess(
+      await backup.decryptBackup(
+        bytes: bytes,
+        backupPassword: backupPassword,
+        onProgress: reports.add,
+      ),
+    );
+    expect(plan.vault, sampleVault());
+    _expectIncreasingProgress(reports);
+    expect(reports.first.percent, 0);
+    expect(reports.last.percent, 100);
+    expect(reports.last.stage, RestoreProgressStage.completed);
+    expect(
+      reports.map((report) => report.stage),
+      containsAll(<RestoreProgressStage>[
+        RestoreProgressStage.starting,
+        RestoreProgressStage.validating,
+        RestoreProgressStage.derivingKey,
+        RestoreProgressStage.decrypting,
+        RestoreProgressStage.deserializing,
+        RestoreProgressStage.completed,
+      ]),
+    );
+  });
+
+  test('decryptBackup failure never reports 100', () async {
+    await unlock(sampleVault());
+    final bytes = _expectSuccess(
+      await backup.createBackup(backupPassword: backupPassword),
+    );
+    final reports = <RestoreProgress>[];
+    final result = await backup.decryptBackup(
+      bytes: bytes,
+      backupPassword: 'wrong-backup',
+      onProgress: reports.add,
+    );
+    expect(result, isA<FailureResult<BackupRestorePlan>>());
+    expect(reports, isNotEmpty);
+    expect(reports.any((report) => report.percent >= 100), isFalse);
+    expect(reports.any((report) => report.isCompleted), isFalse);
+  });
+
+  test('restoreVault reports persist progress without claiming 100', () async {
+    await unlock(sampleVault());
+    final bytes = _expectSuccess(
+      await backup.createBackup(backupPassword: backupPassword),
+    );
+    final plan = _expectSuccess(
+      await backup.decryptBackup(bytes: bytes, backupPassword: backupPassword),
+    );
+    final reports = <RestoreProgress>[];
+    _expectSuccess(await backup.restoreVault(plan.vault, onProgress: reports.add));
+    expect(reports, isNotEmpty);
+    expect(reports.first.stage, RestoreProgressStage.persisting);
+    expect(reports.first.percent, 40);
+    expect(reports.any((report) => report.isCompleted), isFalse);
+    expect(reports.any((report) => report.percent > 100), isFalse);
+  });
 }
 
 class _MemoryVaultRepository implements VaultRepository {
@@ -380,4 +446,14 @@ class _MemoryVaultRepository implements VaultRepository {
 T _expectSuccess<T>(Result<T> result) {
   expect(result, isA<Success<T>>());
   return (result as Success<T>).data;
+}
+
+void _expectIncreasingProgress(List<RestoreProgress> reports) {
+  expect(reports, isNotEmpty);
+  var previous = -1;
+  for (final report in reports) {
+    expect(report.percent, inInclusiveRange(0, 100));
+    expect(report.percent, greaterThanOrEqualTo(previous));
+    previous = report.percent;
+  }
 }

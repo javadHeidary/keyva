@@ -20,6 +20,7 @@ Future<void> showPinCodeDialog(
   return showDialog<void>(
     context: context,
     barrierColor: context.colors.overlay,
+    barrierDismissible: false,
     builder: (dialogContext) => _PinCodeDialog(mode: mode),
   );
 }
@@ -130,6 +131,17 @@ class _PinCodeDialogState extends State<_PinCodeDialog> {
                   context: context,
                 );
               },
+            ),
+            SizedBox(height: AppSpacing.sm.h),
+            TextButton(
+              key: const Key('settings-pin-cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'انصراف',
+                style: AppTypography.button.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
             ),
           ],
         ),

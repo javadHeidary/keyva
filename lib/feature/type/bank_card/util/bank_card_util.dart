@@ -84,6 +84,14 @@ bool verifyCardWithLuhn(String digits) {
   return IranianBanks.verifyCardNumber(digits);
 }
 
+({String month, String year}) splitBankCardExpiry(String expiryDate) {
+  final parts = expiryDate.trim().split('/');
+  if (parts.length != 2) {
+    return (month: '', year: '');
+  }
+  return (month: parts[0], year: parts[1]);
+}
+
 String? validateExpiryInput(String? value) {
   if (value == null || value.trim().isEmpty) {
     return 'تاریخ انقضا الزامی است';

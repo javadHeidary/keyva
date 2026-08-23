@@ -4,10 +4,16 @@ import 'package:get/get.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
 
-Widget vaultTestApp({required Widget home, String? initialRoute, List<GetPage>? getPages}) {
+Widget vaultTestApp({
+  required Widget home,
+  String? initialRoute,
+  List<GetPage>? getPages,
+  ThemeMode themeMode = ThemeMode.light,
+}) {
   return GetMaterialApp(
     theme: AppTheme.light,
     darkTheme: AppTheme.dark,
+    themeMode: themeMode,
     defaultTransition: Transition.noTransition,
     transitionDuration: Duration.zero,
     home: getPages == null ? home : null,
@@ -15,10 +21,7 @@ Widget vaultTestApp({required Widget home, String? initialRoute, List<GetPage>? 
     getPages: getPages,
     builder: (context, child) {
       AppResponsive.init(context);
-      return Directionality(
-        textDirection: TextDirection.rtl,
-        child: child!,
-      );
+      return Directionality(textDirection: TextDirection.rtl, child: child!);
     },
   );
 }

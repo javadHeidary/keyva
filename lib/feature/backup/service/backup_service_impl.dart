@@ -15,6 +15,7 @@ import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/backup/model/backup_envelope.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
+import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/serialization/backup_envelope_codec.dart';
 import 'package:keyva/feature/backup/service/backup_service.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -126,7 +127,10 @@ class BackupServiceImpl implements BackupService {
   Future<Result<BackupRestorePlan>> decryptBackup({
     required Uint8List bytes,
     required String backupPassword,
+    RestoreProgressCallback? onProgress,
   }) async {
+    _emit(onProgress, RestoreProgress.decryptStarting());
+    _emit(onProgress, RestoreProgress.decryptValidating());
     final decoded = BackupEnvelopeCodec.decode(bytes);
     if (decoded is FailureResult<BackupEnvelope>) {
       return FailureResult(decoded.failure);
@@ -134,6 +138,7 @@ class BackupServiceImpl implements BackupService {
     final envelope = (decoded as Success<BackupEnvelope>).data;
     _log('decrypt started version=${envelope.formatVersion}');
 
+    _emit(onProgress, RestoreProgress.decryptDerivingKey());
     final derived = await _crypto.deriveKey(
       masterPassword: backupPassword,
       salt: envelope.kdfSalt,
@@ -145,6 +150,7 @@ class BackupServiceImpl implements BackupService {
     }
     final backupKey = (derived as Success<Uint8List>).data;
 
+    _emit(onProgress, RestoreProgress.decryptDecrypting());
     final decrypted = await _crypto.decrypt(
       payload: EncryptedPayload(
         version: SecurityConstants.vaultEncryptionVersion,
@@ -163,6 +169,7 @@ class BackupServiceImpl implements BackupService {
       return const FailureResult(BackupIntegrityFailure());
     }
 
+    _emit(onProgress, RestoreProgress.decryptDeserializing());
     final deserialized = await _serializer.deserialize(
       (decrypted as Success<Uint8List>).data,
     );
@@ -171,6 +178,7 @@ class BackupServiceImpl implements BackupService {
       return const FailureResult(BackupPayloadValidationFailure());
     }
     final vault = (deserialized as Success<VaultData>).data;
+    _emit(onProgress, RestoreProgress.decryptCompleted());
     return Success(
       BackupRestorePlan(
         vault: vault,
@@ -180,7 +188,11 @@ class BackupServiceImpl implements BackupService {
   }
 
   @override
-  Future<Result<void>> restoreVault(VaultData vault) async {
+  Future<Result<void>> restoreVault(
+    VaultData vault, {
+    RestoreProgressCallback? onProgress,
+  }) async {
+    _emit(onProgress, RestoreProgress.replacePersisting());
     final replaced = await _vaultData.replaceVault(vault);
     if (replaced is FailureResult<void>) {
       if (replaced.failure is AuthenticationFailure) {
@@ -197,6 +209,7 @@ class BackupServiceImpl implements BackupService {
     required String username,
     required String masterPassword,
     required VaultData vault,
+    RestoreProgressCallback? onProgress,
   }) async {
     final auth = _auth;
     final unlock = _unlock;
@@ -209,12 +222,14 @@ class BackupServiceImpl implements BackupService {
       return const FailureResult(ValidationFailure());
     }
 
+    _emit(onProgress, RestoreProgress.newAccountPreparing());
     final serialized = await _serializer.serialize(vault);
     if (serialized is FailureResult<Uint8List>) {
       _log('restore validation failed');
       return const FailureResult(BackupPayloadValidationFailure());
     }
 
+    _emit(onProgress, RestoreProgress.newAccountCreating());
     final created = await auth.createAccount(
       username: trimmedName,
       masterPassword: masterPassword,
@@ -224,6 +239,7 @@ class BackupServiceImpl implements BackupService {
     }
     final user = (created as Success<UserRecord>).data;
 
+    _emit(onProgress, RestoreProgress.newAccountUnlocking());
     final unlocked = await unlock.unlock(
       userId: user.id,
       masterPassword: masterPassword,
@@ -233,14 +249,23 @@ class BackupServiceImpl implements BackupService {
       return const FailureResult(BackupRestorePersistenceFailure());
     }
 
+    _emit(onProgress, RestoreProgress.newAccountPersisting());
     final replaced = await _vaultData.replaceVault(vault);
     if (replaced is FailureResult<void>) {
       await _rollbackNewAccount(user.id);
       return const FailureResult(BackupRestorePersistenceFailure());
     }
 
+    _emit(onProgress, RestoreProgress.commitCompleted());
     _log('restore committed');
     return const Success<void>(null);
+  }
+
+  static void _emit(
+    RestoreProgressCallback? onProgress,
+    RestoreProgress progress,
+  ) {
+    onProgress?.call(progress);
   }
 
   Future<void> _rollbackNewAccount(String userId) async {

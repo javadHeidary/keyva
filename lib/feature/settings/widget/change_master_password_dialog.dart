@@ -13,6 +13,7 @@ Future<void> showChangeMasterPasswordDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
     barrierColor: context.colors.overlay,
+    barrierDismissible: false,
     builder: (dialogContext) => const _ChangeMasterPasswordDialog(),
   );
 }
@@ -89,16 +90,34 @@ class _ChangeMasterPasswordDialogState
               ),
               SizedBox(height: AppSpacing.xl.h),
               Obx(() {
-                return AppButtonWidget(
-                  key: const Key('settings-change-mp-submit'),
-                  title: 'تأیید',
-                  isLoading: controller.isSecurityBusy.value,
-                  onPressed: () => controller.onChangeMasterPasswordSubmitted(
-                    currentPassword: _currentController.text,
-                    newPassword: _newController.text,
-                    confirmPassword: _confirmController.text,
-                    context: context,
-                  ),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppButtonWidget(
+                      key: const Key('settings-change-mp-submit'),
+                      title: 'تأیید',
+                      isLoading: controller.isSecurityBusy.value,
+                      onPressed: () => controller.onChangeMasterPasswordSubmitted(
+                        currentPassword: _currentController.text,
+                        newPassword: _newController.text,
+                        confirmPassword: _confirmController.text,
+                        context: context,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    TextButton(
+                      key: const Key('settings-change-mp-cancel'),
+                      onPressed: controller.isSecurityBusy.value
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(
+                        'انصراف',
+                        style: AppTypography.button.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }),
             ],

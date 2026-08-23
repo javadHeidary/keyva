@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 
 class AppSearchHeaderWidget extends StatelessWidget {
   const AppSearchHeaderWidget({
@@ -103,7 +104,7 @@ class _SearchField extends StatelessWidget {
             color: colors.textTertiary,
           ),
           prefixIcon: Icon(
-            Icons.search_rounded,
+            AppIcon.search,
             size: 22.s,
             color: colors.textSecondary,
           ),

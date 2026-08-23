@@ -10,6 +10,7 @@ import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
 import 'package:keyva/feature/backup/widget/create_backup_dialog.dart';
 import 'package:keyva/feature/backup/widget/restore_backup_password_dialog.dart';
 import 'package:keyva/feature/backup/widget/restore_confirm_dialog.dart';
+import 'package:keyva/feature/backup/widget/restore_progress_overlay.dart';
 import 'package:keyva/feature/settings/widget/settings_group_card.dart';
 import 'package:keyva/feature/settings/widget/settings_row.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
@@ -153,6 +154,10 @@ class BackupRestoreView extends StatelessWidget {
       Get.toNamed(AppRoutes.authRestoreSetup);
       return;
     }
-    await restore.confirmRestore(context);
+    await runRestoreWithProgressOverlay(
+      context: context,
+      restore: restore,
+      action: () => restore.confirmRestore(context),
+    );
   }
 }

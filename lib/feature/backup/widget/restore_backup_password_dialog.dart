@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
+import 'package:keyva/feature/backup/widget/restore_progress_overlay.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
@@ -13,6 +14,7 @@ Future<void> showRestoreBackupPasswordDialog(BuildContext context) {
   return showDialog<void>(
     context: context,
     barrierColor: context.colors.overlay,
+    barrierDismissible: false,
     builder: (dialogContext) => const _RestoreBackupPasswordDialog(),
   );
 }
@@ -69,20 +71,42 @@ class _RestoreBackupPasswordDialogState
               ),
               SizedBox(height: AppSpacing.xl.h),
               Obx(() {
-                return AppButtonWidget(
-                  key: const Key('backup-restore-submit'),
-                  title: 'ادامه',
-                  isLoading: controller.isBusy.value,
-                  onPressed: () async {
-                    final preview = await controller.decryptSelectedBackup(
-                      password: _passwordController.text,
-                      context: context,
-                    );
-                    if (preview == null || !context.mounted) {
-                      return;
-                    }
-                    Navigator.of(context).pop();
-                  },
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppButtonWidget(
+                      key: const Key('backup-restore-submit'),
+                      title: 'ادامه',
+                      isLoading: controller.isBusy.value,
+                      onPressed: () async {
+                        final preview = await runRestoreWithProgressOverlay(
+                          context: context,
+                          restore: controller,
+                          action: () => controller.decryptSelectedBackup(
+                            password: _passwordController.text,
+                            context: context,
+                          ),
+                        );
+                        if (preview == null || !context.mounted) {
+                          return;
+                        }
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    TextButton(
+                      key: const Key('backup-restore-password-cancel'),
+                      onPressed: controller.isBusy.value
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(
+                        'انصراف',
+                        style: AppTypography.button.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               }),
             ],

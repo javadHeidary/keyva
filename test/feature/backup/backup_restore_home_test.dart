@@ -7,6 +7,7 @@ import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/backup/model/backup_file_result.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
+import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
@@ -173,8 +174,11 @@ class _HomeAwareBackupService extends FakeBackupService {
   final FakeVaultOperationService operations;
 
   @override
-  Future<Result<void>> restoreVault(VaultData vault) async {
-    final restored = await super.restoreVault(vault);
+  Future<Result<void>> restoreVault(
+    VaultData vault, {
+    RestoreProgressCallback? onProgress,
+  }) async {
+    final restored = await super.restoreVault(vault, onProgress: onProgress);
     if (restored is Success<void>) {
       operations.vault = vault;
     }
