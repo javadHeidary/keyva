@@ -98,4 +98,12 @@ class LoginDetailsViewModel extends GetxController {
       onDeleted: Get.back,
     );
   }
+
+  Future<void> togglePin(BuildContext context) async {
+    final login = item;
+    if (login == null || !Get.isRegistered<HomeController>()) return;
+    final listItem = mapVaultListItem(login);
+    if (listItem == null) return;
+    await Get.find<HomeController>().toggleItemPin(context, listItem);
+  }
 }

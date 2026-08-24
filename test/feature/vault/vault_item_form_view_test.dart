@@ -225,4 +225,33 @@ void main() {
     expect(find.text('keep-this-user'), findsOneWidget);
     expect(find.text('https://mail.test'), findsOneWidget);
   });
+
+  testWidgets('edit form preserves isPinned when saving', (tester) async {
+    final home = VaultHomeViewModel(operations: operations);
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [existingLogin().copyWith(isPinned: true)],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+    await home.loadVault();
+    Get.put(home);
+    Get.put(LoginEditViewModel(loginId: 'login-1', items: items));
+
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(vaultTestApp(home: const LoginEditView()));
+    await pumpVaultFrame(tester);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('vault-form-submit')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const Key('vault-form-submit')));
+    await pumpVaultFrame(tester);
+
+    expect(operations.lastUpdated, isA<LoginItem>());
+    expect((operations.lastUpdated! as LoginItem).isPinned, isTrue);
+  });
 }

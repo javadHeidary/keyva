@@ -19,6 +19,8 @@ class AppIconTestPage extends StatelessWidget {
         'eyeOff': AppIcon.eyeOff,
         'fingerprint': AppIcon.fingerprint,
         'pin': AppIcon.pin,
+        'itemPin': AppIcon.itemPin,
+        'itemUnpin': AppIcon.itemUnpin,
         'masterPassword': AppIcon.masterPassword,
       },
 

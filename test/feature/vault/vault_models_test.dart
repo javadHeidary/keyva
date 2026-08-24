@@ -67,6 +67,22 @@ void main() {
     expect(vault.categories.single, category);
   });
 
+  test('initial vault includes the three default categories', () {
+    final vault = VaultData.initial();
+
+    expect(vault.version, VaultData.currentVersion);
+    expect(vault.logins, isEmpty);
+    expect(vault.bankCards, isEmpty);
+    expect(vault.secureNotes, isEmpty);
+    expect(vault.categories.map((item) => item.id), [
+      'cat_personal',
+      'cat_work',
+      'cat_finance',
+    ]);
+    expect(vault.categories.map((item) => item.name), ['شخصی', 'کاری', 'مالی']);
+    expect(vault, VaultData.initial());
+  });
+
   test('required fields are preserved', () {
     expect(login.id, 'login-1');
     expect(login.title, 'Email');
@@ -181,5 +197,28 @@ void main() {
     expect(() => vault.bankCards.removeAt(0), throwsUnsupportedError);
     expect(() => vault.secureNotes.clear(), throwsUnsupportedError);
     expect(() => vault.categories[0] = category, throwsUnsupportedError);
+  });
+
+  test('isPinned defaults to false and participates in equality', () {
+    expect(login.isPinned, isFalse);
+    expect(card.isPinned, isFalse);
+    expect(note.isPinned, isFalse);
+
+    final pinned = login.copyWith(isPinned: true);
+    expect(pinned.isPinned, isTrue);
+    expect(pinned, isNot(login));
+    expect(login.copyWith(isPinned: false), login);
+  });
+
+  test('pinnedItemCount counts across item types', () {
+    final vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login.copyWith(isPinned: true)],
+      bankCards: [card.copyWith(isPinned: true)],
+      secureNotes: [note],
+      categories: [category],
+    );
+    expect(vault.pinnedItemCount, 2);
+    expect(VaultData.maxPinnedItems, 5);
   });
 }

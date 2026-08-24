@@ -272,4 +272,12 @@ class _FakeVaultOperationService implements VaultOperationService {
   Future<Result<void>> deleteItem(String id) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<Result<void>> setItemPinned({
+    required String id,
+    required bool isPinned,
+  }) {
+    throw UnimplementedError();
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
@@ -13,11 +14,14 @@ import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
+import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_search_widget.dart';
+import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/fake_vault_operation_service.dart';
 import 'support/vault_widget_harness.dart';
@@ -28,6 +32,7 @@ void main() {
   late FakeVaultOperationService operations;
   late VaultHomeViewModel vault;
   late HomeController home;
+  late FakeVaultSession session;
 
   final createdAt = DateTime.utc(2026, 7, 1, 10);
   final updatedAt = DateTime.utc(2026, 7, 2, 11);
@@ -131,24 +136,93 @@ void main() {
     await pumpVaultFrame(tester);
   }
 
+  Future<void> expectHomeChrome(WidgetTester tester) async {
+    expect(find.byKey(const Key('home-account-header')), findsOneWidget);
+    expect(find.byKey(const Key('home-search-chip')), findsOneWidget);
+    expect(find.byKey(const Key('home-type-selector')), findsOneWidget);
+    expect(find.text('انواع آیتم‌ها'), findsOneWidget);
+    expect(find.text('ورودها'), findsOneWidget);
+    expect(find.text('کارت‌های بانکی'), findsOneWidget);
+    expect(find.text('یادداشت‌ها'), findsOneWidget);
+    expect(find.byType(AppFabWidget), findsOneWidget);
+  }
+
   setUp(() {
     Get.testMode = true;
     operations = FakeVaultOperationService();
     vault = VaultHomeViewModel(operations: operations);
-    home = HomeController(vault: vault);
+    session = FakeVaultSession();
+    home = HomeController(vault: vault, session: session);
     Get.put(vault);
     Get.put(home);
   });
 
-  tearDown(Get.reset);
+  tearDown(() {
+    AppToast.dismiss();
+    Get.reset();
+  });
 
-  testWidgets('loading state renders', (tester) async {
+  testWidgets('loading state keeps Home chrome without a page spinner', (
+    tester,
+  ) async {
     vault.status.value = VaultUiStatus.loading;
 
     await pumpHome(tester, loadBeforePump: false);
 
-    expect(find.byKey(const Key('vault-home-loading')), findsOneWidget);
-    expect(find.text('در حال بارگذاری گاوصندوق'), findsOneWidget);
+    expect(find.byKey(const Key('vault-home-loading')), findsNothing);
+    expect(find.text('در حال بارگذاری گاوصندوق'), findsNothing);
+    await expectHomeChrome(tester);
+    expect(find.byKey(const Key('vault-home-empty')), findsNothing);
+    expect(find.byKey(const Key('vault-home-empty-cta')), findsNothing);
+    expect(vault.status.value, VaultUiStatus.loading);
+  });
+
+  testWidgets('unlocked vault shows the open-lock icon', (tester) async {
+    operations.vault = emptyVault();
+
+    await pumpHome(tester);
+
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('home-lock')),
+        matching: find.byIcon(AppIcon.lockOpen),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('home-lock')),
+        matching: find.byIcon(AppIcon.lock),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('locked session shows the locked icon', (tester) async {
+    Get.delete<HomeController>(force: true);
+    home = HomeController(
+      vault: vault,
+      session: FakeVaultSession(unlocked: false),
+    );
+    Get.put(home);
+    operations.vault = emptyVault();
+
+    await pumpHome(tester);
+
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('home-lock')),
+        matching: find.byIcon(AppIcon.lock),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('home-lock')),
+        matching: find.byIcon(AppIcon.lockOpen),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('loaded state renders items and skips categories', (tester) async {
@@ -170,17 +244,6 @@ void main() {
     expect(find.text('6219861234567890'), findsNothing);
   });
 
-  Future<void> expectHomeChrome(WidgetTester tester) async {
-    expect(find.byKey(const Key('home-account-header')), findsOneWidget);
-    expect(find.byKey(const Key('home-search-chip')), findsOneWidget);
-    expect(find.byKey(const Key('home-type-selector')), findsOneWidget);
-    expect(find.text('انواع آیتم‌ها'), findsOneWidget);
-    expect(find.text('ورودها'), findsOneWidget);
-    expect(find.text('کارت‌های بانکی'), findsOneWidget);
-    expect(find.text('یادداشت‌ها'), findsOneWidget);
-    expect(find.byType(AppFabWidget), findsOneWidget);
-  }
-
   testWidgets('empty vault keeps Home chrome and content empty state', (
     tester,
   ) async {
@@ -191,10 +254,10 @@ void main() {
 
     await expectHomeChrome(tester);
     expect(find.byKey(const Key('vault-home-empty')), findsOneWidget);
-    expect(find.byKey(const Key('vault-home-empty-cta')), findsOneWidget);
+    expect(find.byKey(const Key('vault-home-empty-cta')), findsNothing);
     expect(find.text('هنوز چیزی اضافه نکرده‌اید'), findsOneWidget);
     expect(find.text('اولین اطلاعات خود را به کیوا اضافه کنید.'), findsOneWidget);
-    expect(find.text('افزودن آیتم'), findsOneWidget);
+    expect(find.text('افزودن آیتم'), findsNothing);
     expect(find.text('هنوز چیزی ذخیره نکرده‌اید'), findsNothing);
     expect(find.text('ایجاد اولین آیتم'), findsNothing);
     expect(
@@ -221,7 +284,7 @@ void main() {
     );
   });
 
-  testWidgets('empty vault CTA opens the existing FAB create flow', (
+  testWidgets('empty vault FAB remains the create entry point', (
     tester,
   ) async {
     operations.vault = emptyVault();
@@ -249,9 +312,11 @@ void main() {
       ),
     );
     await pumpVaultFrame(tester);
-    await revealFinder(tester, find.byKey(const Key('vault-home-empty-cta')));
 
-    await tester.tap(find.byKey(const Key('vault-home-empty-cta')));
+    expect(find.byType(AppFabWidget), findsOneWidget);
+    expect(find.byKey(const Key('vault-home-empty-cta')), findsNothing);
+
+    await tester.tap(find.byIcon(AppIcon.add));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
 
@@ -458,4 +523,97 @@ void main() {
 
     expect(operations.lastDeletedId, 'login-1');
   });
+
+  testWidgets('pinned items appear first and show a pin indicator', (
+    tester,
+  ) async {
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login(), login(id: 'login-2', title: 'Pinned Mail').copyWith(isPinned: true)],
+      bankCards: [card()],
+      secureNotes: const [],
+      categories: const [],
+    );
+
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-2')));
+
+    expect(find.byKey(const Key('vault-item-pin-indicator')), findsOneWidget);
+    final pinnedTop = tester.getTopLeft(find.byKey(const Key('vault-item-login-2')));
+    final unpinnedTop = tester.getTopLeft(find.byKey(const Key('vault-item-login-1')));
+    expect(pinnedTop.dy, lessThan(unpinnedTop.dy));
+  });
+
+  testWidgets('pin action from more-menu persists on the item', (tester) async {
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login(), login(id: 'login-2', title: 'Other Mail')],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-1')));
+
+    await tester.tap(find.byIcon(Icons.more_horiz).first);
+    await pumpVaultFrame(tester);
+    await tester.tap(find.text('سنجاق کردن'));
+    await pumpVaultFrame(tester);
+
+    expect(operations.vault!.logins.first.isPinned, isTrue);
+    expect(find.byKey(const Key('vault-item-pin-indicator')), findsOneWidget);
+  });
+
+  testWidgets('pin action persists and a sixth pin shows a Persian toast', (
+    tester,
+  ) async {
+    operations.vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [
+        for (var i = 1; i <= 5; i++)
+          login(id: 'login-$i', title: 'Mail $i').copyWith(isPinned: true),
+        login(id: 'login-6', title: 'Extra Mail'),
+      ],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-6')));
+
+    await tester.tap(find.byIcon(Icons.more_horiz).last);
+    await pumpVaultFrame(tester);
+    await tester.tap(find.text('سنجاق کردن'));
+    await pumpVaultFrame(tester);
+
+    expect(find.text('حداکثر ۵ مورد را می‌توانید سنجاق کنید.'), findsOneWidget);
+    expect(operations.vault!.logins.last.isPinned, isFalse);
+    AppToast.dismiss();
+  });
+}
+
+class FakeVaultSession implements VaultSession {
+  FakeVaultSession({bool unlocked = true}) : _unlocked = unlocked;
+
+  bool _unlocked;
+
+  @override
+  bool get isUnlocked => _unlocked;
+
+  @override
+  VaultData? get vaultData => null;
+
+  @override
+  Future<Result<void>> unlock(VaultData vaultData) async {
+    _unlocked = true;
+    return const Success<void>(null);
+  }
+
+  @override
+  Future<Result<void>> lock() async {
+    _unlocked = false;
+    return const Success<void>(null);
+  }
 }

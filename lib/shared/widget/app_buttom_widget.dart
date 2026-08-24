@@ -78,8 +78,15 @@ class AppButtonWidget extends StatelessWidget {
                       ? MainAxisAlignment.spaceBetween
                       : MainAxisAlignment.center,
                   children: [
-                    Text(title, style: textStyle ?? AppTypography.button),
-
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          title,
+                          style: textStyle ?? AppTypography.button,
+                        ),
+                      ),
+                    ),
                     if (icon != null) ...[icon!],
                   ],
                 ),

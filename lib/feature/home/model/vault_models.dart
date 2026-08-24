@@ -53,6 +53,7 @@ class VaultListItem {
     required this.title,
     required this.subtitle,
     required this.categoryId,
+    this.isPinned = false,
   });
 
   final String id;
@@ -60,4 +61,5 @@ class VaultListItem {
   final String title;
   final String subtitle;
   final String categoryId;
+  final bool isPinned;
 }

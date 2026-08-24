@@ -4,7 +4,6 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/biometric_service.dart';
-import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
@@ -191,11 +190,10 @@ class LoginController extends GetxController {
       return;
     }
     errorMessage.value = '';
-    final pin = pinController.text;
-    if (!PinPolicy.isValid(pin)) {
-      errorMessage.value = PinPolicy.userMessage;
+    if (!(loginFormKey.currentState?.validate() ?? false)) {
       return;
     }
+    final pin = pinController.text;
     final userId = selectedUserId.value;
     if (userId.isEmpty) {
       Get.offNamed(AppRoutes.authAccounts);

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
+import 'package:keyva/feature/category/viewmodel/category_inline_create_mixin.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/note/util/note_util.dart';
 
-abstract class NoteFormViewModel extends GetxController {
+abstract class NoteFormViewModel extends GetxController
+    with CategoryInlineCreateMixin {
   final formKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final notesController = TextEditingController();
 
+  @override
   final selectedCategoryId = Rxn<String>();
   final isSubmitting = false.obs;
   final submitError = Rxn<String>();

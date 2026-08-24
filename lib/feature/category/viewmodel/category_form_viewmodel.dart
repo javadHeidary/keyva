@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_model.dart';
+import 'package:keyva/feature/category/util/category_name_validator.dart';
 import 'package:keyva/feature/category/util/category_vault_mapper.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/view/vault_form_submit.dart';
@@ -58,10 +60,20 @@ class CategoryFormViewModel extends GetxController {
   }
 
   String? validateName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'نام دسته‌بندی را وارد کنید';
+    return CategoryNameValidator.validate(
+      value,
+      existingNames: _existingNames(),
+      currentName: _original?.name,
+    );
+  }
+
+  Iterable<String> _existingNames() {
+    if (!Get.isRegistered<CategoryCatalogController>()) {
+      return const <String>[];
     }
-    return null;
+    return Get.find<CategoryCatalogController>().categories.map(
+      (category) => category.name,
+    );
   }
 
   void selectIcon(String iconId) {

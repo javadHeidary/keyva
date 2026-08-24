@@ -17,6 +17,7 @@ import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
+import 'package:keyva/feature/category/model/category_defaults.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
@@ -266,7 +267,10 @@ void main() {
 
     _expectSuccess(await dataService.addCategory(original));
     _expectSuccess(await dataService.addLogin(linkedLogin));
-    expect(vaultSession.vaultData!.categories, [original]);
+    expect(vaultSession.vaultData!.categories, [
+      ...CategoryDefaults.items,
+      original,
+    ]);
 
     _expectFailure<ValidationFailure>(
       await dataService.addCategory(category(name: 'Other')),
@@ -274,14 +278,17 @@ void main() {
 
     final updated = category(name: 'Work');
     _expectSuccess(await dataService.updateCategory(updated));
-    expect(vaultSession.vaultData!.categories, [updated]);
+    expect(vaultSession.vaultData!.categories, [
+      ...CategoryDefaults.items,
+      updated,
+    ]);
 
     _expectFailure<ValidationFailure>(
       await dataService.updateCategory(category(id: 'missing')),
     );
 
     _expectSuccess(await dataService.deleteCategory(updated.id));
-    expect(vaultSession.vaultData!.categories, isEmpty);
+    expect(vaultSession.vaultData!.categories, CategoryDefaults.items);
     expect(vaultSession.vaultData!.logins.single.categoryId, original.id);
 
     _expectFailure<ValidationFailure>(
@@ -350,7 +357,10 @@ void main() {
     expect(vaultSession.vaultData!.logins, [login()]);
     expect(vaultSession.vaultData!.bankCards, [card()]);
     expect(vaultSession.vaultData!.secureNotes, [note()]);
-    expect(vaultSession.vaultData!.categories, [category()]);
+    expect(vaultSession.vaultData!.categories, [
+      ...CategoryDefaults.items,
+      category(),
+    ]);
   }, timeout: kdfTimeout);
 
   test('failed persistence leaves the previous session state', () async {

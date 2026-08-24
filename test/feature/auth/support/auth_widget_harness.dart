@@ -9,12 +9,15 @@ import 'package:keyva/core/theme/app_theme.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view/account_selection_view.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
+import 'package:keyva/feature/auth/view/auth_register_view.dart';
 import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
 
 Widget authTestApp({
   required String initialRoute,
   required LoginController login,
+  RegisterController? register,
   List<GetPage>? extraPages,
 }) {
   void bindAccounts() {
@@ -26,6 +29,16 @@ Widget authTestApp({
   void bindUnlock() {
     if (!Get.isRegistered<LoginController>()) {
       Get.put(login);
+    }
+  }
+
+  void bindRegister() {
+    final controller = register;
+    if (controller == null) {
+      return;
+    }
+    if (!Get.isRegistered<RegisterController>()) {
+      Get.put(controller);
     }
   }
 
@@ -53,6 +66,13 @@ Widget authTestApp({
         name: AppRoutes.authUnlock,
         page: () => const AuthLoginView(),
         binding: BindingsBuilder(bindUnlock),
+        middlewares: [UnlockedRedirectMiddleware()],
+        transition: Transition.noTransition,
+      ),
+      GetPage(
+        name: AppRoutes.authRegister,
+        page: () => const AuthRegisterView(),
+        binding: BindingsBuilder(bindRegister),
         middlewares: [UnlockedRedirectMiddleware()],
         transition: Transition.noTransition,
       ),

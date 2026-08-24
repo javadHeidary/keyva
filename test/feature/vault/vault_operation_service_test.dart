@@ -22,6 +22,7 @@ void main() {
   LoginItem login({
     String id = 'login-1',
     String title = 'Mail',
+    bool isPinned = false,
   }) {
     return LoginItem(
       id: id,
@@ -33,12 +34,14 @@ void main() {
       categoryId: null,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      isPinned: isPinned,
     );
   }
 
   BankCardItem card({
     String id = 'card-1',
     String title = 'Travel',
+    bool isPinned = false,
   }) {
     return BankCardItem(
       id: id,
@@ -52,12 +55,14 @@ void main() {
       categoryId: null,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      isPinned: isPinned,
     );
   }
 
   SecureNoteItem note({
     String id = 'note-1',
     String title = 'Gate',
+    bool isPinned = false,
   }) {
     return SecureNoteItem(
       id: id,
@@ -66,6 +71,7 @@ void main() {
       categoryId: null,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      isPinned: isPinned,
     );
   }
 
@@ -389,6 +395,166 @@ void main() {
     _expectSuccess(await operations.deleteItem(work.id));
     expect(session.vaultData!.categories, isEmpty);
     expect(session.vaultData!.secureNotes, [renamed]);
+  });
+
+  group('setItemPinned', () {
+    test('pins and unpins an item without changing updatedAt', () async {
+      final mail = login();
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: [mail],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+        ),
+      );
+
+      _expectSuccess(
+        await operations.setItemPinned(id: mail.id, isPinned: true),
+      );
+      expect(session.vaultData!.logins.single.isPinned, isTrue);
+      expect(session.vaultData!.logins.single.updatedAt, mail.updatedAt);
+      expect(dataService.persistCount, 1);
+
+      _expectSuccess(
+        await operations.setItemPinned(id: mail.id, isPinned: true),
+      );
+      expect(dataService.persistCount, 1);
+
+      _expectSuccess(
+        await operations.setItemPinned(id: mail.id, isPinned: false),
+      );
+      expect(session.vaultData!.logins.single.isPinned, isFalse);
+      expect(dataService.persistCount, 2);
+    });
+
+    test('rejects a sixth pin and leaves the vault unchanged', () async {
+      final items = [
+        for (var i = 1; i <= 5; i++) login(id: 'login-$i', isPinned: true),
+      ];
+      final extra = login(id: 'login-6', title: 'Extra');
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: [...items, extra],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+        ),
+      );
+
+      _expectFailure<PinLimitFailure>(
+        await operations.setItemPinned(id: extra.id, isPinned: true),
+      );
+      expect(session.vaultData!.logins.last.isPinned, isFalse);
+      expect(session.vaultData!.pinnedItemCount, 5);
+      expect(dataService.persistCount, 0);
+    });
+
+    test('counts pins across item types', () async {
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: [
+            login(id: 'login-1', isPinned: true),
+            login(id: 'login-2', isPinned: true),
+          ],
+          bankCards: [
+            card(id: 'card-1', isPinned: true),
+            card(id: 'card-2', isPinned: true),
+          ],
+          secureNotes: [
+            note(id: 'note-1', isPinned: true),
+            note(id: 'note-2'),
+          ],
+          categories: const [],
+        ),
+      );
+
+      _expectFailure<PinLimitFailure>(
+        await operations.setItemPinned(id: 'note-2', isPinned: true),
+      );
+      expect(session.vaultData!.secureNotes.last.isPinned, isFalse);
+
+      _expectSuccess(
+        await operations.setItemPinned(id: 'login-1', isPinned: false),
+      );
+      _expectSuccess(
+        await operations.setItemPinned(id: 'note-2', isPinned: true),
+      );
+      expect(session.vaultData!.secureNotes.last.isPinned, isTrue);
+    });
+
+    test('unpinning a missing item fails', () async {
+      await unlockWith(emptyVault());
+      _expectFailure<ValidationFailure>(
+        await operations.setItemPinned(id: 'missing', isPinned: true),
+      );
+    });
+
+    test('allows the fifth pin', () async {
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: [
+            for (var i = 1; i <= 4; i++) login(id: 'login-$i', isPinned: true),
+            login(id: 'login-5'),
+          ],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+        ),
+      );
+
+      _expectSuccess(
+        await operations.setItemPinned(id: 'login-5', isPinned: true),
+      );
+      expect(session.vaultData!.logins.last.isPinned, isTrue);
+      expect(session.vaultData!.pinnedItemCount, 5);
+    });
+
+    test('deleting a pinned item frees a pin slot', () async {
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: [
+            for (var i = 1; i <= 5; i++) login(id: 'login-$i', isPinned: true),
+            login(id: 'login-6'),
+          ],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+        ),
+      );
+
+      _expectSuccess(await operations.deleteItem('login-1'));
+      expect(session.vaultData!.pinnedItemCount, 4);
+
+      _expectSuccess(
+        await operations.setItemPinned(id: 'login-6', isPinned: true),
+      );
+      expect(session.vaultData!.logins.last.isPinned, isTrue);
+      expect(session.vaultData!.pinnedItemCount, 5);
+    });
+
+    test('updateItem preserves isPinned', () async {
+      final mail = login(isPinned: true);
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: [mail],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+        ),
+      );
+
+      final renamed = login(title: 'Work Mail', isPinned: true);
+      _expectSuccess(await operations.updateItem(renamed));
+      expect(session.vaultData!.logins.single.title, 'Work Mail');
+      expect(session.vaultData!.logins.single.isPinned, isTrue);
+    });
   });
 }
 

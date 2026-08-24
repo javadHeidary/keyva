@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/category/model/category_defaults.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
@@ -137,6 +138,21 @@ void main() {
 
     test('sets empty when the vault has no items', () async {
       operations.vault = emptyVault();
+
+      await viewModel.loadVault();
+
+      expect(viewModel.status.value, VaultUiStatus.empty);
+      expect(viewModel.visibleItems, isEmpty);
+    });
+
+    test('stays empty when the vault only has categories', () async {
+      operations.vault = VaultData(
+        version: VaultData.currentVersion,
+        logins: const [],
+        bankCards: const [],
+        secureNotes: const [],
+        categories: CategoryDefaults.items,
+      );
 
       await viewModel.loadVault();
 
@@ -320,6 +336,50 @@ void main() {
       expect(viewModel.errorMessage.value, 'Cryptographic operation failed');
     });
   });
+
+  group('pin order', () {
+    test('shows pinned items before unpinned items and keeps relative order', () async {
+      final unpinnedLogin = login();
+      final pinnedLogin = login(id: 'login-2', title: 'Pinned Mail').copyWith(
+        isPinned: true,
+      );
+      final pinnedCard = card().copyWith(isPinned: true);
+      operations.vault = VaultData(
+        version: VaultData.currentVersion,
+        logins: [unpinnedLogin, pinnedLogin],
+        bankCards: [pinnedCard],
+        secureNotes: [note()],
+        categories: [category()],
+      );
+
+      await viewModel.loadVault();
+
+      expect(viewModel.visibleItems, [
+        pinnedLogin,
+        pinnedCard,
+        unpinnedLogin,
+        note(),
+        category(),
+      ]);
+      expect(
+        viewModel.visibleItems.whereType<LoginItem>().toList(),
+        [pinnedLogin, unpinnedLogin],
+      );
+    });
+
+    test('setItemPinned reloads pin-first order', () async {
+      operations.vault = populatedVault();
+      await viewModel.loadVault();
+
+      final result = await viewModel.setItemPinned(
+        id: 'note-1',
+        isPinned: true,
+      );
+
+      expect(result, isA<Success<void>>());
+      expect(viewModel.visibleItems.first, note().copyWith(isPinned: true));
+    });
+  });
 }
 
 class _FakeVaultOperationService implements VaultOperationService {
@@ -402,6 +462,65 @@ class _FakeVaultOperationService implements VaultOperationService {
         for (final item in current.categories)
           if (item.id != id) item,
       ],
+    );
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void>> setItemPinned({
+    required String id,
+    required bool isPinned,
+  }) async {
+    final current = vault;
+    if (current == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    Object? found;
+    for (final item in [...current.logins, ...current.bankCards, ...current.secureNotes]) {
+      if (item is LoginItem && item.id == id) found = item;
+      if (item is BankCardItem && item.id == id) found = item;
+      if (item is SecureNoteItem && item.id == id) found = item;
+    }
+    if (found == null) {
+      return const FailureResult(ValidationFailure());
+    }
+    final currentlyPinned = switch (found) {
+      LoginItem login => login.isPinned,
+      BankCardItem card => card.isPinned,
+      SecureNoteItem note => note.isPinned,
+      _ => false,
+    };
+    if (currentlyPinned == isPinned) {
+      return const Success(null);
+    }
+    if (isPinned && current.pinnedItemCount >= VaultData.maxPinnedItems) {
+      return const FailureResult(PinLimitFailure());
+    }
+    persistCount++;
+    final updated = switch (found) {
+      LoginItem login => login.copyWith(isPinned: isPinned),
+      BankCardItem card => card.copyWith(isPinned: isPinned),
+      SecureNoteItem note => note.copyWith(isPinned: isPinned),
+      _ => found,
+    };
+    vault = VaultData(
+      version: current.version,
+      logins: [
+        for (final login in current.logins)
+          if (updated is LoginItem && login.id == updated.id) updated else login,
+      ],
+      bankCards: [
+        for (final card in current.bankCards)
+          if (updated is BankCardItem && card.id == updated.id) updated else card,
+      ],
+      secureNotes: [
+        for (final note in current.secureNotes)
+          if (updated is SecureNoteItem && note.id == updated.id)
+            updated
+          else
+            note,
+      ],
+      categories: current.categories,
     );
     return const Success(null);
   }

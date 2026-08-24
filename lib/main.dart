@@ -6,6 +6,7 @@ import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/session/app_lock_controller.dart';
+import 'package:keyva/core/session/auto_lock_pause_store.dart';
 import 'package:keyva/core/session/privacy_overlay.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/theme/app_responsive.dart';
@@ -19,12 +20,14 @@ Future<void> main() async {
   final database = await HiveDatabase.initialize();
   initDependencies(database);
   await getIt<ScreenProtectionService>().applyPersisted();
-  final themePreference = await getIt<SettingsRepository>().loadThemePreference();
+  final themePreference = await getIt<SettingsRepository>()
+      .loadThemePreference();
   Get.put(
     AppLockController(
       session: getIt<SessionService>(),
       unlock: getIt<VaultUnlockService>(),
       auth: getIt<AuthRepository>(),
+      pauseStore: getIt<AutoLockPauseStore>(),
     ),
     permanent: true,
   );

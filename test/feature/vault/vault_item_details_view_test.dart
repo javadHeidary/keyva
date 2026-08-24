@@ -427,4 +427,22 @@ void main() {
     expect(find.text('Updated Mail'), findsWidgets);
     expect(find.text('Mail'), findsNothing);
   });
+
+  testWidgets('login detail pin toggle updates header icon', (tester) async {
+    operations.vault = populatedVault();
+    await vault.loadVault();
+    Get.put(LoginDetailsViewModel(loginId: 'login-1'));
+
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(vaultTestApp(home: const LoginDetailsView()));
+    await pumpVaultFrame(tester);
+
+    expect(find.byKey(const Key('vault-item-pin-toggle')), findsOneWidget);
+    expect(operations.vault!.logins.single.isPinned, isFalse);
+
+    await tester.tap(find.byKey(const Key('vault-item-pin-toggle')));
+    await pumpVaultFrame(tester);
+
+    expect(operations.vault!.logins.single.isPinned, isTrue);
+  });
 }

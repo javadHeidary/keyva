@@ -92,4 +92,12 @@ class NoteDetailsViewModel extends GetxController {
       onDeleted: Get.back,
     );
   }
+
+  Future<void> togglePin(BuildContext context) async {
+    final note = item;
+    if (note == null || !Get.isRegistered<HomeController>()) return;
+    final listItem = mapVaultListItem(note);
+    if (listItem == null) return;
+    await Get.find<HomeController>().toggleItemPin(context, listItem);
+  }
 }

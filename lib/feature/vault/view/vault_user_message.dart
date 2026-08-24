@@ -38,6 +38,8 @@ String vaultUserMessage(String? errorMessage) {
       return 'ذخیره فایل پشتیبان انجام نشد.';
     case 'Unable to update screen capture protection':
       return 'به‌روزرسانی محافظت صفحه انجام نشد.';
+    case 'A maximum of 5 items can be pinned.':
+      return 'حداکثر ۵ مورد را می‌توانید سنجاق کنید.';
   }
 
   if (errorMessage.contains('Exception') ||

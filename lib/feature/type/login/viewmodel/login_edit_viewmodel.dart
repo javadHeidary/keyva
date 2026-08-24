@@ -74,6 +74,7 @@ class LoginEditViewModel extends LoginFormViewModel {
       categoryId: selectedCategoryId.value,
       createdAt: original.createdAt,
       updatedAt: now,
+      isPinned: original.isPinned,
     );
 
     await submitVaultItem(

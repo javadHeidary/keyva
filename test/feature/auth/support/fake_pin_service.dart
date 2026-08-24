@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:keyva/core/exceptions/app_failure.dart';
@@ -10,10 +11,14 @@ class FakePinService implements PinService {
   int remaining = 3;
   AppFailure? unwrapFailure;
   AppFailure? enableFailure;
+  AppFailure? changeFailure;
+  Completer<void>? enableGate;
+  Completer<void>? changeGate;
   String? lastEnabledPin;
   String? lastUnwrapPin;
   int unwrapCount = 0;
   int enableCount = 0;
+  int changeCount = 0;
   int disableCount = 0;
   int resetCount = 0;
   Uint8List vaultKey = Uint8List(32);
@@ -32,6 +37,10 @@ class FakePinService implements PinService {
   Future<Result<void>> enable(String pin) async {
     enableCount++;
     lastEnabledPin = pin;
+    final gate = enableGate;
+    if (gate != null) {
+      await gate.future;
+    }
     final failure = enableFailure;
     if (failure != null) {
       return FailureResult(failure);
@@ -45,7 +54,16 @@ class FakePinService implements PinService {
     required String currentPin,
     required String newPin,
   }) async {
+    changeCount++;
     lastEnabledPin = newPin;
+    final gate = changeGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    final failure = changeFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
     return const Success<void>(null);
   }
 

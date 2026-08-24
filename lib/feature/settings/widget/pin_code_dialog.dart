@@ -13,6 +13,10 @@ import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
 enum PinCodeDialogMode { setup, change }
 
+const pinSetupSecurityInfo =
+    'حداکثر ۳ تلاش ناموفق. پس از قفل شدن، ورود فقط با رمز اصلی ممکن است. '
+    'قفل پس از ۱۵ دقیقه برداشته می‌شود و ورود موفق با رمز اصلی هم فوراً آن را باز می‌کند.';
+
 Future<void> showPinCodeDialog(
   BuildContext context, {
   PinCodeDialogMode mode = PinCodeDialogMode.setup,
@@ -68,82 +72,103 @@ class _PinCodeDialogState extends State<_PinCodeDialog> {
       ),
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.lg.s),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              isChange ? 'تغییر کد PIN' : 'تنظیم کد PIN',
-              textAlign: TextAlign.center,
-              style: AppTypography.titleMedium.copyWith(
-                color: colors.textPrimary,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                isChange ? 'تغییر کد PIN' : 'تنظیم کد PIN',
+                textAlign: TextAlign.center,
+                style: AppTypography.titleMedium.copyWith(
+                  color: colors.textPrimary,
+                ),
               ),
-            ),
-            SizedBox(height: AppSpacing.lg.h),
-            if (isChange) ...[
+              SizedBox(height: AppSpacing.md.h),
+              Text(
+                pinSetupSecurityInfo,
+                key: const Key('settings-pin-security-info'),
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+              SizedBox(height: AppSpacing.lg.h),
+              if (isChange) ...[
+                AppTextFieldWidget(
+                  key: const Key('settings-pin-current'),
+                  controller: _currentController,
+                  labelText: 'PIN فعلی',
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  textDirection: TextDirection.ltr,
+                  inputFormatters: _pinFormatters,
+                ),
+                SizedBox(height: AppSpacing.md.h),
+              ],
               AppTextFieldWidget(
-                key: const Key('settings-pin-current'),
-                controller: _currentController,
-                labelText: 'PIN فعلی',
+                key: const Key('settings-pin-new'),
+                controller: _pinController,
+                labelText: isChange ? 'PIN جدید' : 'کد PIN',
                 obscureText: true,
                 keyboardType: TextInputType.number,
                 textDirection: TextDirection.ltr,
                 inputFormatters: _pinFormatters,
               ),
               SizedBox(height: AppSpacing.md.h),
-            ],
-            AppTextFieldWidget(
-              key: const Key('settings-pin-new'),
-              controller: _pinController,
-              labelText: isChange ? 'PIN جدید' : 'کد PIN',
-              obscureText: true,
-              keyboardType: TextInputType.number,
-              textDirection: TextDirection.ltr,
-              inputFormatters: _pinFormatters,
-            ),
-            SizedBox(height: AppSpacing.md.h),
-            AppTextFieldWidget(
-              key: const Key('settings-pin-confirm'),
-              controller: _confirmController,
-              labelText: 'تکرار PIN',
-              obscureText: true,
-              keyboardType: TextInputType.number,
-              textDirection: TextDirection.ltr,
-              inputFormatters: _pinFormatters,
-            ),
-            SizedBox(height: AppSpacing.xl.h),
-            AppButtonWidget(
-              key: const Key('settings-pin-save'),
-              title: 'ذخیره',
-              onPressed: () {
-                if (isChange) {
-                  controller.onPinChanged(
-                    currentPin: _currentController.text,
-                    pin: _pinController.text,
-                    confirmPin: _confirmController.text,
-                    context: context,
-                  );
-                  return;
-                }
-                controller.onPinSubmitted(
-                  pin: _pinController.text,
-                  confirmPin: _confirmController.text,
-                  context: context,
-                );
-              },
-            ),
-            SizedBox(height: AppSpacing.sm.h),
-            TextButton(
-              key: const Key('settings-pin-cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'انصراف',
-                style: AppTypography.button.copyWith(
-                  color: colors.textSecondary,
-                ),
+              AppTextFieldWidget(
+                key: const Key('settings-pin-confirm'),
+                controller: _confirmController,
+                labelText: 'تکرار PIN',
+                obscureText: true,
+                keyboardType: TextInputType.number,
+                textDirection: TextDirection.ltr,
+                inputFormatters: _pinFormatters,
               ),
-            ),
-          ],
+              SizedBox(height: AppSpacing.xl.h),
+              Obx(() {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppButtonWidget(
+                      key: const Key('settings-pin-save'),
+                      title: 'ذخیره',
+                      isLoading: controller.isSecurityBusy.value,
+                      onPressed: () {
+                        if (isChange) {
+                          controller.onPinChanged(
+                            currentPin: _currentController.text,
+                            pin: _pinController.text,
+                            confirmPin: _confirmController.text,
+                            context: context,
+                          );
+                          return;
+                        }
+                        controller.onPinSubmitted(
+                          pin: _pinController.text,
+                          confirmPin: _confirmController.text,
+                          context: context,
+                        );
+                      },
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    TextButton(
+                      key: const Key('settings-pin-cancel'),
+                      onPressed: controller.isSecurityBusy.value
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(
+                        'انصراف',
+                        style: AppTypography.button.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
         ),
       ),
     );

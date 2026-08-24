@@ -11,6 +11,7 @@ class BankCardItem {
     required this.categoryId,
     required this.createdAt,
     required this.updatedAt,
+    this.isPinned = false,
   });
 
   final String id;
@@ -24,6 +25,37 @@ class BankCardItem {
   final String? categoryId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isPinned;
+
+  BankCardItem copyWith({
+    String? id,
+    String? title,
+    String? cardNumber,
+    String? cardHolder,
+    String? expiryDate,
+    String? cvv,
+    String? bankName,
+    String? notes,
+    String? categoryId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isPinned,
+  }) {
+    return BankCardItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      cardNumber: cardNumber ?? this.cardNumber,
+      cardHolder: cardHolder ?? this.cardHolder,
+      expiryDate: expiryDate ?? this.expiryDate,
+      cvv: cvv ?? this.cvv,
+      bankName: bankName ?? this.bankName,
+      notes: notes ?? this.notes,
+      categoryId: categoryId ?? this.categoryId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isPinned: isPinned ?? this.isPinned,
+    );
+  }
 
   @override
   bool operator ==(Object other) {
@@ -38,7 +70,8 @@ class BankCardItem {
         notes == other.notes &&
         categoryId == other.categoryId &&
         createdAt == other.createdAt &&
-        updatedAt == other.updatedAt;
+        updatedAt == other.updatedAt &&
+        isPinned == other.isPinned;
   }
 
   @override
@@ -54,5 +87,6 @@ class BankCardItem {
     categoryId,
     createdAt,
     updatedAt,
+    isPinned,
   );
 }

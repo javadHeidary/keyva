@@ -4,8 +4,8 @@ import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/category/widget/category_selector_field.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_form_viewmodel.dart';
-import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
@@ -26,35 +26,12 @@ class NoteFormContent extends StatelessWidget {
       child: AppSectionCardWidget(
         children: [
           Obx(() {
-            final categories = controller.selectableCategories;
-            final items = [
-              const AppDropdownItem<String?>(
-                value: null,
-                label: 'بدون دسته‌بندی',
-                icon: Icon(Icons.label_off_outlined),
-              ),
-              ...categories.map(
-                (category) => AppDropdownItem<String?>(
-                  value: category.id,
-                  label: category.name,
-                ),
-              ),
-            ];
-
-            return AppDropdownWidget<String?>(
-              value: controller.selectedCategoryId.value,
-              hint: 'بدون دسته‌بندی',
-              items: items,
-              labelText: 'دسته‌بندی',
-              labelAlwaysVisible: true,
-              useOutlinedStyle: true,
-              fillColor: fieldFill,
-              leadingIcon: Icon(
-                Icons.folder_outlined,
-                size: AppSizes.iconMd.s,
-                color: colors.textSecondary,
-              ),
+            return CategorySelectorField(
+              selectedId: controller.selectedCategoryId.value,
+              categories: controller.selectableCategories,
               onChanged: controller.onCategoryChanged,
+              onCreate: controller.createInlineCategory,
+              fillColor: fieldFill,
             );
           }),
           SizedBox(height: _fieldGap.h),

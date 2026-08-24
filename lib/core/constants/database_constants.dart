@@ -8,9 +8,9 @@ abstract final class HiveSettingsKeys {
   static const databaseVersion = 'databaseVersion';
   static const activeUserId = 'activeUserId';
   static const themePreference = 'themePreference';
+  static const lastBackgroundedAt = 'lastBackgroundedAt';
 
-  static String pinFailedAttempts(String userId) =>
-      'pinFailedAttempts:$userId';
+  static String pinFailedAttempts(String userId) => 'pinFailedAttempts:$userId';
 
   static String pinLockoutStartedAt(String userId) =>
       'pinLockoutStartedAt:$userId';

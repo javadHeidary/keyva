@@ -25,6 +25,7 @@ VaultListItem? mapVaultListItem(Object item) {
       title: login.title,
       subtitle: login.username,
       categoryId: login.categoryId ?? '',
+      isPinned: login.isPinned,
     ),
     BankCardItem card => VaultListItem(
       id: card.id,
@@ -32,6 +33,7 @@ VaultListItem? mapVaultListItem(Object item) {
       title: card.title,
       subtitle: card.bankName,
       categoryId: card.categoryId ?? '',
+      isPinned: card.isPinned,
     ),
     SecureNoteItem note => VaultListItem(
       id: note.id,
@@ -39,6 +41,7 @@ VaultListItem? mapVaultListItem(Object item) {
       title: note.title,
       subtitle: 'یادداشت امن',
       categoryId: note.categoryId ?? '',
+      isPinned: note.isPinned,
     ),
     _ => null,
   };
@@ -51,6 +54,15 @@ String? vaultItemId(Object item) {
     SecureNoteItem note => note.id,
     CategoryItem category => category.id,
     _ => null,
+  };
+}
+
+bool vaultItemIsPinned(Object item) {
+  return switch (item) {
+    LoginItem login => login.isPinned,
+    BankCardItem card => card.isPinned,
+    SecureNoteItem note => note.isPinned,
+    _ => false,
   };
 }
 

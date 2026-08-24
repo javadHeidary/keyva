@@ -9,6 +9,7 @@ class LoginItem {
     required this.categoryId,
     required this.createdAt,
     required this.updatedAt,
+    this.isPinned = false,
   });
 
   final String id;
@@ -20,6 +21,33 @@ class LoginItem {
   final String? categoryId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isPinned;
+
+  LoginItem copyWith({
+    String? id,
+    String? title,
+    String? username,
+    String? password,
+    String? website,
+    String? notes,
+    String? categoryId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isPinned,
+  }) {
+    return LoginItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      username: username ?? this.username,
+      password: password ?? this.password,
+      website: website ?? this.website,
+      notes: notes ?? this.notes,
+      categoryId: categoryId ?? this.categoryId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isPinned: isPinned ?? this.isPinned,
+    );
+  }
 
   @override
   bool operator ==(Object other) {
@@ -32,7 +60,8 @@ class LoginItem {
         notes == other.notes &&
         categoryId == other.categoryId &&
         createdAt == other.createdAt &&
-        updatedAt == other.updatedAt;
+        updatedAt == other.updatedAt &&
+        isPinned == other.isPinned;
   }
 
   @override
@@ -46,5 +75,6 @@ class LoginItem {
     categoryId,
     createdAt,
     updatedAt,
+    isPinned,
   );
 }

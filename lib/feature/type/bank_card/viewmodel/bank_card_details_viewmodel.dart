@@ -101,4 +101,12 @@ class BankCardDetailsViewModel extends GetxController {
       onDeleted: Get.back,
     );
   }
+
+  Future<void> togglePin(BuildContext context) async {
+    final card = item;
+    if (card == null || !Get.isRegistered<HomeController>()) return;
+    final listItem = mapVaultListItem(card);
+    if (listItem == null) return;
+    await Get.find<HomeController>().toggleItemPin(context, listItem);
+  }
 }

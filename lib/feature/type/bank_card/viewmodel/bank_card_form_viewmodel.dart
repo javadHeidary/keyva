@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iranian_banks/iranian_banks.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
+import 'package:keyva/feature/category/viewmodel/category_inline_create_mixin.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
 
-abstract class BankCardFormViewModel extends GetxController {
+abstract class BankCardFormViewModel extends GetxController
+    with CategoryInlineCreateMixin {
   final formKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final cardNumberController = TextEditingController();
@@ -17,6 +19,7 @@ abstract class BankCardFormViewModel extends GetxController {
 
   final detectedBank = Rxn<BankInfoView>();
   final isCvvVisible = false.obs;
+  @override
   final selectedCategoryId = Rxn<String>();
   final isSubmitting = false.obs;
   final submitError = Rxn<String>();

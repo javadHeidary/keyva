@@ -8,6 +8,7 @@ import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/service/vault_operation_service.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 
 class VaultHomeViewModel extends GetxController {
@@ -62,6 +63,19 @@ class VaultHomeViewModel extends GetxController {
     await loadVault();
   }
 
+  Future<Result<void>> setItemPinned({
+    required String id,
+    required bool isPinned,
+  }) async {
+    errorMessage.value = null;
+    final result = await _operations.setItemPinned(id: id, isPinned: isPinned);
+    if (result is FailureResult<void>) {
+      return result;
+    }
+    await loadVault();
+    return result;
+  }
+
   void _applyVisibleItems(VaultData data) {
     if (_isEmpty(data)) {
       visibleItems.clear();
@@ -92,15 +106,18 @@ class VaultHomeViewModel extends GetxController {
   static bool _isEmpty(VaultData data) {
     return data.logins.isEmpty &&
         data.bankCards.isEmpty &&
-        data.secureNotes.isEmpty &&
-        data.categories.isEmpty;
+        data.secureNotes.isEmpty;
   }
 
   static List<Object> _flatten(VaultData data) {
-    return <Object>[
+    final items = <Object>[
       ...data.logins,
       ...data.bankCards,
       ...data.secureNotes,
+    ];
+    return <Object>[
+      ...items.where(vaultItemIsPinned),
+      ...items.where((item) => !vaultItemIsPinned(item)),
       ...data.categories,
     ];
   }

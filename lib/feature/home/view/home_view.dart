@@ -14,12 +14,12 @@ import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/feature/vault/view/vault_error_view.dart';
+import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
-import 'package:keyva/shared/widget/app_loading_widger.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -66,14 +66,11 @@ class HomeView extends GetView<HomeController> {
           switch (status) {
             case VaultUiStatus.initial:
             case VaultUiStatus.loading:
-              if (controller.hasLoadedVault) {
-                return const _VaultContent();
-              }
-              return AppLoadingWidget(
-                key: const Key('vault-home-loading'),
-                layout: AppLoadingLayout.page,
-                message: 'در حال بارگذاری گاوصندوق',
-              );
+            case VaultUiStatus.empty:
+            case VaultUiStatus.loaded:
+            case VaultUiStatus.submitting:
+            case VaultUiStatus.success:
+              return const _VaultContent();
             case VaultUiStatus.error:
               if (controller.hasLoadedVault) {
                 return const _VaultContent();
@@ -85,11 +82,6 @@ class HomeView extends GetView<HomeController> {
                   onRetry: controller.loadVault,
                 ),
               );
-            case VaultUiStatus.empty:
-            case VaultUiStatus.loaded:
-            case VaultUiStatus.submitting:
-            case VaultUiStatus.success:
-              return const _VaultContent();
           }
         }),
       ),
@@ -236,7 +228,11 @@ class _AccountHeader extends GetView<HomeController> {
           key: const Key('home-lock'),
           onPressed: controller.lock,
           visualDensity: VisualDensity.compact,
-          icon: Icon(AppIcon.lock, size: 22.s, color: colors.textPrimary),
+          icon: Icon(
+            controller.isVaultUnlocked ? AppIcon.lockOpen : AppIcon.lock,
+            size: 22.s,
+            color: colors.textPrimary,
+          ),
           tooltip: 'قفل کردن',
         ),
       ],
@@ -412,6 +408,9 @@ class _ItemsSection extends GetView<HomeController> {
       child: Obx(() {
         final items = controller.visibleItems;
         if (items.isEmpty) {
+          if (controller.isVaultLoadPending) {
+            return const SizedBox.shrink();
+          }
           return _SectionCard(children: [_itemsEmptyState(controller)]);
         }
 
@@ -430,10 +429,7 @@ class _ItemsSection extends GetView<HomeController> {
 
 Widget _itemsEmptyState(HomeController controller) {
   if (controller.hasNoVaultItems) {
-    return AppEmptyWidget.vault(
-      key: const Key('vault-home-empty'),
-      onAction: controller.onCreateFirstItem,
-    );
+    return AppEmptyWidget.vault(key: const Key('vault-home-empty'));
   }
 
   final type = controller.selectedType.value;
@@ -471,14 +467,20 @@ class _VaultItemTile extends GetView<HomeController> {
             color: colors.textSecondary,
           ),
         ),
-        leadingIcon: AppMoreWidget(
-          dialogTitle: item.title,
-          actions: vaultMoreActionsForItem(
-            item,
-            source: controller.sourceFor(item.id),
-            onDelete: controller.isVaultSubmitting
-                ? null
-                : () => controller.confirmDelete(context, item),
+        leadingIcon: VaultItemPinMoreLeading(
+          isPinned: item.isPinned,
+          more: AppMoreWidget(
+            dialogTitle: item.title,
+            actions: vaultMoreActionsForItem(
+              item,
+              source: controller.sourceFor(item.id),
+              onTogglePin: controller.isVaultSubmitting
+                  ? null
+                  : () => controller.toggleItemPin(context, item),
+              onDelete: controller.isVaultSubmitting
+                  ? null
+                  : () => controller.confirmDelete(context, item),
+            ),
           ),
         ),
         onTap: () => controller.onItemTap(item),

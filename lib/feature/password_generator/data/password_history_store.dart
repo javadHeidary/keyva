@@ -5,8 +5,13 @@ import 'package:keyva/feature/password_generator/model/password_history_entry.da
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PasswordHistoryStore extends GetxService {
-  static const _historyKey = 'password_generator_history';
-  static const _retentionDays = 7;
+  PasswordHistoryStore({DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now;
+
+  static const historyKey = 'password_generator_history';
+  static const retentionDays = 7;
+
+  final DateTime Function() _clock;
 
   final RxList<PasswordHistoryEntry> entries = <PasswordHistoryEntry>[].obs;
 
@@ -15,7 +20,7 @@ class PasswordHistoryStore extends GetxService {
   Future<PasswordHistoryStore> init() async {
     _prefs = await SharedPreferences.getInstance();
     await _load();
-    _purgeExpired();
+    await purgeExpired();
     return this;
   }
 
@@ -23,7 +28,7 @@ class PasswordHistoryStore extends GetxService {
     final prefs = _prefs;
     if (prefs == null) return;
 
-    final raw = prefs.getString(_historyKey);
+    final raw = prefs.getString(historyKey);
     if (raw == null) return;
 
     try {
@@ -42,21 +47,24 @@ class PasswordHistoryStore extends GetxService {
     final prefs = _prefs;
     if (prefs == null) return;
     final json = entries.map((e) => e.toJson()).toList();
-    await prefs.setString(_historyKey, jsonEncode(json));
+    await prefs.setString(historyKey, jsonEncode(json));
   }
 
-  void _purgeExpired() {
-    final cutoff = DateTime.now().subtract(const Duration(days: _retentionDays));
+  Future<void> purgeExpired() async {
+    final cutoff = _clock().subtract(const Duration(days: retentionDays));
+    final beforeCount = entries.length;
     entries.removeWhere((entry) => entry.copiedAt.isBefore(cutoff));
-    _persist();
+    if (entries.length != beforeCount) {
+      await _persist();
+    }
   }
 
   Future<void> addFromCopy(String password) async {
     if (password.isEmpty) return;
-    _purgeExpired();
+    await purgeExpired();
     entries.insert(
       0,
-      PasswordHistoryEntry(password: password, copiedAt: DateTime.now()),
+      PasswordHistoryEntry(password: password, copiedAt: _clock()),
     );
     await _persist();
   }

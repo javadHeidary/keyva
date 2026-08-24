@@ -116,6 +116,10 @@ class SearchViewModel extends GetxController {
     _homeController.confirmDelete(context, item);
   }
 
+  void togglePin(BuildContext context, VaultListItem item) {
+    _homeController.toggleItemPin(context, item);
+  }
+
   Object? sourceFor(String id) => _homeController.sourceFor(id);
 
   @override

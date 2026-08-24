@@ -11,6 +11,7 @@ import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/security/pin_policy.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/security/screen_protection_service.dart';
+import 'package:keyva/core/session/app_lock_controller.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
@@ -24,6 +25,8 @@ import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+typedef SettingsUrlLauncher = Future<bool> Function(Uri uri);
+
 class SettingsViewModel extends GetxController {
   SettingsViewModel({
     SettingsRepository? repository,
@@ -33,13 +36,23 @@ class SettingsViewModel extends GetxController {
     SessionService? session,
     AuthRepository? auth,
     ScreenProtectionService? screenProtection,
+    SettingsUrlLauncher? launchUrlFn,
+    String? telegramUrl,
+    String? baleUrl,
+    String? baleFallbackUrl,
+    String? supportEmail,
   }) : _repository = repository,
        _unlockOverride = unlock,
        _pinOverride = pin,
        _biometricOverride = biometric,
        _sessionOverride = session,
        _authOverride = auth,
-       _screenProtectionOverride = screenProtection;
+       _screenProtectionOverride = screenProtection,
+       _launchUrl = launchUrlFn ?? _launchExternal,
+       telegramUrl = telegramUrl ?? AppInfo.telegramUrl,
+       baleUrl = baleUrl ?? AppInfo.baleUrl,
+       baleFallbackUrl = baleFallbackUrl ?? AppInfo.baleFallbackUrl,
+       supportEmail = supportEmail ?? AppInfo.feedbackEmail;
 
   final SettingsRepository? _repository;
   final VaultUnlockService? _unlockOverride;
@@ -48,6 +61,15 @@ class SettingsViewModel extends GetxController {
   final SessionService? _sessionOverride;
   final AuthRepository? _authOverride;
   final ScreenProtectionService? _screenProtectionOverride;
+  final SettingsUrlLauncher _launchUrl;
+  final String telegramUrl;
+  final String baleUrl;
+  final String baleFallbackUrl;
+  final String supportEmail;
+
+  static Future<bool> _launchExternal(Uri uri) {
+    return launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   SettingsRepository? get repository => _repository;
 
@@ -110,7 +132,8 @@ class SettingsViewModel extends GetxController {
   final showBiometricSetting = false.obs;
   final isSecurityBusy = false.obs;
 
-  static const _biometricEnableReason = 'برای فعال‌سازی باز کردن با اثر انگشت یا چهره';
+  static const _biometricEnableReason =
+      'برای فعال‌سازی باز کردن با اثر انگشت یا چهره';
 
   @override
   void onInit() {
@@ -317,22 +340,109 @@ class SettingsViewModel extends GetxController {
   }
 
   Future<void> openFeedback(BuildContext context) async {
+    await _openMailto(
+      context,
+      email: AppInfo.feedbackEmail,
+      subject: 'نقد و پیشنهادات — کیوا',
+    );
+  }
+
+  Future<bool> openTelegram(BuildContext context) {
+    return _openConfiguredLink(
+      context,
+      url: telegramUrl,
+      unconfiguredMessage: 'لینک تلگرام کیوا هنوز تنظیم نشده است.',
+    );
+  }
+
+  Future<bool> openBale(BuildContext context) async {
+    if (baleUrl.trim().isEmpty && baleFallbackUrl.trim().isEmpty) {
+      if (context.mounted) {
+        AppToast.info(context, title: 'لینک بله کیوا هنوز تنظیم نشده است.');
+      }
+      return false;
+    }
+
+    if (baleUrl.trim().isNotEmpty) {
+      final opened = await _tryLaunch(Uri.parse(baleUrl.trim()));
+      if (opened) return true;
+    }
+
+    if (baleFallbackUrl.trim().isNotEmpty) {
+      final opened = await _tryLaunch(Uri.parse(baleFallbackUrl.trim()));
+      if (opened) return true;
+    }
+
+    if (context.mounted) {
+      AppToast.info(
+        context,
+        title: 'امکان باز کردن بله روی این دستگاه وجود ندارد.',
+      );
+    }
+    return false;
+  }
+
+  Future<bool> openSupportEmail(BuildContext context) {
+    return _openMailto(
+      context,
+      email: supportEmail,
+      subject: AppInfo.supportEmailSubject,
+    );
+  }
+
+  Future<bool> _openConfiguredLink(
+    BuildContext context, {
+    required String url,
+    required String unconfiguredMessage,
+  }) async {
+    if (url.trim().isEmpty) {
+      if (context.mounted) {
+        AppToast.info(context, title: unconfiguredMessage);
+      }
+      return false;
+    }
+
+    final opened = await _tryLaunch(Uri.parse(url.trim()));
+    if (opened) return true;
+    if (context.mounted) {
+      AppToast.info(
+        context,
+        title: 'امکان باز کردن این مسیر ارتباطی وجود ندارد.',
+      );
+    }
+    return false;
+  }
+
+  Future<bool> _openMailto(
+    BuildContext context, {
+    required String email,
+    required String subject,
+  }) async {
     final uri = Uri(
       scheme: 'mailto',
-      path: AppInfo.feedbackEmail,
-      queryParameters: {'subject': 'نقد و پیشنهادات — کیوا'},
+      path: email,
+      queryParameters: {'subject': subject},
     );
     try {
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched && context.mounted) {
-        AppToast.info(context, title: 'ایمیل: ${AppInfo.feedbackEmail}');
+      final launched = await _launchUrl(uri);
+      if (launched) return true;
+      if (context.mounted) {
+        AppToast.info(context, title: 'ایمیل: $email');
       }
+      return false;
     } catch (_) {
-      if (!context.mounted) return;
-      AppToast.info(context, title: 'ایمیل: ${AppInfo.feedbackEmail}');
+      if (context.mounted) {
+        AppToast.info(context, title: 'ایمیل: $email');
+      }
+      return false;
+    }
+  }
+
+  Future<bool> _tryLaunch(Uri uri) async {
+    try {
+      return await _launchUrl(uri);
+    } catch (_) {
+      return false;
     }
   }
 
@@ -403,6 +513,9 @@ class SettingsViewModel extends GetxController {
         return;
       }
       security.value = security.value.copyWith(autoLockTimeout: timeout);
+      if (Get.isRegistered<AppLockController>()) {
+        Get.find<AppLockController>().onTimeoutChanged(timeout);
+      }
     } finally {
       isSecurityBusy.value = false;
     }
@@ -463,6 +576,9 @@ class SettingsViewModel extends GetxController {
     required String confirmPin,
     required BuildContext context,
   }) async {
+    if (isSecurityBusy.value) {
+      return;
+    }
     if (!PinPolicy.isValid(pin)) {
       AppToast.error(context, title: PinPolicy.userMessage);
       return;
@@ -472,7 +588,7 @@ class SettingsViewModel extends GetxController {
       return;
     }
     final pinService = _pin;
-    if (pinService == null || isSecurityBusy.value) {
+    if (pinService == null) {
       AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
       return;
     }
@@ -490,6 +606,7 @@ class SettingsViewModel extends GetxController {
         return;
       }
       security.value = security.value.copyWith(pinEnabled: true);
+      AppToast.success(context, title: 'کد PIN', message: 'کد PIN تنظیم شد');
       Get.back();
     } finally {
       isSecurityBusy.value = false;
@@ -502,6 +619,9 @@ class SettingsViewModel extends GetxController {
     required String confirmPin,
     required BuildContext context,
   }) async {
+    if (isSecurityBusy.value) {
+      return;
+    }
     if (!PinPolicy.isValid(pin)) {
       AppToast.error(context, title: PinPolicy.userMessage);
       return;
@@ -511,7 +631,7 @@ class SettingsViewModel extends GetxController {
       return;
     }
     final pinService = _pin;
-    if (pinService == null || isSecurityBusy.value) {
+    if (pinService == null) {
       AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
       return;
     }
@@ -531,6 +651,11 @@ class SettingsViewModel extends GetxController {
         );
         return;
       }
+      AppToast.success(
+        context,
+        title: 'کد PIN',
+        message: 'کد PIN به‌روزرسانی شد',
+      );
       Get.back();
     } finally {
       isSecurityBusy.value = false;

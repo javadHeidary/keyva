@@ -244,7 +244,7 @@ void main() {
     expect(session.vaultKey, isNull);
   }, timeout: kdfTimeout);
 
-  test('missing vault unlocks an empty in-memory VaultData', () async {
+  test('missing vault unlocks an in-memory vault with default categories', () async {
     final user = await createUser();
 
     _expectSuccess(
@@ -255,9 +255,49 @@ void main() {
     );
 
     expect(vaultSession.isUnlocked, isTrue);
-    expect(vaultSession.vaultData, _emptyVault());
+    expect(vaultSession.vaultData, VaultData.initial());
+    expect(
+      vaultSession.vaultData!.categories.map((category) => category.name),
+      ['شخصی', 'کاری', 'مالی'],
+    );
     expect(vaultSession.vaultData!.version, VaultData.currentVersion);
     expect(_expectSuccess(await vaults.findByUserId(user.id)), isNull);
+  }, timeout: kdfTimeout);
+
+  test('missing vault unlock does not duplicate default categories', () async {
+    final user = await createUser();
+
+    _expectSuccess(
+      await unlockService.unlock(
+        userId: user.id,
+        masterPassword: masterPassword,
+      ),
+    );
+    _expectSuccess(await unlockService.lock());
+    _expectSuccess(
+      await unlockService.unlock(
+        userId: user.id,
+        masterPassword: masterPassword,
+      ),
+    );
+
+    expect(vaultSession.vaultData, VaultData.initial());
+    expect(vaultSession.vaultData!.categories, hasLength(3));
+    expect(_expectSuccess(await vaults.findByUserId(user.id)), isNull);
+  }, timeout: kdfTimeout);
+
+  test('persisted vault with empty categories is not backfilled', () async {
+    final user = await createUser();
+    await persistVault(user, _emptyVault());
+
+    _expectSuccess(
+      await unlockService.unlock(
+        userId: user.id,
+        masterPassword: masterPassword,
+      ),
+    );
+
+    expect(vaultSession.vaultData!.categories, isEmpty);
   }, timeout: kdfTimeout);
 
   test('failed unlock after a successful unlock leaves the session locked', () async {

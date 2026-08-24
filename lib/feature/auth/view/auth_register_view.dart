@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
@@ -8,9 +7,14 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
+import 'package:keyva/feature/auth/widget/auth_countdown_warning_dialog.dart';
+import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
+import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
+import 'package:keyva/shared/widget/password_strengthbar_widget.dart';
 
 class AuthRegisterView extends GetView<RegisterController> {
   const AuthRegisterView({super.key});
@@ -18,142 +22,155 @@ class AuthRegisterView extends GetView<RegisterController> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.pagePadding.s,
-              vertical: AppSpacing.pagePadding.h,
-            ),
-            child: Column(
-              children: [
-                SizedBox(height: AppSpacing.sectionGap.h),
-                Container(
-                  width: 72.s,
-                  height: 72.s,
-                  decoration: const BoxDecoration(shape: BoxShape.circle),
-                  child: Icon(AppIcon.lock, size: 36.s, color: colors.primary),
-                ),
-                SizedBox(height: AppSpacing.lg.h),
-                Text(
-                  'ایجاد حساب جدید',
-                  style: AppTypography.headlineLarge.copyWith(
-                    color: colors.textPrimary,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.sm.h),
-                Text(
-                  'رمز اصلی شما مبنای رمزنگاری تمام اطلاعات خواهد بود',
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: colors.textSecondary,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.sectionGap.h + AppSpacing.xs.h),
-
-                SizedBox(height: AppSpacing.xxxl.h),
-                Form(
-                  key: controller.registerFormKey,
-                  child: Column(
-                    children: [
-                      AppTextFieldWidget(
-                        controller: controller.usernameController,
-                        textInputAction: TextInputAction.next,
-                        labelText: 'نام کاربری',
-                        hintText: 'یک نام برای حساب خود انتخاب کنید',
-                        prefixIcon: const Icon(AppIcon.accountCircle),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'نام کاربری الزامی است';
-                          }
-                          if (value.trim().length < 3) {
-                            return 'نام کاربری باید حداقل ۳ کاراکتر باشد';
-                          }
-                          return null;
-                        },
-                      ),
-
-                      SizedBox(height: AppSpacing.lg.h),
-                      Obx(() {
-                        return AppTextFieldWidget(
-                          controller: controller.passwordController,
-                          obscureText: !controller.isPasswordVisible.value,
-                          textInputAction: TextInputAction.next,
-                          labelText: 'Master Password',
-                          hintText: 'رمز اصلی را وارد کنید',
-                          prefixIcon: Icon(AppIcon.lock),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              controller.isPasswordVisible.value
-                                  ? AppIcon.visibilityOff
-                                  : AppIcon.visibility,
-                            ),
-                            onPressed: controller.togglePasswordVisibility,
-                          ),
-                          validator: MasterPasswordPolicy.fieldError,
-                        );
-                      }),
-                      SizedBox(height: AppSpacing.lg.h),
-                      Obx(() {
-                        return AppTextFieldWidget(
-                          controller: controller.confirmPasswordController,
-                          obscureText:
-                              !controller.isConfirmPasswordVisible.value,
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) =>
-                              _onRegisterPressed(controller),
-                          labelText: 'تکرار Master Password',
-                          hintText: 'رمز اصلی را دوباره وارد کنید',
-                          prefixIcon: const Icon(AppIcon.lock),
-                          validator: MasterPasswordPolicy.fieldError,
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              controller.isConfirmPasswordVisible.value
-                                  ? AppIcon.visibilityOff
-                                  : AppIcon.visibility,
-                            ),
-                            onPressed:
-                                controller.toggleConfirmPasswordVisibility,
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: AppSpacing.xxl.h),
-                Obx(() {
-                  if (controller.errorMessage.value.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: AppSpacing.lg.h),
-                    child: Text(
-                      controller.errorMessage.value,
-                      key: const Key('auth-register-error'),
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: colors.error,
-                      ),
+      resizeToAvoidBottomInset: true,
+      body: AuthErrorToastBinder(
+        message: controller.errorMessage,
+        child: SafeArea(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.pagePadding.s,
+                AppSpacing.pagePadding.h,
+                AppSpacing.pagePadding.s,
+                AppSpacing.pagePadding.h + bottomInset,
+              ),
+              child: Column(
+                children: [
+                  const AuthBrandHeader(compact: false),
+                  SizedBox(height: AppSpacing.lg.h),
+                  Text(
+                    'ایجاد حساب جدید',
+                    style: AppTypography.headlineLarge.copyWith(
+                      color: colors.textPrimary,
                     ),
-                  );
-                }),
-                Obx(() {
-                  return AppButtonWidget(
-                    key: const Key('auth-register-submit'),
-                    title: 'ثبت‌نام',
-                    isLoading: controller.isLoading.value,
-                    onPressed: () => _onRegisterPressed(controller),
-                  );
-                }),
-                SizedBox(height: AppSpacing.sectionGap.h + AppSpacing.xs.h),
-                const _LoginText(),
-                SizedBox(height: AppSpacing.md.h),
-                const _RestoreText(),
-                SizedBox(height: AppSpacing.xxxl.h),
-              ],
+                  ),
+                  SizedBox(height: AppSpacing.sm.h),
+                  Text(
+                    'رمز اصلی شما مبنای رمزنگاری تمام اطلاعات خواهد بود',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.sectionGap.h),
+                  Form(
+                    key: controller.registerFormKey,
+                    child: Column(
+                      children: [
+                        Obx(() {
+                          return AppTextFieldWidget(
+                            key: const Key('auth-register-username'),
+                            controller: controller.usernameController,
+                            enabled: !controller.isLoading.value,
+                            textInputAction: TextInputAction.next,
+                            labelText: 'نام کاربری',
+                            hintText: 'یک نام برای حساب خود انتخاب کنید',
+                            prefixIcon: const Icon(AppIcon.accountCircle),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'نام کاربری الزامی است';
+                              }
+                              if (value.trim().length < 3) {
+                                return 'نام کاربری باید حداقل ۳ کاراکتر باشد';
+                              }
+                              return null;
+                            },
+                          );
+                        }),
+                        SizedBox(height: AppSpacing.lg.h),
+                        Obx(() {
+                          return AppTextFieldWidget(
+                            key: const Key('auth-register-password'),
+                            controller: controller.passwordController,
+                            enabled: !controller.isLoading.value,
+                            obscureText: !controller.isPasswordVisible.value,
+                            textInputAction: TextInputAction.next,
+                            labelText: 'رمز اصلی',
+                            hintText: 'رمز اصلی را وارد کنید',
+                            prefixIcon: const Icon(AppIcon.lock),
+                            suffixIcon: IconButton(
+                              onPressed: controller.togglePasswordVisibility,
+                              icon: Icon(
+                                controller.isPasswordVisible.value
+                                    ? AppIcon.visibilityOff
+                                    : AppIcon.visibility,
+                              ),
+                            ),
+                            validator: MasterPasswordPolicy.fieldError,
+                          );
+                        }),
+                        Obx(() {
+                          if (!controller.hasPasswordInput.value) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: EdgeInsets.only(top: AppSpacing.sm.h),
+                            child: PasswordStrengthBarWidget(
+                              strength: controller.passwordStrength.value,
+                              showLabel: true,
+                              useSegmentedBars: true,
+                            ),
+                          );
+                        }),
+                        SizedBox(height: AppSpacing.lg.h),
+                        Obx(() {
+                          return AppTextFieldWidget(
+                            key: const Key('auth-register-confirm'),
+                            controller: controller.confirmPasswordController,
+                            enabled: !controller.isLoading.value,
+                            obscureText:
+                                !controller.isConfirmPasswordVisible.value,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _onRegisterPressed(),
+                            labelText: 'تکرار رمز اصلی',
+                            hintText: 'رمز اصلی را دوباره وارد کنید',
+                            prefixIcon: const Icon(AppIcon.lock),
+                            validator: controller.confirmPasswordValidator,
+                            suffixIcon: IconButton(
+                              onPressed:
+                                  controller.toggleConfirmPasswordVisibility,
+                              icon: Icon(
+                                controller.isConfirmPasswordVisible.value
+                                    ? AppIcon.visibilityOff
+                                    : AppIcon.visibility,
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xxl.h),
+                  Obx(() {
+                    return AppButtonWidget(
+                      key: const Key('auth-register-submit'),
+                      title: 'ایجاد حساب',
+                      isLoading: controller.isLoading.value,
+                      onPressed: _onRegisterPressed,
+                    );
+                  }),
+                  SizedBox(height: AppSpacing.sectionGap.h),
+                  AuthFooterLink(
+                    key: const Key('auth-register-to-accounts'),
+                    prefix: 'اکانت دارید؟ ',
+                    actionLabel: 'ورود',
+                    prefixColor: colors.textSecondary,
+                    onTap: () => Get.offNamed(AppRoutes.authAccounts),
+                  ),
+                  SizedBox(height: AppSpacing.md.h),
+                  AuthFooterLink(
+                    key: const Key('auth-register-to-restore'),
+                    prefix: 'فایل پشتیبان دارید؟ ',
+                    actionLabel: 'بازیابی',
+                    prefixColor: colors.textSecondary,
+                    onTap: () => Get.toNamed(AppRoutes.authRestore),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -161,134 +178,18 @@ class AuthRegisterView extends GetView<RegisterController> {
     );
   }
 
-  void _onRegisterPressed(RegisterController controller) {
-    if (!controller.registerFormKey.currentState!.validate()) return;
+  void _onRegisterPressed() {
+    if (controller.isLoading.value) {
+      return;
+    }
+    if (!(controller.registerFormKey.currentState?.validate() ?? false)) {
+      return;
+    }
     controller.startWarningDialogCountdown();
-    _showMasterPasswordWarningDialog(controller);
-  }
-
-  void _showMasterPasswordWarningDialog(RegisterController controller) {
-    Get.dialog(
-      barrierDismissible: false,
-      Obx(() {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: AlertDialog(
-            title: Text('هشدار مهم امنیتی', style: AppTypography.headlineSmall),
-            content: Text(
-              'رمز اصلی (Master Password) مهم‌ترین رمز برنامه است.\n\n'
-              'در صورت فراموش کردن این رمز، امکان بازیابی اطلاعات شما وجود ندارد.\n\n'
-              'لطفاً آن را در محل امنی یادداشت کنید یا در یک Password Manager ذخیره نمایید.',
-              style: AppTypography.bodyMedium,
-            ),
-            actions: [
-              TextButton(
-                onPressed: controller.canConfirmDialog.value
-                    ? () {
-                        Get.back();
-                        controller.createAccount();
-                      }
-                    : null,
-                child: Text(
-                  controller.canConfirmDialog.value
-                      ? 'متوجه شدم و ادامه می‌دهم'
-                      : 'متوجه شدم (${controller.dialogCountdown.value})',
-                  style: AppTypography.button,
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-    );
-  }
-}
-
-/// Keeps [TapGestureRecognizer] alive to avoid recreating it on rebuild.
-class _LoginText extends StatefulWidget {
-  const _LoginText();
-
-  @override
-  State<_LoginText> createState() => _LoginTextState();
-}
-
-class _LoginTextState extends State<_LoginText> {
-  late final TapGestureRecognizer _recognizer;
-
-  @override
-  void initState() {
-    super.initState();
-    _recognizer = TapGestureRecognizer()
-      ..onTap = () => Get.offNamed(AppRoutes.authAccounts);
-  }
-
-  @override
-  void dispose() {
-    _recognizer.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Text.rich(
-      TextSpan(
-        text: 'اکانت دارید؟ ',
-        style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
-        children: [
-          TextSpan(
-            text: 'ورود',
-            style: AppTypography.titleMedium.copyWith(color: colors.primary),
-            recognizer: _recognizer,
-          ),
-        ],
-      ),
-      textAlign: TextAlign.center,
-    );
-  }
-}
-
-class _RestoreText extends StatefulWidget {
-  const _RestoreText();
-
-  @override
-  State<_RestoreText> createState() => _RestoreTextState();
-}
-
-class _RestoreTextState extends State<_RestoreText> {
-  late final TapGestureRecognizer _recognizer;
-
-  @override
-  void initState() {
-    super.initState();
-    _recognizer = TapGestureRecognizer()
-      ..onTap = () => Get.toNamed(AppRoutes.authRestore);
-  }
-
-  @override
-  void dispose() {
-    _recognizer.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Text.rich(
-      TextSpan(
-        text: 'فایل پشتیبان دارید؟ ',
-        style: AppTypography.bodyMedium.copyWith(color: colors.textSecondary),
-        children: [
-          TextSpan(
-            text: 'بازیابی',
-            style: AppTypography.titleMedium.copyWith(color: colors.primary),
-            recognizer: _recognizer,
-          ),
-        ],
-      ),
-      textAlign: TextAlign.center,
+    showAuthCountdownWarningDialog(
+      countdown: controller.dialogCountdown,
+      canConfirm: controller.canConfirmDialog,
+      onConfirm: controller.createAccount,
     );
   }
 }

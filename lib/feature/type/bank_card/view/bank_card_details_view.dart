@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
+import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -52,6 +53,15 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
+                  trailingActions: [
+                    vaultPinHeaderAction(
+                      isPinned: card.isPinned,
+                      color: card.isPinned
+                          ? colors.primary
+                          : colors.textSecondary,
+                      onTap: () => controller.togglePin(context),
+                    ),
+                  ],
                 ),
               ),
               SliverPadding(

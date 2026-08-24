@@ -7,6 +7,7 @@ import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
 import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/note/data/note_vault_store.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 
 class HomeBindings extends Bindings {
@@ -32,6 +33,7 @@ class HomeBindings extends Bindings {
         () => HomeController(
           unlock: getIt<VaultUnlockService>(),
           auth: getIt<AuthRepository>(),
+          session: getIt<VaultSession>(),
         ),
       );
     }

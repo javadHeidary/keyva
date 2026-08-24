@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
+import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -108,12 +109,16 @@ class _SearchResultTile extends GetView<SearchViewModel> {
             color: colors.textSecondary,
           ),
         ),
-        leadingIcon: AppMoreWidget(
-          dialogTitle: item.title,
-          actions: vaultMoreActionsForItem(
-            item,
-            source: controller.sourceFor(item.id),
-            onDelete: () => controller.confirmDelete(context, item),
+        leadingIcon: VaultItemPinMoreLeading(
+          isPinned: item.isPinned,
+          more: AppMoreWidget(
+            dialogTitle: item.title,
+            actions: vaultMoreActionsForItem(
+              item,
+              source: controller.sourceFor(item.id),
+              onTogglePin: () => controller.togglePin(context, item),
+              onDelete: () => controller.confirmDelete(context, item),
+            ),
           ),
         ),
         onTap: () => controller.onItemTap(item),

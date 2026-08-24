@@ -1,16 +1,19 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/pin_policy.dart';
-import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/auth_account_avatar.dart';
+import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
+import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
+import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
+import 'package:keyva/feature/auth/widget/auth_method_tile.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
@@ -20,73 +23,84 @@ class AuthLoginView extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
     return Scaffold(
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.pagePadding.s,
-              vertical: AppSpacing.pagePadding.h,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(() {
-                  if (!controller.canSwitchAccount.value) {
-                    return SizedBox(height: AppSizes.iconLg.s);
-                  }
-                  return Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton(
-                      key: const Key('auth-unlock-change-account'),
-                      onPressed: controller.changeAccount,
-                      child: Text(
-                        'تغییر حساب',
-                        style: AppTypography.titleMedium.copyWith(
-                          color: context.colors.primary,
+      resizeToAvoidBottomInset: true,
+      body: AuthErrorToastBinder(
+        message: controller.errorMessage,
+        child: SafeArea(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSpacing.pagePadding.s,
+                    AppSpacing.pagePadding.h,
+                    AppSpacing.pagePadding.s,
+                    AppSpacing.pagePadding.h + bottomInset,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight -
+                          AppSpacing.pagePadding.h * 2 -
+                          bottomInset,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Obx(() {
+                          if (!controller.canSwitchAccount.value) {
+                            return const SizedBox.shrink();
+                          }
+                          return Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: TextButton(
+                              key: const Key('auth-unlock-change-account'),
+                              onPressed: controller.isLoading.value
+                                  ? null
+                                  : controller.changeAccount,
+                              child: Text(
+                                'تغییر حساب',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: colors.primary,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        const AuthBrandHeader(),
+                        SizedBox(height: AppSpacing.xxl.h),
+                        Obx(() => _header(context)),
+                        SizedBox(height: AppSpacing.xxl.h),
+                        Obx(() {
+                          if (controller.showMethodPicker.value) {
+                            return _methodPicker();
+                          }
+                          return _unlockForm(context);
+                        }),
+                        SizedBox(height: AppSpacing.sectionGap.h),
+                        Obx(() {
+                          if (controller.showMethodPicker.value) {
+                            return const SizedBox.shrink();
+                          }
+                          return _primaryAction();
+                        }),
+                        SizedBox(height: AppSpacing.md.h),
+                        Obx(() => _secondaryActions(context)),
+                        SizedBox(height: AppSpacing.sectionGap.h),
+                        AuthFooterLink(
+                          prefix: 'اکانتی ندارید؟ ',
+                          actionLabel: 'ثبت‌نام',
+                          onTap: () => Get.toNamed(AppRoutes.authRegister),
                         ),
-                      ),
+                      ],
                     ),
-                  );
-                }),
-                const Spacer(flex: 1),
-                Obx(() => _header(context)),
-                SizedBox(height: AppSpacing.xxl.h),
-                Obx(() {
-                  if (controller.showMethodPicker.value) {
-                    return _methodPicker(context);
-                  }
-                  return _unlockForm(context);
-                }),
-                Obx(() {
-                  if (controller.errorMessage.value.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(top: AppSpacing.md.h),
-                    child: Text(
-                      controller.errorMessage.value,
-                      key: const Key('auth-login-error'),
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: context.colors.error,
-                      ),
-                    ),
-                  );
-                }),
-                SizedBox(height: AppSpacing.sectionGap.h),
-                Obx(() {
-                  if (controller.showMethodPicker.value) {
-                    return const SizedBox.shrink();
-                  }
-                  return _primaryAction();
-                }),
-                SizedBox(height: AppSpacing.md.h),
-                Obx(() => _secondaryActions(context)),
-                SizedBox(height: AppSpacing.sectionGap.h),
-                const Align(alignment: Alignment.center, child: _RegisterText()),
-                const Spacer(flex: 2),
-              ],
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -98,23 +112,8 @@ class AuthLoginView extends GetView<LoginController> {
     final username = controller.selectedUsername.value;
     return Row(
       children: [
-        Container(
-          width: 65.s,
-          height: 65.s,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
-            color: context.colors.strengthBarBg,
-            borderRadius: BorderRadius.circular(18.s),
-          ),
-          child: username.isEmpty
-              ? const Icon(AppIcon.lock)
-              : Text(
-                  String.fromCharCodes(username.trim().runes.take(1)),
-                  style: AppTypography.titleLarge,
-                ),
-        ),
-        SizedBox(width: AppSpacing.xl.s),
+        AuthAccountAvatar(username: username),
+        SizedBox(width: AppSpacing.lg.s),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,14 +121,18 @@ class AuthLoginView extends GetView<LoginController> {
               Text(
                 username.isEmpty ? 'ورود به حساب' : username,
                 key: const Key('auth-unlock-username'),
-                style: AppTypography.titleLarge,
+                style: AppTypography.titleLarge.copyWith(
+                  color: context.colors.textPrimary,
+                ),
               ),
               SizedBox(height: AppSpacing.sm.h),
               Text(
                 controller.showMethodPicker.value
                     ? 'روش ورود را انتخاب کنید'
                     : _subtitle(controller.unlockMethod.value),
-                style: AppTypography.bodyLarge,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: context.colors.textSecondary,
+                ),
               ),
             ],
           ),
@@ -145,41 +148,49 @@ class AuthLoginView extends GetView<LoginController> {
       case UnlockMethod.biometric:
         return 'با اثر انگشت یا چهره وارد شوید';
       case UnlockMethod.masterPassword:
-        return 'رمز اکانت خود را وارد کنید';
+        return 'رمز اصلی خود را وارد کنید';
     }
   }
 
-  Widget _methodPicker(BuildContext context) {
+  Widget _methodPicker() {
+    final loading = controller.isLoading.value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AppButtonWidget(
-          key: const Key('auth-unlock-method-master'),
-          title: 'رمز اصلی',
-          onPressed: controller.chooseMasterPassword,
-        ),
-        if (controller.pinAvailable) ...[
-          SizedBox(height: AppSpacing.md.h),
-          AppButtonWidget(
-            key: const Key('auth-unlock-method-pin'),
-            title: 'پین کد',
-            onPressed: controller.choosePin,
-          ),
-        ],
         if (controller.biometricOptionAvailable) ...[
-          SizedBox(height: AppSpacing.md.h),
-          AppButtonWidget(
+          AuthMethodTile(
             key: const Key('auth-unlock-method-biometric'),
-            title: 'ورود با بیومتریک',
-            isLoading: controller.isLoading.value,
-            onPressed: controller.chooseBiometric,
+            icon: AppIcon.fingerprint,
+            title: 'ورود با اثر انگشت یا چهره',
+            isLoading: loading,
+            enabled: !loading,
+            onTap: controller.chooseBiometric,
           ),
+          SizedBox(height: AppSpacing.md.h),
         ],
+        if (controller.pinAvailable) ...[
+          AuthMethodTile(
+            key: const Key('auth-unlock-method-pin'),
+            icon: AppIcon.hash,
+            title: 'کد PIN',
+            enabled: !loading,
+            onTap: controller.choosePin,
+          ),
+          SizedBox(height: AppSpacing.md.h),
+        ],
+        AuthMethodTile(
+          key: const Key('auth-unlock-method-master'),
+          icon: AppIcon.lock,
+          title: 'رمز اصلی',
+          enabled: !loading,
+          onTap: controller.chooseMasterPassword,
+        ),
       ],
     );
   }
 
   Widget _unlockForm(BuildContext context) {
+    final loading = controller.isLoading.value;
     switch (controller.unlockMethod.value) {
       case UnlockMethod.pin:
         return Form(
@@ -187,6 +198,7 @@ class AuthLoginView extends GetView<LoginController> {
           child: AppTextFieldWidget(
             key: const Key('auth-login-pin'),
             controller: controller.pinController,
+            enabled: !loading,
             obscureText: !controller.isPinVisible.value,
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
@@ -194,15 +206,15 @@ class AuthLoginView extends GetView<LoginController> {
             enableInteractiveSelection: false,
             onFieldSubmitted: (_) => controller.unlockWithPin(),
             labelText: 'کد PIN',
-            hintText: 'PIN را وارد کنید',
-            prefixIcon: const Icon(AppIcon.pin),
+            hintText: 'کد PIN را وارد کنید',
+            prefixIcon: const Icon(AppIcon.hash),
             suffixIcon: IconButton(
+              onPressed: controller.togglePinVisibility,
               icon: Icon(
                 controller.isPinVisible.value
                     ? AppIcon.visibilityOff
                     : AppIcon.visibility,
               ),
-              onPressed: controller.togglePinVisibility,
             ),
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
@@ -227,19 +239,20 @@ class AuthLoginView extends GetView<LoginController> {
           child: AppTextFieldWidget(
             key: const Key('auth-login-password'),
             controller: controller.passwordController,
+            enabled: !loading,
             obscureText: !controller.isPasswordVisible.value,
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => controller.login(),
-            labelText: 'رمز عبور',
-            hintText: 'رمز را وارد کنید',
+            labelText: 'رمز اصلی',
+            hintText: 'رمز اصلی را وارد کنید',
             prefixIcon: const Icon(AppIcon.lock),
             suffixIcon: IconButton(
+              onPressed: controller.togglePasswordVisibility,
               icon: Icon(
                 controller.isPasswordVisible.value
                     ? AppIcon.visibilityOff
                     : AppIcon.visibility,
               ),
-              onPressed: controller.togglePasswordVisibility,
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -292,7 +305,9 @@ class AuthLoginView extends GetView<LoginController> {
       if (canPickMethods)
         TextButton(
           key: const Key('auth-unlock-back-methods'),
-          onPressed: controller.backToMethods,
+          onPressed: controller.isLoading.value
+              ? null
+              : controller.backToMethods,
           child: Text(
             'روش‌های ورود',
             style: AppTypography.titleMedium.copyWith(
@@ -306,7 +321,9 @@ class AuthLoginView extends GetView<LoginController> {
       children.add(
         TextButton(
           key: const Key('auth-login-use-master-password'),
-          onPressed: controller.useMasterPassword,
+          onPressed: controller.isLoading.value
+              ? null
+              : controller.useMasterPassword,
           child: Text(
             'ورود با رمز اصلی',
             style: AppTypography.titleMedium.copyWith(
@@ -320,7 +337,7 @@ class AuthLoginView extends GetView<LoginController> {
       children.add(
         TextButton(
           key: const Key('auth-login-use-pin'),
-          onPressed: controller.usePin,
+          onPressed: controller.isLoading.value ? null : controller.usePin,
           child: Text(
             'ورود با PIN',
             style: AppTypography.titleMedium.copyWith(
@@ -331,53 +348,5 @@ class AuthLoginView extends GetView<LoginController> {
       );
     }
     return Column(children: children);
-  }
-}
-
-class _RegisterText extends StatefulWidget {
-  const _RegisterText();
-
-  @override
-  State<_RegisterText> createState() => _RegisterTextState();
-}
-
-class _RegisterTextState extends State<_RegisterText> {
-  late final TapGestureRecognizer _recognizer;
-
-  @override
-  void initState() {
-    super.initState();
-    _recognizer = TapGestureRecognizer()
-      ..onTap = () {
-        Get.toNamed(AppRoutes.authRegister);
-      };
-  }
-
-  @override
-  void dispose() {
-    _recognizer.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        text: 'اکانتی ندارید؟ ',
-        style: AppTypography.bodyMedium.copyWith(
-          color: context.colors.textTertiary,
-        ),
-        children: [
-          TextSpan(
-            text: 'ثبت‌نام',
-            style: AppTypography.titleMedium.copyWith(
-              color: context.colors.primary,
-            ),
-            recognizer: _recognizer,
-          ),
-        ],
-      ),
-      textAlign: TextAlign.center,
-    );
   }
 }

@@ -48,6 +48,7 @@ void main() {
           categoryId: null,
           createdAt: DateTime.utc(2026, 1, 1),
           updatedAt: DateTime.utc(2026, 1, 2),
+          isPinned: title == 'Alpha',
         ),
       ],
       bankCards: const [],
@@ -144,6 +145,7 @@ void main() {
     );
     expect(session.current!.userId, accountA.id);
     expect(vaultSession.vaultData, vaultA);
+    expect(vaultSession.vaultData!.logins.single.isPinned, isTrue);
 
     _expectSuccess(await unlock.lock());
     _expectSuccess(
@@ -151,6 +153,7 @@ void main() {
     );
     expect(session.current!.userId, accountB.id);
     expect(vaultSession.vaultData, restored);
+    expect(vaultSession.vaultData!.logins.single.isPinned, isFalse);
   });
 }
 

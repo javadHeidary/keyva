@@ -14,6 +14,8 @@ class AppIcon {
   static const eyeOff = LucideIcons.eyeOff;
   static const fingerprint = LucideIcons.fingerprint;
   static const pin = LucideIcons.pin;
+  static const itemPin = LucideIcons.pin;
+  static const itemUnpin = LucideIcons.pinOff;
   static const masterPassword = LucideIcons.keyRound;
 
   // Information Types
@@ -48,6 +50,7 @@ class AppIcon {
   static const heading = LucideIcons.heading;
   static const users = LucideIcons.users;
   static const mail = LucideIcons.mail;
+  static const send = LucideIcons.send;
   static const help = LucideIcons.helpCircle;
   static const messageSquare = LucideIcons.messageSquare;
   static const apps = LucideIcons.layoutGrid;

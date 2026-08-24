@@ -125,13 +125,7 @@ class VaultUnlockServiceImpl implements VaultUnlockService {
 
     late final VaultData vaultData;
     if (plaintext == null) {
-      vaultData = VaultData(
-        version: VaultData.currentVersion,
-        logins: const [],
-        bankCards: const [],
-        secureNotes: const [],
-        categories: const [],
-      );
+      vaultData = VaultData.initial();
     } else {
       final deserialized = await _serializer.deserialize(plaintext);
       if (deserialized is FailureResult<VaultData>) {

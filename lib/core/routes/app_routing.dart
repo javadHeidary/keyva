@@ -22,6 +22,8 @@ import 'package:keyva/feature/onboarding/view/onboarding_view.dart';
 import 'package:keyva/feature/password_generator/bindings/password_generator_bindings.dart';
 import 'package:keyva/feature/password_generator/view/password_history_view.dart';
 import 'package:keyva/feature/search/bindings/search_bindings.dart';
+import 'package:keyva/feature/settings/view/about_view.dart';
+import 'package:keyva/feature/settings/view/privacy_policy_view.dart';
 import 'package:keyva/feature/shell/bindings/main_shell_bindings.dart';
 import 'package:keyva/feature/shell/view/main_shell_view.dart';
 import 'package:keyva/feature/splash/bindings/splash_bindings.dart';
@@ -74,6 +76,8 @@ class AppRoutes {
   static const String passwordGeneratorHistory = '/password-generator/history';
   static const String settings = '/settings';
   static const String backupRestore = '/settings/backup';
+  static const String privacyPolicy = '/settings/privacy';
+  static const String about = '/settings/about';
   static const String categoryCreate = '/category/create';
   static const String categoryEdit = '/category/edit';
   static const String appIconTest = '/app-icon-test';
@@ -353,6 +357,24 @@ class AppRoutes {
       name: backupRestore,
       page: () => const BackupRestoreView(),
       binding: BackupBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: privacyPolicy,
+      page: () => const PrivacyPolicyView(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: about,
+      page: () => const AboutView(),
       middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,

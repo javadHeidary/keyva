@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
+import 'package:keyva/feature/category/viewmodel/category_inline_create_mixin.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/login/model/login_website_field.dart';
 import 'package:keyva/feature/type/login/util/login_password_util.dart';
 
-abstract class LoginFormViewModel extends GetxController {
+abstract class LoginFormViewModel extends GetxController
+    with CategoryInlineCreateMixin {
   final formKey = GlobalKey<FormState>();
   final titleController = TextEditingController();
   final usernameController = TextEditingController();
@@ -14,6 +16,7 @@ abstract class LoginFormViewModel extends GetxController {
 
   final isPasswordVisible = false.obs;
   final passwordStrength = 0.0.obs;
+  @override
   final selectedCategoryId = Rxn<String>();
   final isSubmitting = false.obs;
   final submitError = Rxn<String>();

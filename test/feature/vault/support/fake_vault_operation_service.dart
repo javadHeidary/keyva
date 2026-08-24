@@ -123,6 +123,58 @@ class FakeVaultOperationService implements VaultOperationService {
     return const Success(null);
   }
 
+  @override
+  Future<Result<void>> setItemPinned({
+    required String id,
+    required bool isPinned,
+  }) async {
+    final current = vault;
+    if (current == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final found = _findPinnable(current, id);
+    if (found == null) {
+      return const FailureResult(ValidationFailure());
+    }
+    if (_itemIsPinned(found) == isPinned) {
+      return const Success(null);
+    }
+    if (isPinned && current.pinnedItemCount >= VaultData.maxPinnedItems) {
+      return const FailureResult(PinLimitFailure());
+    }
+    persistCount++;
+    lastUpdated = switch (found) {
+      LoginItem login => login.copyWith(isPinned: isPinned),
+      BankCardItem card => card.copyWith(isPinned: isPinned),
+      SecureNoteItem note => note.copyWith(isPinned: isPinned),
+      _ => found,
+    };
+    _replace(lastUpdated!);
+    return const Success(null);
+  }
+
+  Object? _findPinnable(VaultData current, String id) {
+    for (final login in current.logins) {
+      if (login.id == id) return login;
+    }
+    for (final card in current.bankCards) {
+      if (card.id == id) return card;
+    }
+    for (final note in current.secureNotes) {
+      if (note.id == id) return note;
+    }
+    return null;
+  }
+
+  bool _itemIsPinned(Object item) {
+    return switch (item) {
+      LoginItem login => login.isPinned,
+      BankCardItem card => card.isPinned,
+      SecureNoteItem note => note.isPinned,
+      _ => false,
+    };
+  }
+
   void _replace(Object item) {
     final current = vault;
     if (current == null) {

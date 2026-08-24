@@ -61,6 +61,7 @@ class NoteEditViewModel extends NoteFormViewModel {
       categoryId: selectedCategoryId.value,
       createdAt: original.createdAt,
       updatedAt: DateTime.now(),
+      isPinned: original.isPinned,
     );
 
     await submitVaultItem(

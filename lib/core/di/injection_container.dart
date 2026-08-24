@@ -21,6 +21,7 @@ import 'package:keyva/core/security/screen_protection_service_impl.dart';
 import 'package:keyva/core/security/secure_storage_service.dart';
 import 'package:keyva/core/security/secure_storage_service_impl.dart';
 import 'package:keyva/core/security/unlock_attempt_limiter.dart';
+import 'package:keyva/core/session/auto_lock_pause_store.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
@@ -63,12 +64,13 @@ void initDependencies(HiveDatabase database) {
     () => KeyManagementServiceImpl(getIt<CryptoService>()),
   );
   getIt.registerLazySingleton<SessionService>(SessionServiceImpl.new);
+  getIt.registerLazySingleton<AutoLockPauseStore>(
+    () => HiveAutoLockPauseStore(getIt<HiveDatabase>()),
+  );
   getIt.registerLazySingleton<SecureStorageService>(
     SecureStorageServiceImpl.new,
   );
-  getIt.registerLazySingleton<BiometricGateway>(
-    LocalAuthBiometricGateway.new,
-  );
+  getIt.registerLazySingleton<BiometricGateway>(LocalAuthBiometricGateway.new);
   getIt.registerLazySingleton<ScreenProtectionGateway>(
     MethodChannelScreenProtectionGateway.new,
   );

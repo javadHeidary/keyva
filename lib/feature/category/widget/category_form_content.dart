@@ -5,6 +5,7 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/category/model/category_constants.dart';
 import 'package:keyva/feature/category/viewmodel/category_form_viewmodel.dart';
 import 'package:keyva/feature/category/widget/category_icon_picker.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
@@ -37,7 +38,9 @@ class CategoryFormContent extends StatelessWidget {
                 textInputAction: TextInputAction.done,
                 fillColor: fieldFill,
                 validator: controller.validateName,
-                inputFormatters: [LengthLimitingTextInputFormatter(10)],
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(CategoryConstants.maxNameLength),
+                ],
               ),
               SizedBox(height: AppSpacing.lg.h),
               Text(

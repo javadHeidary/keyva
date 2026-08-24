@@ -9,6 +9,7 @@ import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/auth_widget_harness.dart';
 import 'support/fake_auth_repository.dart';
@@ -35,6 +36,7 @@ void main() {
   });
 
   tearDown(() async {
+    AppToast.dismiss();
     Get.reset();
     await getIt.reset();
   });

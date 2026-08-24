@@ -3,11 +3,13 @@ import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
 
 List<AppMoreAction> vaultMoreActionsForItem(
   VaultListItem item, {
   Object? source,
+  VoidCallback? onTogglePin,
   VoidCallback? onDelete,
 }) {
   final actions = <AppMoreAction>[];
@@ -62,10 +64,21 @@ List<AppMoreAction> vaultMoreActionsForItem(
       break;
   }
 
+  if (onTogglePin != null) {
+    actions.add(
+      AppMoreAction(
+        label: item.isPinned ? 'برداشتن سنجاق' : 'سنجاق کردن',
+        icon: item.isPinned ? AppIcon.itemUnpin : AppIcon.itemPin,
+        onPressed: onTogglePin,
+      ),
+    );
+  }
+
   if (onDelete != null) {
     actions.add(
       AppMoreAction(
         label: 'حذف',
+        icon: AppIcon.delete,
         onPressed: onDelete,
         isDestructive: true,
       ),

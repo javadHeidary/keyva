@@ -117,3 +117,9 @@ final class ScreenProtectionFailure extends AppFailure {
     super.message = 'Unable to update screen capture protection',
   });
 }
+
+final class PinLimitFailure extends AppFailure {
+  const PinLimitFailure({
+    super.message = 'A maximum of 5 items can be pinned.',
+  });
+}

@@ -5,9 +5,9 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/category/widget/category_selector_field.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_form_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_favicon_widget.dart';
-import 'package:keyva/shared/widget/app_dropdown_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
 import 'package:keyva/shared/widget/app_title_item_widget.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
@@ -61,35 +61,12 @@ class LoginFormContent extends StatelessWidget {
               ),
               SizedBox(height: _fieldGap.h),
               Obx(() {
-                final categories = controller.selectableCategories;
-                final items = [
-                  const AppDropdownItem<String?>(
-                    value: null,
-                    label: 'بدون دسته‌بندی',
-                    icon: Icon(Icons.label_off_outlined),
-                  ),
-                  ...categories.map(
-                    (category) => AppDropdownItem<String?>(
-                      value: category.id,
-                      label: category.name,
-                    ),
-                  ),
-                ];
-
-                return AppDropdownWidget<String?>(
-                  value: controller.selectedCategoryId.value,
-                  hint: 'بدون دسته‌بندی',
-                  items: items,
-                  labelText: 'دسته‌بندی',
-                  labelAlwaysVisible: true,
-                  useOutlinedStyle: true,
-                  fillColor: fieldFill,
-                  leadingIcon: Icon(
-                    Icons.folder_outlined,
-                    size: AppSizes.iconMd.s,
-                    color: colors.textSecondary,
-                  ),
+                return CategorySelectorField(
+                  selectedId: controller.selectedCategoryId.value,
+                  categories: controller.selectableCategories,
                   onChanged: controller.onCategoryChanged,
+                  onCreate: controller.createInlineCategory,
+                  fillColor: fieldFill,
                 );
               }),
             ],

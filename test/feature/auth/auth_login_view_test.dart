@@ -11,6 +11,7 @@ import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/auth_widget_harness.dart';
 import 'support/fake_auth_repository.dart';
@@ -39,6 +40,7 @@ void main() {
   });
 
   tearDown(() async {
+    AppToast.dismiss();
     Get.reset();
     await getIt.reset();
   });
@@ -162,13 +164,13 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(session.isAuthenticated, isFalse);
-    expect(find.byKey(const Key('auth-login-error')), findsOneWidget);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(find.textContaining('AuthenticationFailure'), findsNothing);
     expect(find.textContaining('Hive'), findsNothing);
     expect(login.passwordController.text, isEmpty);
     expect(login.isLoading.value, isFalse);
+    AppToast.dismiss();
   });
 
   testWidgets('PIN field is shown when PIN is enabled', (tester) async {
@@ -215,6 +217,7 @@ void main() {
     );
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(login.pinController.text, isEmpty);
+    AppToast.dismiss();
   });
 
   testWidgets('Master Password fallback is available from PIN unlock', (
@@ -378,6 +381,7 @@ void main() {
       find.text('احراز هویت بیومتریک ناموفق بود. ۲ تلاش باقی مانده است.'),
       findsOneWidget,
     );
+    AppToast.dismiss();
   });
 
   testWidgets('third biometric failure shows lockout dialog', (tester) async {
@@ -431,6 +435,7 @@ void main() {
       find.text('احراز هویت بیومتریک روی این دستگاه در دسترس نیست.'),
       findsOneWidget,
     );
+    AppToast.dismiss();
   });
 
   testWidgets('not configured biometric shows a Persian message', (
@@ -460,6 +465,7 @@ void main() {
       find.text('باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.'),
       findsOneWidget,
     );
+    AppToast.dismiss();
   });
 
   testWidgets('vault unlock failure after biometric stays generic', (
@@ -485,6 +491,7 @@ void main() {
 
     expect(session.isAuthenticated, isFalse);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
+    AppToast.dismiss();
   });
 
   testWidgets('biometric lockout hides the biometric option', (tester) async {

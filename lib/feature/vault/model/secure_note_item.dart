@@ -6,6 +6,7 @@ class SecureNoteItem {
     required this.categoryId,
     required this.createdAt,
     required this.updatedAt,
+    this.isPinned = false,
   });
 
   final String id;
@@ -14,6 +15,27 @@ class SecureNoteItem {
   final String? categoryId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isPinned;
+
+  SecureNoteItem copyWith({
+    String? id,
+    String? title,
+    String? content,
+    String? categoryId,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isPinned,
+  }) {
+    return SecureNoteItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      categoryId: categoryId ?? this.categoryId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isPinned: isPinned ?? this.isPinned,
+    );
+  }
 
   @override
   bool operator ==(Object other) {
@@ -23,7 +45,8 @@ class SecureNoteItem {
         content == other.content &&
         categoryId == other.categoryId &&
         createdAt == other.createdAt &&
-        updatedAt == other.updatedAt;
+        updatedAt == other.updatedAt &&
+        isPinned == other.isPinned;
   }
 
   @override
@@ -34,5 +57,6 @@ class SecureNoteItem {
     categoryId,
     createdAt,
     updatedAt,
+    isPinned,
   );
 }

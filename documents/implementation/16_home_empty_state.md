@@ -19,16 +19,17 @@ The first-run screen no longer looked like Home. The empty state belongs to the 
 
 ```
 Home (Scaffold + FAB)
- ├── loading (no snapshot) → page spinner
+ ├── initial / loading → Home chrome (no page spinner)
  ├── error (no snapshot) → VaultErrorView + retry
- └── _VaultContent (empty, loaded, submitting, success, or snapshot retry)
-      ├── Account header + search chip + lock
+ └── _VaultContent (empty, loaded, submitting, success, snapshot retry, or first load)
+      ├── Account header + search chip + lock (open-lock icon while VaultSession is unlocked)
       ├── Type summaries (always, including 0 counts)
       ├── Category chips
       └── Items section
+           ├── First load without snapshot → no empty flash
            ├── List
-           ├── Empty vault → AppEmptyWidget.vault (card)
-           └── Filter with zero rows → type/filter empty (no vault CTA)
+           ├── Empty vault → AppEmptyWidget.vault (card, message only)
+           └── Filter with zero rows → type/filter empty (no Add button)
 ```
 
 `VaultUiStatus.empty` is not an error. Home treats it like a successful load with no items.
@@ -40,8 +41,8 @@ When `HomeController.visibleItems` is empty after a successful load:
 - If the vault has no login / card / note items: `AppEmptyWidget.vault` in the items card
   - Title: هنوز چیزی اضافه نکرده‌اید
   - Description: اولین اطلاعات خود را به کیوا اضافه کنید.
-  - CTA: افزودن آیتم
-- If the vault has items but the current type/category filter matches none: `AppEmptyWidget.typeList` or `AppEmptyWidget.filteredResults` (no “افزودن آیتم”, no search-no-results copy on Home)
+  - No Add button (the Home FAB is the only create entry)
+- If the vault has items but the current type/category filter matches none: `AppEmptyWidget.typeList` or `AppEmptyWidget.filteredResults` (no Add button, no search-no-results copy on Home)
 
 The widget uses `AppEmptyLayout.card` inside `_SectionCard`. There is no page layout, illustration, or `Spacer`-based full screen.
 
@@ -55,9 +56,9 @@ New account → unlock → Home:
 
 ## Create flow
 
-CTA `onCreateFirstItem` toggles the existing expandable FAB (`GlobalKey<ExpandableFabState>`). Child buttons call `onAddItemForType` → `loginCreate` / `bankCardCreate` / `noteCreate` → `VaultItemViewModel.create` → `submitVaultItem` → `VaultHomeViewModel.refreshVault`.
+The expandable FAB is the only create entry. Child buttons call `onAddItemForType` → `loginCreate` / `bankCardCreate` / `noteCreate` → `VaultItemViewModel.create` → `submitVaultItem` → `VaultHomeViewModel.refreshVault`.
 
-There is one FAB. The CTA does not write vault data and does not skip `VaultItemViewModel`.
+There is no empty-state Add button. The FAB does not write vault data and does not skip `VaultItemViewModel`.
 
 After the first save, Home chrome stays and the created item appears in the list; the content empty state is gone.
 
@@ -73,8 +74,8 @@ After the first save, Home chrome stays and the created item appears in the list
 
 [`test/feature/vault/vault_home_view_test.dart`](../../test/feature/vault/vault_home_view_test.dart):
 
-- Empty vault: header, type selector, FAB, content empty; no page `AppEmptyWidget.vault`
-- Empty CTA expands FAB and opens login create without `addItem`
+- Empty vault: header, type selector, FAB, content empty without Add; no page `AppEmptyWidget.vault`
+- Expanding the FAB opens login create without `addItem`
 - Refresh after create: item listed, empty gone, chrome remains
 - Delete last item: content empty returns, chrome remains
 - Type filter with zero rows: content empty, chrome remains

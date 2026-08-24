@@ -86,15 +86,33 @@ void main() {
 
   tearDown(Get.reset);
 
-  test('new vault load keeps the category catalog empty', () async {
+  test(
+    'persisted vault with no categories does not backfill defaults into the catalog',
+    () async {
+      await vaultHome.loadVault();
+
+      expect(catalog.categories, isEmpty);
+      expect(
+        home.filterCategories.map((category) => category.id),
+        [CategoryConstants.filterAllId],
+      );
+      expect(home.filterCategories.single.name, CategoryConstants.filterAllName);
+    },
+  );
+
+  test('loadVault hydrates default categories from an initial vault', () async {
+    operations.vault = VaultData.initial();
+
     await vaultHome.loadVault();
 
-    expect(catalog.categories, isEmpty);
     expect(
-      home.filterCategories.map((category) => category.id),
-      [CategoryConstants.filterAllId],
+      catalog.categories.map((category) => category.name),
+      ['شخصی', 'کاری', 'مالی'],
     );
-    expect(home.filterCategories.single.name, CategoryConstants.filterAllName);
+    expect(
+      home.filterCategories.map((category) => category.name),
+      [CategoryConstants.filterAllName, 'شخصی', 'کاری', 'مالی'],
+    );
   });
 
   test('loadVault hydrates the catalog from VaultData.categories', () async {
@@ -228,6 +246,21 @@ void main() {
   );
 
   test(
+    'login form selectable categories include defaults from an initial vault',
+    () async {
+      operations.vault = VaultData.initial();
+      await vaultHome.loadVault();
+
+      final loginForm = LoginCreateViewModel(items: items);
+
+      expect(
+        loginForm.selectableCategories.map((category) => category.name),
+        ['شخصی', 'کاری', 'مالی'],
+      );
+    },
+  );
+
+  test(
     'details label resolves after reload when categoryId matches vault',
     () async {
       operations.vault = vaultData(
@@ -259,6 +292,22 @@ void main() {
     },
   );
 
+  testWidgets('Home chips show default categories after loading an initial vault', (
+    tester,
+  ) async {
+    operations.vault = VaultData.initial();
+    await vaultHome.loadVault();
+
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(vaultTestApp(home: const HomeView()));
+    await pumpVaultFrame(tester);
+
+    expect(find.text(CategoryConstants.filterAllName), findsOneWidget);
+    expect(find.text('شخصی'), findsOneWidget);
+    expect(find.text('کاری'), findsOneWidget);
+    expect(find.text('مالی'), findsOneWidget);
+  });
+
   testWidgets('Home chips show persisted categories after load', (tester) async {
     operations.vault = vaultData(categories: [workCategory()]);
     await vaultHome.loadVault();
@@ -269,6 +318,5 @@ void main() {
 
     expect(find.text(CategoryConstants.filterAllName), findsOneWidget);
     expect(find.text('Work'), findsOneWidget);
-    expect(find.text('کاری'), findsNothing);
   });
 }

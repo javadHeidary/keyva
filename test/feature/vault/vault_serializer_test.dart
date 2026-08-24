@@ -264,6 +264,61 @@ void main() {
     );
   });
 
+  test('isPinned true round-trips', () async {
+    final vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login().copyWith(isPinned: true)],
+      bankCards: [card().copyWith(isPinned: true)],
+      secureNotes: [note().copyWith(isPinned: true)],
+      categories: const [],
+    );
+    expect(await roundTrip(vault), vault);
+  });
+
+  test('missing isPinned deserializes as false', () async {
+    final vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login()],
+      bankCards: [card()],
+      secureNotes: [note()],
+      categories: const [],
+    );
+    final json = await _serializedJson(serializer, vault);
+    final loginJson = Map<String, dynamic>.from(json['logins'].single as Map);
+    final cardJson = Map<String, dynamic>.from(json['bankCards'].single as Map);
+    final noteJson = Map<String, dynamic>.from(
+      json['secureNotes'].single as Map,
+    );
+    loginJson.remove('isPinned');
+    cardJson.remove('isPinned');
+    noteJson.remove('isPinned');
+    json['logins'] = [loginJson];
+    json['bankCards'] = [cardJson];
+    json['secureNotes'] = [noteJson];
+
+    final restored = _expectSuccess(
+      await serializer.deserialize(_jsonBytes(json)),
+    );
+    expect(restored.logins.single.isPinned, isFalse);
+    expect(restored.bankCards.single.isPinned, isFalse);
+    expect(restored.secureNotes.single.isPinned, isFalse);
+  });
+
+  test('isPinned wrong type fails closed', () async {
+    final vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: [login()],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+    );
+    final json = await _serializedJson(serializer, vault);
+    final loginJson = Map<String, dynamic>.from(json['logins'].single as Map);
+    loginJson['isPinned'] = 'yes';
+    json['logins'] = [loginJson];
+    _expectValidationFailure(await serializer.deserialize(_jsonBytes(json)));
+  });
+
   test('unknown keys fail closed', () async {
     final json = await _serializedJson(serializer, emptyVault());
     json['extra'] = true;

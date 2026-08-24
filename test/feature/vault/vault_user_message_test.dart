@@ -50,4 +50,11 @@ void main() {
       'به‌روزرسانی محافظت صفحه انجام نشد.',
     );
   });
+
+  test('maps pin limit failure', () {
+    expect(
+      vaultUserMessage('A maximum of 5 items can be pinned.'),
+      'حداکثر ۵ مورد را می‌توانید سنجاق کنید.',
+    );
+  });
 }

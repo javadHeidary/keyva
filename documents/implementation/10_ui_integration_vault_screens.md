@@ -106,7 +106,7 @@ Navigation:
 Vault Home / Search / Type list
    ├── Item tap → matching details route (id argument)
    │      └── «ویرایش» → matching edit route
-   └── FAB / empty CTA → create
+   └── FAB → create
           └── success → type list + details (create removed from the stack)
 ```
 
@@ -126,8 +126,8 @@ Home reads `VaultHomeViewModel.status`:
 
 | Status | UI |
 |---|---|
-| `initial` / `loading` | `AppLoadingWidget` page (unless a vault snapshot already exists; then Home chrome stays) |
-| `empty` | Same Home chrome as loaded; items section shows `AppEmptyWidget.vault` (card layout + create CTA). Not a full-page empty Home. |
+| `initial` / `loading` | Home chrome (`_VaultContent`). No page spinner. Items empty is withheld until a vault snapshot exists. `VaultUiStatus.loading` still represents the in-flight `getVault()` call. |
+| `empty` | Same Home chrome as loaded; items section shows `AppEmptyWidget.vault` (card layout, message only). FAB is the only Add entry. Not a full-page empty Home. |
 | `loaded` / `submitting` / `success` | List chrome; submitting keeps the previous list and disables extra deletes |
 | `error` | `VaultErrorView` + retry when no snapshot; if a snapshot exists, the list stays |
 
@@ -156,7 +156,7 @@ Home search chip opens `AppSearchWidget`. `SearchViewModel` calls `searchItems(q
 
 ### Create
 
-FAB or empty CTA → type create route → field controllers → Task 05 model (UI generates `id` / timestamps) → `VaultItemViewModel.create` → `refreshVault()` → `openCreatedVaultItem`.
+FAB → type create route → field controllers → Task 05 model (UI generates `id` / timestamps) → `VaultItemViewModel.create` → `refreshVault()` → `openCreatedVaultItem`.
 
 That helper pops Create (and any extra type list under it) until `/shell` or `/home`, then pushes Type list for that kind and Detail for the new id:
 

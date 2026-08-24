@@ -88,6 +88,71 @@ class VaultOperationServiceImpl implements VaultOperationService {
     return const FailureResult(ValidationFailure());
   }
 
+  @override
+  Future<Result<void>> setItemPinned({
+    required String id,
+    required bool isPinned,
+  }) async {
+    final vaultResult = await getVault();
+    if (vaultResult is FailureResult<VaultData>) {
+      return FailureResult(vaultResult.failure);
+    }
+    final vault = (vaultResult as Success<VaultData>).data;
+    final item = _findVaultEntry(vault, id);
+    if (item == null) {
+      return const FailureResult(ValidationFailure());
+    }
+
+    final currentlyPinned = _isPinned(item);
+    if (currentlyPinned == isPinned) {
+      return const Success(null);
+    }
+    if (isPinned && vault.pinnedItemCount >= VaultData.maxPinnedItems) {
+      return const FailureResult(PinLimitFailure());
+    }
+
+    return switch (item) {
+      LoginItem login => _vaultData.updateLogin(
+        login.copyWith(isPinned: isPinned),
+      ),
+      BankCardItem card => _vaultData.updateBankCard(
+        card.copyWith(isPinned: isPinned),
+      ),
+      SecureNoteItem note => _vaultData.updateSecureNote(
+        note.copyWith(isPinned: isPinned),
+      ),
+      _ => const FailureResult(ValidationFailure()),
+    };
+  }
+
+  static Object? _findVaultEntry(VaultData vault, String id) {
+    for (final login in vault.logins) {
+      if (login.id == id) {
+        return login;
+      }
+    }
+    for (final card in vault.bankCards) {
+      if (card.id == id) {
+        return card;
+      }
+    }
+    for (final note in vault.secureNotes) {
+      if (note.id == id) {
+        return note;
+      }
+    }
+    return null;
+  }
+
+  static bool _isPinned(Object item) {
+    return switch (item) {
+      LoginItem login => login.isPinned,
+      BankCardItem card => card.isPinned,
+      SecureNoteItem note => note.isPinned,
+      _ => false,
+    };
+  }
+
   static Object? _findItem(VaultData vault, String id) {
     for (final login in vault.logins) {
       if (login.id == id) {

@@ -10,6 +10,7 @@ import 'package:keyva/feature/type/login/util/login_password_util.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/login/widget/login_favicon_widget.dart';
+import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -53,6 +54,15 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
+                  trailingActions: [
+                    vaultPinHeaderAction(
+                      isPinned: login.isPinned,
+                      color: login.isPinned
+                          ? colors.primary
+                          : colors.textSecondary,
+                      onTap: () => controller.togglePin(context),
+                    ),
+                  ],
                 ),
               ),
               SliverPadding(

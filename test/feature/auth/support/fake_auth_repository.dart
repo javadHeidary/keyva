@@ -28,6 +28,7 @@ class FakeAuthRepository implements AuthRepository {
   Duration? lastAutoLockTimeout;
   AppFailure? changeMasterPasswordFailure;
   AppFailure? setAutoLockTimeoutFailure;
+  AppFailure? currentSecuritySettingsFailure;
   int setPreventScreenshotsCount = 0;
   bool preventScreenshots = false;
   bool? lastPreventScreenshots;
@@ -86,6 +87,10 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<Result<SecuritySettings>> currentSecuritySettings() async {
+    final failure = currentSecuritySettingsFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
     return Success(
       SecuritySettings.initial().copyWith(
         autoLockTimeout: autoLockTimeout,

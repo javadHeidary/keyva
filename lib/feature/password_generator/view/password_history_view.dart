@@ -37,6 +37,17 @@ class PasswordHistoryView extends GetView<PasswordHistoryViewModel> {
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
+                  trailingActions: [
+                    AppHeaderTrailingAction(
+                      child: Icon(
+                        AppIcon.info,
+                        key: const Key('password-history-info'),
+                        size: AppSizes.iconLg.s,
+                        color: colors.textPrimary,
+                      ),
+                      onTap: () => controller.showRetentionInfo(context),
+                    ),
+                  ],
                 ),
               ),
               SliverPadding(

@@ -17,6 +17,7 @@ class AppMoreAction {
     this.toastMessage = '',
     this.onPressed,
     this.isDestructive = false,
+    this.icon,
   });
 
   final String label;
@@ -24,6 +25,7 @@ class AppMoreAction {
   final String toastMessage;
   final VoidCallback? onPressed;
   final bool isDestructive;
+  final IconData? icon;
 }
 
 class AppMoreWidget extends StatelessWidget {
@@ -120,9 +122,10 @@ class _AppMoreDialog extends StatelessWidget {
                 AppButtonWidget(
                   title: actions[i].label,
                   icon: Icon(
-                    actions[i].onPressed != null
-                        ? AppIcon.delete
-                        : AppIcon.copy,
+                    actions[i].icon ??
+                        (actions[i].onPressed != null
+                            ? AppIcon.delete
+                            : AppIcon.copy),
                     size: AppSizes.iconSm.s,
                   ),
                   backgroundColor: actions[i].isDestructive

@@ -13,25 +13,30 @@ import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 import 'package:keyva/shared/widget/app_dialog_widget.dart';
+import 'package:keyva/shared/widget/toast_widget.dart';
 
 class HomeController extends GetxController {
   HomeController({
     VaultHomeViewModel? vault,
     VaultUnlockService? unlock,
     AuthRepository? auth,
+    VaultSession? session,
   }) : _vaultOverride = vault,
        _unlockOverride = unlock,
-       _authOverride = auth;
+       _authOverride = auth,
+       _sessionOverride = session;
 
   final VaultHomeViewModel? _vaultOverride;
   final VaultUnlockService? _unlockOverride;
   final AuthRepository? _authOverride;
+  final VaultSession? _sessionOverride;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final createFabKey = GlobalKey<ExpandableFabState>();
   final selectedType = Rxn<VaultItemType>();
@@ -47,6 +52,18 @@ class HomeController extends GetxController {
 
   VaultUnlockService get _unlock =>
       _unlockOverride ?? getIt<VaultUnlockService>();
+
+  VaultSession? get _session {
+    if (_sessionOverride != null) {
+      return _sessionOverride;
+    }
+    if (getIt.isRegistered<VaultSession>()) {
+      return getIt<VaultSession>();
+    }
+    return null;
+  }
+
+  bool get isVaultUnlocked => _session?.isUnlocked ?? false;
 
   AuthRepository? get _auth {
     if (_authOverride != null) {
@@ -65,6 +82,11 @@ class HomeController extends GetxController {
   bool get isVaultSubmitting => vaultStatus == VaultUiStatus.submitting;
 
   bool get hasLoadedVault => vault.vault.value != null;
+
+  bool get isVaultLoadPending =>
+      !hasLoadedVault &&
+      (vaultStatus == VaultUiStatus.initial ||
+          vaultStatus == VaultUiStatus.loading);
 
   void updateAccountProfile({required String name, required String avatarId}) {
     accountOwnerName.value = name;
@@ -235,6 +257,26 @@ class HomeController extends GetxController {
 
   void onTrashTap() {}
 
+  Future<void> toggleItemPin(BuildContext context, VaultListItem item) async {
+    if (isVaultSubmitting) {
+      return;
+    }
+    final result = await vault.setItemPinned(
+      id: item.id,
+      isPinned: !item.isPinned,
+    );
+    if (!context.mounted) {
+      return;
+    }
+    if (result is FailureResult<void>) {
+      AppToast.warning(
+        context,
+        title: 'حداکثر سنجاق',
+        message: vaultUserMessage(result.failure.message),
+      );
+    }
+  }
+
   void confirmDelete(
     BuildContext context,
     VaultListItem item, {
@@ -258,18 +300,6 @@ class HomeController extends GetxController {
         onDeleted?.call();
       },
     );
-  }
-
-  void onCreateFirstItem() => openCreateMenu();
-
-  void openCreateMenu() {
-    final fab = createFabKey.currentState;
-    if (fab == null) {
-      return;
-    }
-    if (!fab.isOpen) {
-      fab.toggle();
-    }
   }
 
   void onAddItem() {}

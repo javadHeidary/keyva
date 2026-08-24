@@ -113,6 +113,7 @@ class VaultSerializerImpl implements VaultSerializer {
       'website': item.website,
       'notes': item.notes,
       'categoryId': item.categoryId,
+      'isPinned': item.isPinned,
       'createdAt': _formatTimestamp(item.createdAt),
       'updatedAt': _formatTimestamp(item.updatedAt),
     };
@@ -129,6 +130,7 @@ class VaultSerializerImpl implements VaultSerializer {
       'bankName': item.bankName,
       'notes': item.notes,
       'categoryId': item.categoryId,
+      'isPinned': item.isPinned,
       'createdAt': _formatTimestamp(item.createdAt),
       'updatedAt': _formatTimestamp(item.updatedAt),
     };
@@ -140,6 +142,7 @@ class VaultSerializerImpl implements VaultSerializer {
       'title': item.title,
       'content': item.content,
       'categoryId': item.categoryId,
+      'isPinned': item.isPinned,
       'createdAt': _formatTimestamp(item.createdAt),
       'updatedAt': _formatTimestamp(item.updatedAt),
     };
@@ -155,7 +158,7 @@ class VaultSerializerImpl implements VaultSerializer {
   }
 
   LoginItem _loginFromMap(Map<String, Object?> object) {
-    _requireExactKeys(object, _loginKeys);
+    final isPinned = _readPinnedFlag(object, _loginKeys);
     return LoginItem(
       id: _requireString(object['id']),
       title: _requireString(object['title']),
@@ -166,11 +169,12 @@ class VaultSerializerImpl implements VaultSerializer {
       categoryId: _requireNullableString(object['categoryId']),
       createdAt: _requireTimestamp(object['createdAt']),
       updatedAt: _requireTimestamp(object['updatedAt']),
+      isPinned: isPinned,
     );
   }
 
   BankCardItem _bankCardFromMap(Map<String, Object?> object) {
-    _requireExactKeys(object, _bankCardKeys);
+    final isPinned = _readPinnedFlag(object, _bankCardKeys);
     return BankCardItem(
       id: _requireString(object['id']),
       title: _requireString(object['title']),
@@ -183,11 +187,12 @@ class VaultSerializerImpl implements VaultSerializer {
       categoryId: _requireNullableString(object['categoryId']),
       createdAt: _requireTimestamp(object['createdAt']),
       updatedAt: _requireTimestamp(object['updatedAt']),
+      isPinned: isPinned,
     );
   }
 
   SecureNoteItem _secureNoteFromMap(Map<String, Object?> object) {
-    _requireExactKeys(object, _secureNoteKeys);
+    final isPinned = _readPinnedFlag(object, _secureNoteKeys);
     return SecureNoteItem(
       id: _requireString(object['id']),
       title: _requireString(object['title']),
@@ -195,6 +200,7 @@ class VaultSerializerImpl implements VaultSerializer {
       categoryId: _requireNullableString(object['categoryId']),
       createdAt: _requireTimestamp(object['createdAt']),
       updatedAt: _requireTimestamp(object['updatedAt']),
+      isPinned: isPinned,
     );
   }
 
@@ -241,6 +247,18 @@ class VaultSerializerImpl implements VaultSerializer {
     return object;
   }
 
+  bool _readPinnedFlag(Map<String, Object?> object, Set<String> baseKeys) {
+    final hasPinned = object.containsKey('isPinned');
+    _requireExactKeys(
+      object,
+      hasPinned ? {...baseKeys, 'isPinned'} : baseKeys,
+    );
+    if (!hasPinned) {
+      return false;
+    }
+    return _requireBool(object['isPinned']);
+  }
+
   void _requireExactKeys(Map<String, Object?> object, Set<String> expected) {
     if (object.length != expected.length) {
       throw const _VaultSchemaException();
@@ -269,6 +287,13 @@ class VaultSerializerImpl implements VaultSerializer {
 
   int _requireInt(Object? value) {
     if (value is int) {
+      return value;
+    }
+    throw const _VaultSchemaException();
+  }
+
+  bool _requireBool(Object? value) {
+    if (value is bool) {
       return value;
     }
     throw const _VaultSchemaException();

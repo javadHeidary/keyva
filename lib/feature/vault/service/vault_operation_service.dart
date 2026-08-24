@@ -11,4 +11,9 @@ abstract interface class VaultOperationService {
   Future<Result<void>> updateItem(Object item);
 
   Future<Result<void>> deleteItem(String id);
+
+  Future<Result<void>> setItemPinned({
+    required String id,
+    required bool isPinned,
+  });
 }

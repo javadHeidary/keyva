@@ -41,6 +41,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>mailto</string>
+		<string>tg</string>
+		<string>telegram</string>
+		<string>bale</string>
+	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>برای باز کردن سریع گاوصندوق کیوا</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

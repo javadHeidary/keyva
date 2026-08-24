@@ -12,6 +12,7 @@ import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/change_master_password_dialog.dart';
 import 'package:keyva/feature/settings/widget/faq_guide_bottom_sheet.dart';
+import 'package:keyva/feature/settings/widget/contact_us_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/pin_code_dialog.dart';
 import 'package:keyva/feature/settings/widget/settings_group_card.dart';
 import 'package:keyva/feature/settings/widget/settings_row.dart';
@@ -103,10 +104,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                                     controller.security.value.biometricEnabled,
                                 onChanged: (enabled) {
                                   if (enabled) {
-                                    controller.onBiometricToggle(
-                                      true,
-                                      context,
-                                    );
+                                    controller.onBiometricToggle(true, context);
                                     return;
                                   }
                                   _confirmDisableBiometric(context);
@@ -147,11 +145,8 @@ class SettingsView extends GetView<SettingsViewModel> {
                               icon: AppIcon.noPhotography,
                               value:
                                   controller.security.value.preventScreenshot,
-                              onChanged: (enabled) =>
-                                  controller.setPreventScreenshot(
-                                    enabled,
-                                    context,
-                                  ),
+                              onChanged: (enabled) => controller
+                                  .setPreventScreenshot(enabled, context),
                             ),
                           ),
                           KeyedSubtree(
@@ -198,35 +193,28 @@ class SettingsView extends GetView<SettingsViewModel> {
                       const AppTitleItemWidget(title: 'اطلاعات'),
                       SettingsGroupCard(
                         children: [
-                          SettingsRow.nav(
-                            title: 'سیاست حریم خصوصی',
-                            icon: AppIcon.privacy,
-                            onTap: () => _showInfo(
-                              context,
-                              'سیاست حریم خصوصی',
-                              'متن سیاست حریم خصوصی در فاز بعد از طریق لینک یا '
-                                  'محتوای محلی نمایش داده می‌شود. داده‌های شما روی '
-                                  'دستگاه شما می‌ماند.',
+                          KeyedSubtree(
+                            key: const Key('settings-privacy-policy'),
+                            child: SettingsRow.nav(
+                              title: 'سیاست حریم خصوصی',
+                              icon: AppIcon.privacy,
+                              onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
                             ),
                           ),
-                          SettingsRow.nav(
-                            title: 'درباره ما',
-                            icon: AppIcon.users,
-                            onTap: () => _showInfo(
-                              context,
-                              'درباره کیوا',
-                              'کیوا یک گاوصندوق شخصی آفلاین برای نگهداری امن '
-                                  'اطلاعات حساس است.',
+                          KeyedSubtree(
+                            key: const Key('settings-about'),
+                            child: SettingsRow.nav(
+                              title: 'درباره ما',
+                              icon: AppIcon.users,
+                              onTap: () => Get.toNamed(AppRoutes.about),
                             ),
                           ),
-                          SettingsRow.nav(
-                            title: 'تماس با ما',
-                            icon: AppIcon.mail,
-                            onTap: () => _showInfo(
-                              context,
-                              'تماس با ما',
-                              'راه‌های تماس در نسخه نهایی از طریق ایمیل یا '
-                                  'وب‌سایت در دسترس خواهد بود.',
+                          KeyedSubtree(
+                            key: const Key('settings-contact'),
+                            child: SettingsRow.nav(
+                              title: 'تماس با ما',
+                              icon: AppIcon.mail,
+                              onTap: () => showContactUsBottomSheet(context),
                             ),
                           ),
                           SettingsRow.nav(
@@ -284,10 +272,6 @@ class SettingsView extends GetView<SettingsViewModel> {
         }),
       ),
     );
-  }
-
-  void _showInfo(BuildContext context, String title, String description) {
-    AppDialogWidget.show(context, title: title, description: description);
   }
 
   void _confirmDisablePin(BuildContext context) {
