@@ -258,7 +258,7 @@ void main() {
     expect(vaultSession.vaultData, VaultData.initial());
     expect(
       vaultSession.vaultData!.categories.map((category) => category.name),
-      ['شخصی', 'کاری', 'مالی'],
+      ['شخصی', 'مالی', 'کاری'],
     );
     expect(vaultSession.vaultData!.version, VaultData.currentVersion);
     expect(_expectSuccess(await vaults.findByUserId(user.id)), isNull);

@@ -55,8 +55,8 @@ class AppEmptyWidget extends StatelessWidget {
       case VaultItemType.login:
         return const AppEmptyWidget(
           icon: AppIcon.lock,
-          title: 'هنوز ورودی ثبت نشده',
-          description: 'اولین ورود خود را اضافه کنید.',
+          title: 'هنوز ورود به حساب‌ها ثبت نشده',
+          description: 'اولین مورد ورود به حساب‌ها را اضافه کنید.',
           layout: AppEmptyLayout.card,
         );
       case VaultItemType.bankCard:
@@ -82,6 +82,16 @@ class AppEmptyWidget extends StatelessWidget {
       title: 'هنوز دسته‌بندی ندارید',
       description: 'اولین دسته را با دکمه + بسازید.',
       layout: AppEmptyLayout.content,
+    );
+  }
+
+  factory AppEmptyWidget.categoryItems({Key? key}) {
+    return AppEmptyWidget(
+      key: key,
+      icon: AppIcon.folder,
+      title: 'این دسته خالی است',
+      description: 'هنوز آیتمی در این دسته‌بندی ندارید.',
+      layout: AppEmptyLayout.card,
     );
   }
 

@@ -5,6 +5,10 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/note/util/note_util.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
+import 'package:keyva/feature/vault/share/share_confirm_dialog.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
+import 'package:keyva/feature/vault/share/share_vault_item.dart';
+import 'package:keyva/feature/vault/share/vault_item_share_formatter.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/utils/jalali_date_formatter.dart';
@@ -12,9 +16,17 @@ import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NoteDetailsViewModel extends GetxController {
-  NoteDetailsViewModel({required this.noteId});
+  NoteDetailsViewModel({
+    required this.noteId,
+    required this.shareSheet,
+    this.formatter = const VaultItemShareFormatter(),
+    this.confirmShare,
+  });
 
   final String noteId;
+  final ShareSheetService shareSheet;
+  final VaultItemShareFormatter formatter;
+  final Future<bool> Function(BuildContext context)? confirmShare;
 
   VaultHomeViewModel? get _vaultHome => Get.isRegistered<VaultHomeViewModel>()
       ? Get.find<VaultHomeViewModel>()
@@ -99,5 +111,17 @@ class NoteDetailsViewModel extends GetxController {
     final listItem = mapVaultListItem(note);
     if (listItem == null) return;
     await Get.find<HomeController>().toggleItemPin(context, listItem);
+  }
+
+  Future<void> shareItem(BuildContext context) async {
+    final note = item;
+    if (note == null) return;
+    await shareVaultItem(
+      context: context,
+      shareSheet: shareSheet,
+      text: formatter.formatSecureNote(note, categoryName: categoryLabel),
+      subject: VaultItemShareFormatter.noteSubject,
+      confirmShare: confirmShare ?? showShareConfirmDialog,
+    );
   }
 }

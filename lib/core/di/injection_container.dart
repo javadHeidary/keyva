@@ -8,6 +8,8 @@ import 'package:keyva/core/database/hive_user_data_source.dart';
 import 'package:keyva/core/database/hive_vault_data_source.dart';
 import 'package:keyva/core/database/user_data_source.dart';
 import 'package:keyva/core/database/vault_data_source.dart';
+import 'package:keyva/core/image/cached_network_image_plus_cached_remote_image.dart';
+import 'package:keyva/core/image/cached_remote_image.dart';
 import 'package:keyva/core/security/biometric_gateway.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/biometric_service_impl.dart';
@@ -40,6 +42,8 @@ import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service_impl.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/session/vault_session_impl.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service_impl.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 import 'package:keyva/feature/backup/service/backup_file_service.dart';
@@ -53,6 +57,9 @@ final GetIt getIt = GetIt.instance;
 
 void initDependencies(HiveDatabase database) {
   getIt.registerSingleton<HiveDatabase>(database);
+  getIt.registerLazySingleton<CachedRemoteImage>(
+    CachedNetworkImagePlusCachedRemoteImage.new,
+  );
   getIt.registerLazySingleton<UserDataSource>(
     () => HiveUserDataSource(getIt<HiveDatabase>()),
   );
@@ -150,6 +157,7 @@ void initDependencies(HiveDatabase database) {
       vaultSession: getIt<VaultSession>(),
     ),
   );
+  getIt.registerLazySingleton<ShareSheetService>(ShareSheetServiceImpl.new);
   getIt.registerLazySingleton<BackupFileService>(BackupFileServiceImpl.new);
   getIt.registerLazySingleton<BackupService>(
     () => BackupServiceImpl(

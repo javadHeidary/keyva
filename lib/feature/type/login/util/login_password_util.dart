@@ -68,6 +68,14 @@ String? websiteHostForFavicon(String? website) {
   return uri?.host.isNotEmpty == true ? uri!.host : null;
 }
 
+String faviconUrlForHost(String host) {
+  return 'https://www.google.com/s2/favicons?domain=$host&sz=128';
+}
+
+String faviconCacheKeyForHost(String host) {
+  return 'favicon:$host';
+}
+
 String formatLoginCreatedAt(DateTime dateTime) {
   final y = dateTime.year.toString().padLeft(4, '0');
   final m = dateTime.month.toString().padLeft(2, '0');

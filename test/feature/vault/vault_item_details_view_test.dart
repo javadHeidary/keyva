@@ -21,6 +21,7 @@ import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/utils/jalali_date_formatter.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
+import 'support/fake_share_sheet_service.dart';
 import 'support/fake_vault_operation_service.dart';
 import 'support/vault_widget_harness.dart';
 
@@ -30,6 +31,7 @@ void main() {
   late FakeVaultOperationService operations;
   late VaultHomeViewModel vault;
   late HomeController home;
+  late FakeShareSheetService shareSheet;
 
   final createdAt = DateTime.utc(2026, 7, 1, 10);
   final updatedAt = DateTime.utc(2026, 7, 2, 11);
@@ -90,6 +92,7 @@ void main() {
     operations = FakeVaultOperationService();
     vault = VaultHomeViewModel(operations: operations);
     home = HomeController(vault: vault);
+    shareSheet = FakeShareSheetService();
     Get.put(vault);
     Get.put(home);
   });
@@ -101,7 +104,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(LoginDetailsViewModel(loginId: 'login-1'));
+    Get.put(LoginDetailsViewModel(loginId: 'login-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     await tester.pumpWidget(vaultTestApp(home: const LoginDetailsView()));
@@ -122,7 +125,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     tester.view.physicalSize = const Size(2160, 2400);
@@ -143,7 +146,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     tester.view.physicalSize = const Size(2160, 2400);
@@ -181,7 +184,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     tester.view.physicalSize = const Size(2160, 2400);
@@ -201,7 +204,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     tester.view.physicalSize = const Size(2160, 2400);
@@ -247,7 +250,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(BankCardDetailsViewModel(cardId: 'card-1'));
+    Get.put(BankCardDetailsViewModel(cardId: 'card-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     tester.view.physicalSize = const Size(2160, 2400);
@@ -268,7 +271,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+    Get.put(NoteDetailsViewModel(noteId: 'note-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     await tester.pumpWidget(vaultTestApp(home: const NoteDetailsView()));
@@ -308,7 +311,7 @@ void main() {
       ],
     );
     await vault.loadVault();
-    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+    Get.put(NoteDetailsViewModel(noteId: 'note-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     await tester.pumpWidget(vaultTestApp(home: const NoteDetailsView()));
@@ -324,7 +327,7 @@ void main() {
   ) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+    Get.put(NoteDetailsViewModel(noteId: 'note-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     await tester.pumpWidget(vaultTestApp(home: const NoteDetailsView()));
@@ -367,7 +370,7 @@ void main() {
       categories: const [],
     );
     await vault.loadVault();
-    Get.put(NoteDetailsViewModel(noteId: 'note-1'));
+    Get.put(NoteDetailsViewModel(noteId: 'note-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     tester.view.physicalSize = const Size(1080, 3600);
@@ -395,7 +398,7 @@ void main() {
   testWidgets('login detail title updates after vault refresh', (tester) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(LoginDetailsViewModel(loginId: 'login-1'));
+    Get.put(LoginDetailsViewModel(loginId: 'login-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     await tester.pumpWidget(vaultTestApp(home: const LoginDetailsView()));
@@ -431,7 +434,7 @@ void main() {
   testWidgets('login detail pin toggle updates header icon', (tester) async {
     operations.vault = populatedVault();
     await vault.loadVault();
-    Get.put(LoginDetailsViewModel(loginId: 'login-1'));
+    Get.put(LoginDetailsViewModel(loginId: 'login-1', shareSheet: shareSheet));
 
     setupVaultWidgetSurface(tester);
     await tester.pumpWidget(vaultTestApp(home: const LoginDetailsView()));

@@ -7,7 +7,7 @@ extension VaultItemTypeX on VaultItemType {
   String get label {
     switch (this) {
       case VaultItemType.login:
-        return 'ورودها';
+        return 'ورود به حساب‌ها';
       case VaultItemType.bankCard:
         return 'کارت‌های بانکی';
       case VaultItemType.secureNote:

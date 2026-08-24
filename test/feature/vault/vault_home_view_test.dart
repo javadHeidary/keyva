@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/image/cached_remote_image.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/theme/app_sizes.dart';
+import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
+import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
@@ -15,6 +20,7 @@ import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_icon.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
@@ -25,6 +31,7 @@ import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/fake_vault_operation_service.dart';
 import 'support/vault_widget_harness.dart';
+import '../../core/image/fake_cached_remote_image.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -138,10 +145,11 @@ void main() {
 
   Future<void> expectHomeChrome(WidgetTester tester) async {
     expect(find.byKey(const Key('home-account-header')), findsOneWidget);
-    expect(find.byKey(const Key('home-search-chip')), findsOneWidget);
+    expect(find.byKey(const Key('home-search')), findsOneWidget);
+    expect(find.byKey(const Key('home-search-chip')), findsNothing);
     expect(find.byKey(const Key('home-type-selector')), findsOneWidget);
     expect(find.text('انواع آیتم‌ها'), findsOneWidget);
-    expect(find.text('ورودها'), findsOneWidget);
+    expect(find.text('ورود به حساب‌ها'), findsOneWidget);
     expect(find.text('کارت‌های بانکی'), findsOneWidget);
     expect(find.text('یادداشت‌ها'), findsOneWidget);
     expect(find.byType(AppFabWidget), findsOneWidget);
@@ -591,6 +599,96 @@ void main() {
     expect(find.text('حداکثر ۵ مورد را می‌توانید سنجاق کنید.'), findsOneWidget);
     expect(operations.vault!.logins.last.isPinned, isFalse);
     AppToast.dismiss();
+  });
+
+  testWidgets('Home search uses the standard header search icon', (tester) async {
+    operations.vault = emptyVault();
+    await pumpHome(tester);
+
+    final searchIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(const Key('home-search')),
+        matching: find.byIcon(AppIcon.search),
+      ),
+    );
+    expect(searchIcon.size, AppSizes.iconLg.s);
+  });
+
+  testWidgets('short account name displays fully in the header', (tester) async {
+    operations.vault = emptyVault();
+    home.accountOwnerName.value = 'علی رضایی';
+    await pumpHome(tester);
+
+    expect(find.text('علی رضایی'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('long account name ellipsizes without overflowing the header', (
+    tester,
+  ) async {
+    operations.vault = emptyVault();
+    home.accountOwnerName.value =
+        'محمدرضا حسینی‌زاده تهرانی اصفهانی قمی خراسانی';
+    await pumpHome(tester);
+
+    final name = tester.widget<Text>(find.byKey(const Key('home-account-name')));
+    expect(name.maxLines, 1);
+    expect(name.overflow, TextOverflow.ellipsis);
+    expect(name.softWrap, isFalse);
+    expect(find.byKey(const Key('home-search')), findsOneWidget);
+    expect(find.byKey(const Key('home-lock')), findsOneWidget);
+
+    final header = tester.getRect(find.byKey(const Key('home-account-header')));
+    final search = tester.getRect(find.byKey(const Key('home-search')));
+    final lock = tester.getRect(find.byKey(const Key('home-lock')));
+    expect(search.left, greaterThanOrEqualTo(header.left - 1));
+    expect(lock.left, greaterThanOrEqualTo(header.left - 8));
+    expect(search.right, lessThanOrEqualTo(header.right + 1));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Home login tiles use VaultListItemIcon and cached favicon', (
+    tester,
+  ) async {
+    final fake = FakeCachedRemoteImage();
+    getIt.registerSingleton<CachedRemoteImage>(fake);
+    addTearDown(() async => getIt.reset());
+
+    operations.vault = populatedVault();
+    await pumpHome(tester);
+    await revealFinder(tester, find.byKey(const Key('vault-item-login-1')));
+
+    expect(find.byType(VaultListItemIcon), findsWidgets);
+    expect(find.byKey(const Key('login-favicon')), findsOneWidget);
+    expect(find.byKey(const Key('fake-cached-remote-image')), findsOneWidget);
+  });
+
+  testWidgets('Type list header and icons match Home login behavior', (
+    tester,
+  ) async {
+    operations.vault = populatedVault();
+    await home.loadVault();
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(
+      vaultTestApp(home: TypeListItemView(type: VaultItemType.login)),
+    );
+    await pumpVaultFrame(tester);
+
+    expect(find.text('ورود به حساب‌ها'), findsOneWidget);
+    expect(find.byType(VaultListItemIcon), findsOneWidget);
+    expect(find.byIcon(AppIcon.search), findsOneWidget);
+  });
+
+  testWidgets('login type empty state uses the new type title', (tester) async {
+    operations.vault = emptyVault();
+    await home.loadVault();
+    setupVaultWidgetSurface(tester);
+    await tester.pumpWidget(
+      vaultTestApp(home: TypeListItemView(type: VaultItemType.login)),
+    );
+    await pumpVaultFrame(tester);
+
+    expect(find.text('هنوز ورود به حساب‌ها ثبت نشده'), findsOneWidget);
   });
 }
 

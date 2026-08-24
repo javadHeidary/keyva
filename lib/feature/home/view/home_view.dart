@@ -15,6 +15,7 @@ import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/feature/vault/view/vault_error_view.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_icon.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_ui_status.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
@@ -162,68 +163,42 @@ class _AccountHeader extends GetView<HomeController> {
         ),
         SizedBox(width: AppSpacing.sm.s),
         Expanded(
-          flex: 1,
           child: GestureDetector(
             onTap: controller.openSettings,
             behavior: HitTestBehavior.opaque,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Obx(
-                  () => Text(
-                    controller.accountOwnerName.value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.titleLarge.copyWith(
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              key: const Key('home-search-chip'),
-              onTap: controller.onHomeSearchTap,
-              borderRadius: BorderRadius.circular(12.s),
-              child: Container(
-                height: 48.s,
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg.s),
-                decoration: BoxDecoration(
-                  color: colors.input,
-                  borderRadius: BorderRadius.circular(12.s),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      AppIcon.search,
-                      size: 22.s,
-                      color: colors.textSecondary,
-                    ),
-                    SizedBox(width: AppSpacing.sm.s),
-                    Expanded(
-                      child: Text(
-                        'جستجو ...',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: colors.textTertiary,
-                        ),
-                      ),
-                    ),
-                  ],
+            child: Obx(
+              () => Text(
+                key: const Key('home-account-name'),
+                controller.accountOwnerName.value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: AppTypography.titleLarge.copyWith(
+                  color: colors.textPrimary,
                 ),
               ),
             ),
           ),
         ),
-        SizedBox(width: AppSpacing.sm.s),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: const Key('home-search'),
+            onTap: controller.onHomeSearchTap,
+            borderRadius: BorderRadius.circular(20.s),
+            child: SizedBox(
+              width: 40.s,
+              height: 40.s,
+              child: Center(
+                child: Icon(
+                  AppIcon.search,
+                  size: AppSizes.iconLg.s,
+                  color: colors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+        ),
         IconButton(
           key: const Key('home-lock'),
           onPressed: controller.lock,
@@ -453,19 +428,14 @@ class _VaultItemTile extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return KeyedSubtree(
       key: Key('vault-item-${item.id}'),
       child: AppListItemWidget(
         title: item.title,
         subtitle: item.subtitle,
-        trailingIcon: _CircleIcon(
-          icon: Icon(
-            item.type.icon,
-            size: AppSizes.iconMd.s,
-            color: colors.textSecondary,
-          ),
+        trailingIcon: VaultListItemIcon(
+          item: item,
+          source: controller.sourceFor(item.id),
         ),
         leadingIcon: VaultItemPinMoreLeading(
           isPinned: item.isPinned,

@@ -5,6 +5,10 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/login/util/login_password_util.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
+import 'package:keyva/feature/vault/share/share_confirm_dialog.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
+import 'package:keyva/feature/vault/share/share_vault_item.dart';
+import 'package:keyva/feature/vault/share/vault_item_share_formatter.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/utils/jalali_date_formatter.dart';
@@ -12,9 +16,17 @@ import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LoginDetailsViewModel extends GetxController {
-  LoginDetailsViewModel({required this.loginId});
+  LoginDetailsViewModel({
+    required this.loginId,
+    required this.shareSheet,
+    this.formatter = const VaultItemShareFormatter(),
+    this.confirmShare,
+  });
 
   final String loginId;
+  final ShareSheetService shareSheet;
+  final VaultItemShareFormatter formatter;
+  final Future<bool> Function(BuildContext context)? confirmShare;
 
   final isPasswordVisible = false.obs;
 
@@ -105,5 +117,17 @@ class LoginDetailsViewModel extends GetxController {
     final listItem = mapVaultListItem(login);
     if (listItem == null) return;
     await Get.find<HomeController>().toggleItemPin(context, listItem);
+  }
+
+  Future<void> shareItem(BuildContext context) async {
+    final login = item;
+    if (login == null) return;
+    await shareVaultItem(
+      context: context,
+      shareSheet: shareSheet,
+      text: formatter.formatLogin(login, categoryName: categoryLabel),
+      subject: VaultItemShareFormatter.loginSubject,
+      confirmShare: confirmShare ?? showShareConfirmDialog,
+    );
   }
 }

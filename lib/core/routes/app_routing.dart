@@ -12,8 +12,10 @@ import 'package:keyva/feature/backup/bindings/backup_bindings.dart';
 import 'package:keyva/feature/backup/view/backup_restore_view.dart';
 import 'package:keyva/feature/backup/view/restore_account_setup_view.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
+import 'package:keyva/feature/category/bindings/category_items_bindings.dart';
 import 'package:keyva/feature/category/view/category_create_view.dart';
 import 'package:keyva/feature/category/view/category_edit_view.dart';
+import 'package:keyva/feature/category/view/category_items_view.dart';
 import 'package:keyva/feature/home/bindings/home_bindings.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
@@ -80,6 +82,7 @@ class AppRoutes {
   static const String about = '/settings/about';
   static const String categoryCreate = '/category/create';
   static const String categoryEdit = '/category/edit';
+  static const String categoryItems = '/category/items';
   static const String appIconTest = '/app-icon-test';
 
   static final _sessionGuard = <GetMiddleware>[SessionGuard()];
@@ -347,6 +350,16 @@ class AppRoutes {
       name: categoryEdit,
       page: () => const CategoryEditView(),
       binding: CategoryEditBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: categoryItems,
+      page: () => CategoryItemsView(),
+      binding: CategoryItemsBindings(),
       middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,

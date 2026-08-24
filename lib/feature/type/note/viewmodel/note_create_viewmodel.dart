@@ -19,7 +19,7 @@ class NoteCreateViewModel extends NoteFormViewModel {
   @override
   void onInit() {
     super.onInit();
-    initFormFields();
+    initFormFields(categoryId: vaultRouteCategoryId());
   }
 
   @override

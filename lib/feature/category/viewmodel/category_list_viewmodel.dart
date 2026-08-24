@@ -11,6 +11,9 @@ class CategoryListViewModel extends GetxController {
 
   void openCreate() => Get.toNamed(AppRoutes.categoryCreate);
 
+  void openCategory(String id) =>
+      Get.toNamed(AppRoutes.categoryItems, arguments: id);
+
   void openEdit(String id) => Get.toNamed(AppRoutes.categoryEdit, arguments: id);
 
   Future<void> deleteCategory(String id) async {

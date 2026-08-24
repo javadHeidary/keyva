@@ -9,6 +9,7 @@ import 'package:keyva/core/database/user_data_source.dart';
 import 'package:keyva/core/database/vault_data_source.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
+import 'package:keyva/core/image/cached_remote_image.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/session/session_service.dart';
@@ -20,6 +21,7 @@ import 'package:keyva/feature/vault/service/vault_data_service.dart';
 import 'package:keyva/feature/vault/service/vault_operation_service.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
@@ -92,8 +94,10 @@ void main() {
       expect(getIt.isRegistered<VaultUnlockService>(), isTrue);
       expect(getIt.isRegistered<VaultDataService>(), isTrue);
       expect(getIt.isRegistered<VaultOperationService>(), isTrue);
+      expect(getIt.isRegistered<ShareSheetService>(), isTrue);
       expect(getIt.isRegistered<VaultHomeViewModel>(), isTrue);
       expect(getIt.isRegistered<VaultItemViewModel>(), isTrue);
+      expect(getIt.isRegistered<CachedRemoteImage>(), isTrue);
       await getIt.reset();
     },
   );

@@ -5,6 +5,7 @@ import 'package:keyva/feature/type/note/data/note_vault_store.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_create_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_edit_viewmodel.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
@@ -53,6 +54,11 @@ class NoteDetailsBindings extends Bindings {
   void dependencies() {
     NoteBindings._ensureStore();
     final noteId = vaultRouteItemId();
-    Get.lazyPut(() => NoteDetailsViewModel(noteId: noteId));
+    Get.lazyPut(
+      () => NoteDetailsViewModel(
+        noteId: noteId,
+        shareSheet: getIt<ShareSheetService>(),
+      ),
+    );
   }
 }

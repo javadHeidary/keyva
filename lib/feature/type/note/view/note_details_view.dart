@@ -8,6 +8,7 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/widget/note_body_text_widget.dart';
+import 'package:keyva/feature/vault/share/vault_item_share_ui.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
@@ -54,6 +55,10 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                   ),
                   onLeadingTap: Get.back,
                   trailingActions: [
+                    vaultShareHeaderAction(
+                      color: colors.textSecondary,
+                      onTap: () => controller.shareItem(context),
+                    ),
                     vaultPinHeaderAction(
                       isPinned: note.isPinned,
                       color: note.isPinned

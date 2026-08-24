@@ -19,7 +19,7 @@ class BankCardCreateViewModel extends BankCardFormViewModel {
   @override
   void onInit() {
     super.onInit();
-    initFormFields();
+    initFormFields(categoryId: vaultRouteCategoryId());
   }
 
   @override

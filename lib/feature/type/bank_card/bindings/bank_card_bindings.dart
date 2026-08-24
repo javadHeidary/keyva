@@ -5,6 +5,7 @@ import 'package:keyva/feature/type/bank_card/data/bank_card_vault_store.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_create_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_edit_viewmodel.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
@@ -53,6 +54,11 @@ class BankCardDetailsBindings extends Bindings {
   void dependencies() {
     BankCardBindings._ensureStore();
     final cardId = vaultRouteItemId();
-    Get.lazyPut(() => BankCardDetailsViewModel(cardId: cardId));
+    Get.lazyPut(
+      () => BankCardDetailsViewModel(
+        cardId: cardId,
+        shareSheet: getIt<ShareSheetService>(),
+      ),
+    );
   }
 }

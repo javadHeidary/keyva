@@ -4,6 +4,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/login/util/login_password_util.dart';
+import 'package:keyva/shared/widget/app_cached_remote_image.dart';
 
 class LoginFaviconWidget extends StatelessWidget {
   const LoginFaviconWidget({
@@ -23,6 +24,11 @@ class LoginFaviconWidget extends StatelessWidget {
     final dimension = size ?? 40.s;
     final host = websiteHostForFavicon(website);
     final iconData = fallbackIcon ?? VaultItemType.login.icon;
+    final fallback = _FallbackIcon(
+      icon: iconData,
+      dimension: dimension,
+      color: colors.textSecondary,
+    );
 
     return Container(
       width: dimension,
@@ -33,22 +39,15 @@ class LoginFaviconWidget extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: host != null
-          ? Image.network(
-              'https://www.google.com/s2/favicons?domain=$host&sz=128',
+          ? AppCachedRemoteImage(
+              key: const Key('login-favicon'),
+              url: faviconUrlForHost(host),
               width: dimension,
               height: dimension,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _FallbackIcon(
-                icon: iconData,
-                dimension: dimension,
-                color: colors.textSecondary,
-              ),
+              cacheKey: faviconCacheKeyForHost(host),
+              errorWidget: fallback,
             )
-          : _FallbackIcon(
-              icon: iconData,
-              dimension: dimension,
-              color: colors.textSecondary,
-            ),
+          : fallback,
     );
   }
 }

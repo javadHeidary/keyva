@@ -70,19 +70,23 @@ class CategoryListView extends GetView<CategoryListViewModel> {
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final category = categories[index];
 
-                          return CategoryCardWidget(
-                            title: category.name,
-                            itemCount: controller.itemCountFor(category.id),
-                            icon: CategoryIcons.widgetForId(
-                              category.iconId,
-                              color: colors.primary,
-                            ),
-                            // onTap: () => controller.openCategory(category.id),
-                            onEdit: () => controller.openEdit(category.id),
-                            onDelete: () => _confirmDelete(
-                              context,
-                              category.name,
-                              category.id,
+                          return KeyedSubtree(
+                            key: Key('category-card-${category.id}'),
+                            child: CategoryCardWidget(
+                              title: category.name,
+                              itemCount: controller.itemCountFor(category.id),
+                              icon: CategoryIcons.widgetForId(
+                                category.iconId,
+                                color: colors.primary,
+                              ),
+                              onTap: () =>
+                                  controller.openCategory(category.id),
+                              onEdit: () => controller.openEdit(category.id),
+                              onDelete: () => _confirmDelete(
+                                context,
+                                category.name,
+                                category.id,
+                              ),
                             ),
                           );
                         }, childCount: categories.length),

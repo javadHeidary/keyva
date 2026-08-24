@@ -183,6 +183,10 @@ class HomeController extends GetxController {
     return vaultItems.where((item) => item.type == type).toList();
   }
 
+  List<VaultListItem> itemsForCategory(String categoryId) {
+    return vaultItems.where((item) => item.categoryId == categoryId).toList();
+  }
+
   Object? sourceFor(String id) {
     for (final item in vault.visibleItems) {
       if (vaultItemId(item) == id) {
@@ -304,16 +308,19 @@ class HomeController extends GetxController {
 
   void onAddItem() {}
 
-  void onAddItemForType(VaultItemType type) {
+  void onAddItemForType(VaultItemType type, {String? categoryId}) {
+    final arguments = categoryId != null && categoryId.isNotEmpty
+        ? categoryId
+        : null;
     switch (type) {
       case VaultItemType.login:
-        Get.toNamed(AppRoutes.loginCreate);
+        Get.toNamed(AppRoutes.loginCreate, arguments: arguments);
         break;
       case VaultItemType.bankCard:
-        Get.toNamed(AppRoutes.bankCardCreate);
+        Get.toNamed(AppRoutes.bankCardCreate, arguments: arguments);
         break;
       case VaultItemType.secureNote:
-        Get.toNamed(AppRoutes.noteCreate);
+        Get.toNamed(AppRoutes.noteCreate, arguments: arguments);
         break;
     }
   }

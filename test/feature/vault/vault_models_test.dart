@@ -74,12 +74,12 @@ void main() {
     expect(vault.logins, isEmpty);
     expect(vault.bankCards, isEmpty);
     expect(vault.secureNotes, isEmpty);
-    expect(vault.categories.map((item) => item.id), [
+      expect(vault.categories.map((item) => item.id), [
       'cat_personal',
-      'cat_work',
       'cat_finance',
+      'cat_work',
     ]);
-    expect(vault.categories.map((item) => item.name), ['شخصی', 'کاری', 'مالی']);
+    expect(vault.categories.map((item) => item.name), ['شخصی', 'مالی', 'کاری']);
     expect(vault, VaultData.initial());
   });
 

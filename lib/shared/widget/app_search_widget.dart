@@ -9,6 +9,7 @@ import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
+import 'package:keyva/feature/vault/view/vault_list_item_icon.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -95,19 +96,14 @@ class _SearchResultTile extends GetView<SearchViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return KeyedSubtree(
       key: Key('vault-item-${item.id}'),
       child: AppListItemWidget(
         title: item.title,
         subtitle: item.subtitle,
-        trailingIcon: _SearchCircleIcon(
-          icon: Icon(
-            item.type.icon,
-            size: AppSizes.iconMd.s,
-            color: colors.textSecondary,
-          ),
+        trailingIcon: VaultListItemIcon(
+          item: item,
+          source: controller.sourceFor(item.id),
         ),
         leadingIcon: VaultItemPinMoreLeading(
           isPinned: item.isPinned,
@@ -158,27 +154,6 @@ class _SearchSectionDivider extends StatelessWidget {
     return SizedBox(
       width: 300.w,
       child: Divider(height: 1, thickness: 2, color: context.colors.divider),
-    );
-  }
-}
-
-class _SearchCircleIcon extends StatelessWidget {
-  const _SearchCircleIcon({required this.icon});
-
-  final Widget icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Container(
-      width: 40.s,
-      height: 40.s,
-      decoration: BoxDecoration(
-        color: colors.input,
-        borderRadius: BorderRadius.circular(AppRadius.medium),
-      ),
-      child: Center(child: icon),
     );
   }
 }

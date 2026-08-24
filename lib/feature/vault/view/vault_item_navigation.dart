@@ -16,6 +16,14 @@ String vaultRouteItemId() {
   return args is String ? args : '';
 }
 
+String? vaultRouteCategoryId() {
+  final args = Get.arguments;
+  if (args is String && args.isNotEmpty) {
+    return args;
+  }
+  return null;
+}
+
 void openVaultItemDetails(VaultItemType type, String id) {
   Get.toNamed(vaultItemDetailsRoute(type), arguments: id);
 }

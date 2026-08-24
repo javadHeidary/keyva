@@ -5,6 +5,7 @@ import 'package:keyva/feature/type/login/data/login_vault_store.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_create_viewmodel.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/viewmodel/login_edit_viewmodel.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
@@ -53,6 +54,11 @@ class LoginDetailsBindings extends Bindings {
   void dependencies() {
     LoginBindings._ensureStore();
     final loginId = vaultRouteItemId();
-    Get.lazyPut(() => LoginDetailsViewModel(loginId: loginId));
+    Get.lazyPut(
+      () => LoginDetailsViewModel(
+        loginId: loginId,
+        shareSheet: getIt<ShareSheetService>(),
+      ),
+    );
   }
 }

@@ -19,6 +19,7 @@ import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 import 'package:keyva/shared/widget/app_search_widget.dart';
 
+import 'support/fake_share_sheet_service.dart';
 import 'support/fake_vault_operation_service.dart';
 import 'support/vault_widget_harness.dart';
 
@@ -118,7 +119,12 @@ void main() {
           if (Get.isRegistered<LoginDetailsViewModel>()) {
             Get.delete<LoginDetailsViewModel>(force: true);
           }
-          Get.put(LoginDetailsViewModel(loginId: vaultRouteItemId()));
+          Get.put(
+            LoginDetailsViewModel(
+              loginId: vaultRouteItemId(),
+              shareSheet: FakeShareSheetService(),
+            ),
+          );
         }),
       ),
       GetPage(
@@ -205,7 +211,7 @@ void main() {
     operations.vault = populatedVault();
     await pumpRoutedHome(tester);
 
-    await tester.tap(find.byKey(const Key('home-search-chip')));
+    await tester.tap(find.byKey(const Key('home-search')));
     await pumpOpenedRoute(tester);
 
     expect(find.byKey(const Key('vault-search-field')), findsOneWidget);

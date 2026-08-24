@@ -6,15 +6,27 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/share/share_confirm_dialog.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
+import 'package:keyva/feature/vault/share/share_vault_item.dart';
+import 'package:keyva/feature/vault/share/vault_item_share_formatter.dart';
 import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/utils/jalali_date_formatter.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 class BankCardDetailsViewModel extends GetxController {
-  BankCardDetailsViewModel({required this.cardId});
+  BankCardDetailsViewModel({
+    required this.cardId,
+    required this.shareSheet,
+    this.formatter = const VaultItemShareFormatter(),
+    this.confirmShare,
+  });
 
   final String cardId;
+  final ShareSheetService shareSheet;
+  final VaultItemShareFormatter formatter;
+  final Future<bool> Function(BuildContext context)? confirmShare;
 
   final isCvvVisible = false.obs;
 
@@ -108,5 +120,21 @@ class BankCardDetailsViewModel extends GetxController {
     final listItem = mapVaultListItem(card);
     if (listItem == null) return;
     await Get.find<HomeController>().toggleItemPin(context, listItem);
+  }
+
+  Future<void> shareItem(BuildContext context) async {
+    final card = item;
+    if (card == null) return;
+    await shareVaultItem(
+      context: context,
+      shareSheet: shareSheet,
+      text: formatter.formatBankCard(
+        card,
+        categoryName: categoryLabel,
+        bankTitle: displayBankTitle,
+      ),
+      subject: VaultItemShareFormatter.cardSubject,
+      confirmShare: confirmShare ?? showShareConfirmDialog,
+    );
   }
 }

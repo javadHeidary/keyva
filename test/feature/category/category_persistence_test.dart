@@ -18,6 +18,7 @@ import 'package:keyva/feature/vault/view/vault_list_item_mapper.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 
+import '../vault/support/fake_share_sheet_service.dart';
 import '../vault/support/fake_vault_operation_service.dart';
 import '../vault/support/vault_widget_harness.dart';
 
@@ -107,11 +108,11 @@ void main() {
 
     expect(
       catalog.categories.map((category) => category.name),
-      ['شخصی', 'کاری', 'مالی'],
+      ['شخصی', 'مالی', 'کاری'],
     );
     expect(
       home.filterCategories.map((category) => category.name),
-      [CategoryConstants.filterAllName, 'شخصی', 'کاری', 'مالی'],
+      [CategoryConstants.filterAllName, 'شخصی', 'مالی', 'کاری'],
     );
   });
 
@@ -255,7 +256,7 @@ void main() {
 
       expect(
         loginForm.selectableCategories.map((category) => category.name),
-        ['شخصی', 'کاری', 'مالی'],
+        ['شخصی', 'مالی', 'کاری'],
       );
     },
   );
@@ -269,7 +270,10 @@ void main() {
       );
       await vaultHome.loadVault();
 
-      final details = LoginDetailsViewModel(loginId: 'login-1');
+      final details = LoginDetailsViewModel(
+        loginId: 'login-1',
+        shareSheet: FakeShareSheetService(),
+      );
       expect(details.categoryLabel, 'Work');
       expect(vaultCategoryLabel(operations.vault, 'cat-work'), 'Work');
     },

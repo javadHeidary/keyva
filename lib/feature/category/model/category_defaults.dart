@@ -17,15 +17,15 @@ class CategoryDefaults {
       createdAt: createdAt,
     ),
     CategoryItem(
-      id: workId,
-      name: 'کاری',
-      icon: 'work',
-      createdAt: createdAt,
-    ),
-    CategoryItem(
       id: financeId,
       name: 'مالی',
       icon: 'finance',
+      createdAt: createdAt,
+    ),
+    CategoryItem(
+      id: workId,
+      name: 'کاری',
+      icon: 'work',
       createdAt: createdAt,
     ),
   ];
