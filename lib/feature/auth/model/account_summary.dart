@@ -6,12 +6,4 @@ class AccountSummary {
 
   final String id;
   final String username;
-
-  String get initial {
-    final trimmed = username.trim();
-    if (trimmed.isEmpty) {
-      return '?';
-    }
-    return String.fromCharCodes(trimmed.runes.take(1));
-  }
 }

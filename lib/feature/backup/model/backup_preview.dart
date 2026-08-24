@@ -23,7 +23,7 @@ class BackupPreview {
   final int categoryCount;
 
   List<String> get countLines => [
-    'ورود: $loginCount',
+    'اکانت: $loginCount',
     'کارت بانکی: $bankCardCount',
     'یادداشت امن: $secureNoteCount',
     'دسته‌بندی: $categoryCount',

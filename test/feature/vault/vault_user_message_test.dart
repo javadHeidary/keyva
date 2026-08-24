@@ -12,28 +12,28 @@ void main() {
   test('maps biometric unavailable', () {
     expect(
       vaultUserMessage('Biometric authentication is unavailable.'),
-      'احراز هویت بیومتریک روی این دستگاه در دسترس نیست.',
+      'ورود با اثرانگشت روی این دستگاه در دسترس نیست.',
     );
   });
 
   test('maps biometric auth failed', () {
     expect(
       vaultUserMessage('Biometric authentication failed.'),
-      'احراز هویت بیومتریک ناموفق بود.',
+      'ورود با اثرانگشت ناموفق بود.',
     );
   });
 
   test('maps biometric not configured', () {
     expect(
       vaultUserMessage('Biometric unlock is not set up for this account.'),
-      'باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.',
+      'ورود با اثرانگشت برای این حساب تنظیم نشده است.',
     );
   });
 
   test('maps biometric lockout', () {
     expect(
       vaultUserMessage('Biometric unlock is locked. Use your master password.'),
-      'محدودیت تلاش بیومتریک تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.',
+      'محدودیت تلاش ورود با اثرانگشت تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.',
     );
   });
 

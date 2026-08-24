@@ -7,11 +7,21 @@ extension VaultItemTypeX on VaultItemType {
   String get label {
     switch (this) {
       case VaultItemType.login:
-        return 'ورود به حساب‌ها';
+        return 'اکانت‌ها';
       case VaultItemType.bankCard:
         return 'کارت‌های بانکی';
       case VaultItemType.secureNote:
         return 'یادداشت‌ها';
+    }
+  }
+
+  String get listTitle {
+    switch (this) {
+      case VaultItemType.login:
+        return 'لیست اکانت‌ها';
+      case VaultItemType.bankCard:
+      case VaultItemType.secureNote:
+        return label;
     }
   }
 

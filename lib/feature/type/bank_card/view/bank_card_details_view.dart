@@ -88,7 +88,6 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         cvv: cvvOnCard,
                         backgroundColor: bankInfo?.primaryColor,
                         textColor: bankInfo?.onPrimaryColor,
-                        accentColor: bankInfo?.lighterColor,
                         rightLogo: bankInfo?.logoBuilder(
                           width: 40.s,
                           height: 40.s,
@@ -138,6 +137,7 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                         icon: AppIcon.hash,
                         label: 'شماره کارت',
                         value: controller.formattedCardNumber,
+                        valueTextDirection: TextDirection.ltr,
                         trailing: LoginDetailActionIcon(
                           icon: AppIcon.copy,
                           tooltip: 'کپی',

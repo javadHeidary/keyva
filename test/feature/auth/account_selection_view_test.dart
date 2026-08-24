@@ -9,6 +9,7 @@ import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/auth_widget_harness.dart';
@@ -68,6 +69,8 @@ void main() {
     expect(find.byKey(const Key('auth-login-submit')), findsOneWidget);
     expect(find.text('علی'), findsWidgets);
     expect(Get.arguments, 'user-1');
+    expect(find.text('تغییر حساب'), findsNothing);
+    expect(find.byKey(const Key('auth-unlock-back')), findsNothing);
   });
 
   testWidgets('multiple accounts are listed without secrets', (tester) async {
@@ -107,7 +110,9 @@ void main() {
     expect(Get.arguments, 'user-b');
     expect(Get.arguments, isA<String>());
     expect(find.text('رضا'), findsWidgets);
-    expect(find.byKey(const Key('auth-unlock-change-account')), findsOneWidget);
+    expect(find.text('تغییر حساب'), findsNothing);
+    expect(find.byKey(const Key('auth-unlock-back')), findsOneWidget);
+    expect(find.byIcon(AppIcon.arrowBack), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const Key('auth-login-password')),
@@ -120,5 +125,34 @@ void main() {
     expect(unlock.lastUserId, 'user-b');
     expect(unlock.lastPassword, 'reza-password');
     expect(session.current!.userId, 'user-b');
+    AppToast.dismiss();
+  });
+
+  testWidgets('back from unlock returns to the account list', (tester) async {
+    auth.accounts = const [
+      AccountSummary(id: 'user-a', username: 'علی'),
+      AccountSummary(id: 'user-b', username: 'رضا'),
+    ];
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authAccounts, login: login),
+    );
+    await pumpAuthSettle(tester);
+
+    await tester.tap(find.byKey(const Key('auth-account-item-user-b')));
+    await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+    expect(find.text('کی وا'), findsNothing);
+    expect(find.text('Keyva'), findsNothing);
+    expect(find.text('کیوا'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('auth-unlock-back')));
+    await pumpAuthSettle(tester);
+
+    expect(find.byKey(const Key('auth-accounts-list')), findsOneWidget);
+    expect(find.byKey(const Key('auth-account-item-user-a')), findsOneWidget);
+    expect(find.byKey(const Key('auth-account-item-user-b')), findsOneWidget);
+    expect(find.byKey(const Key('auth-login-password')), findsNothing);
   });
 }

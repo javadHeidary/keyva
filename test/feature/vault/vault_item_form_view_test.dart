@@ -87,7 +87,7 @@ void main() {
             name: AppRoutes.loginDetails,
             page: () => const Scaffold(
               key: Key('login-details-test'),
-              body: Text('جزئیات ورود'),
+              body: Text('جزئیات اکانت'),
             ),
           ),
         ],
@@ -106,7 +106,7 @@ void main() {
   testWidgets('create form fields render', (tester) async {
     await pumpCreate(tester);
 
-    expect(find.text('ایجاد ورود'), findsWidgets);
+    expect(find.text('ایجاد اکانت'), findsWidgets);
     expect(find.text('نام اپلیکیشن'), findsOneWidget);
     expect(find.text('نام کاربری / ایمیل'), findsOneWidget);
     expect(find.text('رمز عبور'), findsOneWidget);
@@ -124,7 +124,7 @@ void main() {
     await tester.tap(find.byKey(const Key('vault-form-submit')));
     await pumpVaultFrame(tester);
 
-    expect(find.text('عنوان ورود الزامی است'), findsOneWidget);
+    expect(find.text('عنوان اکانت الزامی است'), findsOneWidget);
     expect(find.text('نام کاربری الزامی است'), findsOneWidget);
     expect(find.text('رمز عبور الزامی است'), findsOneWidget);
     expect(operations.addCount, 0);
@@ -181,7 +181,7 @@ void main() {
     expect(added.username, 'user@test.com');
     expect(added.password, 'secret-pass');
     expect(find.byKey(const Key('login-details-test')), findsOneWidget);
-    expect(find.text('ایجاد ورود'), findsNothing);
+    expect(find.text('ایجاد اکانت'), findsNothing);
   });
 
   testWidgets('failure state renders correctly', (tester) async {
@@ -200,7 +200,7 @@ void main() {
 
     expect(find.byKey(const Key('vault-form-error')), findsOneWidget);
     expect(find.textContaining('CryptoException'), findsNothing);
-    expect(find.text('ایجاد ورود'), findsWidgets);
+    expect(find.text('ایجاد اکانت'), findsWidgets);
   });
 
   testWidgets('edit form hydrates fields from the loaded vault item', (tester) async {
@@ -220,7 +220,7 @@ void main() {
     await tester.pumpWidget(vaultTestApp(home: const LoginEditView()));
     await pumpVaultFrame(tester);
 
-    expect(find.text('ویرایش ورود'), findsWidgets);
+    expect(find.text('ویرایش اکانت'), findsWidgets);
     expect(find.text('Mail'), findsOneWidget);
     expect(find.text('keep-this-user'), findsOneWidget);
     expect(find.text('https://mail.test'), findsOneWidget);

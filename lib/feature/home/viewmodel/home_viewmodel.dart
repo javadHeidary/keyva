@@ -44,7 +44,6 @@ class HomeController extends GetxController {
   final trashItemCount = 0.obs;
 
   final accountOwnerName = UserProfile.defaultName.obs;
-  final accountAvatarId = UserProfileAvatars.defaultId.obs;
   final accountGreeting = 'گاوصندوق شخصی شما';
 
   VaultHomeViewModel get vault =>
@@ -88,9 +87,8 @@ class HomeController extends GetxController {
       (vaultStatus == VaultUiStatus.initial ||
           vaultStatus == VaultUiStatus.loading);
 
-  void updateAccountProfile({required String name, required String avatarId}) {
+  void updateAccountProfile({required String name}) {
     accountOwnerName.value = name;
-    accountAvatarId.value = avatarId;
   }
 
   Future<void> loadAccountProfile() async {
@@ -100,10 +98,7 @@ class HomeController extends GetxController {
     }
     final loaded = await auth.currentUser();
     if (loaded is Success<UserRecord>) {
-      updateAccountProfile(
-        name: loaded.data.username,
-        avatarId: loaded.data.avatarId,
-      );
+      updateAccountProfile(name: loaded.data.username);
     }
   }
 

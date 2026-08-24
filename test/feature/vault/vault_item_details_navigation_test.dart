@@ -203,7 +203,7 @@ void main() {
     await pumpOpenedRoute(tester);
 
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
-    expect(find.text('ویرایش ورود'), findsNothing);
+    expect(find.text('ویرایش اکانت'), findsNothing);
     expect(find.text('keep-this-user'), findsWidgets);
   });
 
@@ -223,7 +223,7 @@ void main() {
     await pumpOpenedRoute(tester);
 
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
-    expect(find.text('ویرایش ورود'), findsNothing);
+    expect(find.text('ویرایش اکانت'), findsNothing);
 
     await popOpenedRoute(tester);
 
@@ -248,13 +248,13 @@ void main() {
     await pumpOpenedRoute(tester);
 
     expect(Get.currentRoute, AppRoutes.loginEdit);
-    expect(find.text('ویرایش ورود'), findsOneWidget);
+    expect(find.text('ویرایش اکانت'), findsOneWidget);
 
     await popOpenedRoute(tester);
 
     expect(Get.currentRoute, AppRoutes.loginDetails);
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
-    expect(find.text('ویرایش ورود'), findsNothing);
+    expect(find.text('ویرایش اکانت'), findsNothing);
   });
 
   testWidgets('back from detail returns to home', (tester) async {
@@ -307,7 +307,7 @@ void main() {
 
     Get.toNamed(AppRoutes.loginCreate);
     await pumpOpenedRoute(tester);
-    expect(find.text('ایجاد ورود'), findsWidgets);
+    expect(find.text('ایجاد اکانت'), findsWidgets);
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), 'Work Mail');
@@ -320,7 +320,7 @@ void main() {
     expect(Get.currentRoute, AppRoutes.loginDetails);
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
     expect(find.text('Work Mail'), findsWidgets);
-    expect(find.text('ایجاد ورود'), findsNothing);
+    expect(find.text('ایجاد اکانت'), findsNothing);
 
     await popOpenedRoute(tester);
 

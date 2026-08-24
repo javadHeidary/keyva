@@ -254,6 +254,7 @@ void main() {
     await tester.tap(find.byKey(const Key('backup-create-submit')));
     await pumpAuthSettle(tester);
     expect(files.exportCount, 0);
+    expect(find.text('پشتیبان‌گیری'), findsWidgets);
     expect(find.text('عملیات امنیتی انجام نشد.'), findsOneWidget);
     AppToast.dismiss();
   });
@@ -294,6 +295,7 @@ void main() {
     await pumpHub(tester);
     await tester.tap(find.byKey(const Key('backup-restore-restore')));
     await pumpAuthSettle(tester);
+    expect(find.text('بازیابی پشتیبان'), findsWidgets);
     expect(find.text('ساختار فایل پشتیبان معتبر نیست.'), findsOneWidget);
     expect(find.byKey(const Key('backup-restore-password')), findsNothing);
     AppToast.dismiss();
@@ -313,6 +315,7 @@ void main() {
     );
     await tester.tap(find.byKey(const Key('backup-restore-submit')));
     await pumpAuthSettle(tester);
+    expect(find.text('بازیابی پشتیبان'), findsWidgets);
     expect(find.text('رمز عبور فایل پشتیبان صحیح نیست.'), findsOneWidget);
     expect(find.byKey(const Key('backup-restore-submit')), findsOneWidget);
     expect(backup.restoreCount, 0);
@@ -338,7 +341,7 @@ void main() {
     await tester.tap(find.byKey(const Key('backup-restore-submit')));
     await pumpAuthSettle(tester);
     expect(find.text('هشدار'), findsOneWidget);
-    expect(find.textContaining('ورود: 1'), findsOneWidget);
+    expect(find.textContaining('اکانت: 1'), findsOneWidget);
     expect(find.textContaining('کارت بانکی: 1'), findsOneWidget);
     expect(find.textContaining('یادداشت امن: 1'), findsOneWidget);
     expect(find.textContaining('دسته‌بندی: 1'), findsOneWidget);
@@ -365,7 +368,7 @@ void main() {
     await tester.tap(find.byKey(const Key('backup-restore-submit')));
     await pumpAuthSettle(tester);
     expect(find.text('هشدار'), findsOneWidget);
-    expect(find.textContaining('ورود: 0'), findsOneWidget);
+    expect(find.textContaining('اکانت: 0'), findsOneWidget);
     await tester.tap(find.text('جایگزینی'));
     await pumpAuthSettle(tester);
     expect(backup.restoreCount, 1);
@@ -449,6 +452,7 @@ void main() {
     await pumpAuthSettle(tester);
     await tester.tap(find.text('جایگزینی'));
     await pumpAuthSettle(tester);
+    expect(find.text('بازیابی پشتیبان'), findsWidgets);
     expect(find.text('بازیابی اطلاعات انجام نشد.'), findsOneWidget);
     AppToast.dismiss();
   });
@@ -672,6 +676,7 @@ void main() {
     await pumpAuthSettle(tester);
     expect(find.byKey(const Key('restore-progress-overlay')), findsNothing);
     expect(restoreVm.progress.value, isNull);
+    expect(find.text('بازیابی پشتیبان'), findsWidgets);
     expect(find.text('بازیابی اطلاعات انجام نشد.'), findsOneWidget);
     expect(find.byKey(const Key('backup-restore-restore')), findsOneWidget);
     AppToast.dismiss();

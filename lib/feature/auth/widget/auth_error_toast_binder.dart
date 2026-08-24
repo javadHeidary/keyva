@@ -7,9 +7,15 @@ class AuthErrorToastBinder extends StatefulWidget {
     super.key,
     required this.message,
     required this.child,
+    this.errorTitle,
+    this.successMessage,
+    this.successTitle,
   });
 
   final RxString message;
+  final String? errorTitle;
+  final RxString? successMessage;
+  final String? successTitle;
   final Widget child;
 
   @override
@@ -17,35 +23,62 @@ class AuthErrorToastBinder extends StatefulWidget {
 }
 
 class _AuthErrorToastBinderState extends State<AuthErrorToastBinder> {
-  Worker? _worker;
+  Worker? _errorWorker;
+  Worker? _successWorker;
 
   @override
   void initState() {
     super.initState();
-    _listen(widget.message);
+    _listenError(widget.message);
+    _listenSuccess(widget.successMessage);
   }
 
   @override
   void didUpdateWidget(covariant AuthErrorToastBinder oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.message != widget.message) {
-      _worker?.dispose();
-      _listen(widget.message);
+      _errorWorker?.dispose();
+      _listenError(widget.message);
+    }
+    if (oldWidget.successMessage != widget.successMessage) {
+      _successWorker?.dispose();
+      _listenSuccess(widget.successMessage);
     }
   }
 
-  void _listen(RxString message) {
-    _worker = ever<String>(message, (value) {
+  void _listenError(RxString message) {
+    _errorWorker = ever<String>(message, (value) {
       if (value.isEmpty || !mounted) {
         return;
       }
-      AppToast.error(context, title: value);
+      AppToast.error(
+        context,
+        title: widget.errorTitle ?? 'خطا',
+        message: value,
+      );
+    });
+  }
+
+  void _listenSuccess(RxString? message) {
+    if (message == null) {
+      return;
+    }
+    _successWorker = ever<String>(message, (value) {
+      if (value.isEmpty || !mounted) {
+        return;
+      }
+      AppToast.success(
+        context,
+        title: widget.successTitle ?? 'عملیات موفق',
+        message: value,
+      );
     });
   }
 
   @override
   void dispose() {
-    _worker?.dispose();
+    _errorWorker?.dispose();
+    _successWorker?.dispose();
     super.dispose();
   }
 

@@ -455,6 +455,7 @@ void main() {
     await tester.tap(find.text('سنجاق کردن'));
     await pumpVaultFrame(tester);
 
+    expect(find.text('حداکثر سنجاق'), findsOneWidget);
     expect(find.text('حداکثر ۵ مورد را می‌توانید سنجاق کنید.'), findsOneWidget);
     expect(operations.vault!.bankCards.single.isPinned, isFalse);
     AppToast.dismiss();

@@ -27,7 +27,11 @@ class LoginController extends GetxController {
   static const pinLockoutMessage =
       'محدودیت تلاش PIN تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
   static const biometricLockoutMessage =
-      'محدودیت تلاش بیومتریک تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
+      'محدودیت تلاش ورود با اثرانگشت تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
+  static const loadingMessage = 'در حال ورود...';
+  static const errorTitle = 'ورود';
+  static const successTitle = 'ورود به حساب';
+  static const successBody = 'ورود با موفقیت انجام شد';
 
   final VaultUnlockService _unlock;
   final AuthRepository _auth;
@@ -40,6 +44,7 @@ class LoginController extends GetxController {
   final isPinVisible = false.obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
+  final successMessage = ''.obs;
   final loginFormKey = GlobalKey<FormState>();
   final unlockMethod = UnlockMethod.masterPassword.obs;
   final showMethodPicker = true.obs;
@@ -169,6 +174,7 @@ class LoginController extends GetxController {
     }
 
     isLoading.value = true;
+    var succeeded = false;
     try {
       final unlocked = await _unlock.unlock(
         userId: userId,
@@ -178,10 +184,14 @@ class LoginController extends GetxController {
         errorMessage.value = vaultUserMessage(unlocked.failure.message);
         return;
       }
+      succeeded = true;
+      successMessage.value = successBody;
       Get.offAllNamed(AppRoutes.shell);
     } finally {
       passwordController.clear();
-      isLoading.value = false;
+      if (!succeeded) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -201,16 +211,21 @@ class LoginController extends GetxController {
     }
 
     isLoading.value = true;
+    var succeeded = false;
     try {
       final unlocked = await _unlock.unlockWithPin(userId: userId, pin: pin);
       if (unlocked is FailureResult<void>) {
         await _handlePinFailure(userId, unlocked.failure);
         return;
       }
+      succeeded = true;
+      successMessage.value = successBody;
       Get.offAllNamed(AppRoutes.shell);
     } finally {
       pinController.clear();
-      isLoading.value = false;
+      if (!succeeded) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -225,6 +240,7 @@ class LoginController extends GetxController {
       return;
     }
     isLoading.value = true;
+    var succeeded = false;
     try {
       final unlocked = await _unlock.unlockWithBiometric(userId: userId);
       if (unlocked is FailureResult<void>) {
@@ -234,9 +250,13 @@ class LoginController extends GetxController {
         await _handleBiometricFailure(userId, unlocked.failure);
         return;
       }
+      succeeded = true;
+      successMessage.value = successBody;
       Get.offAllNamed(AppRoutes.shell);
     } finally {
-      isLoading.value = false;
+      if (!succeeded) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -272,7 +292,7 @@ class LoginController extends GetxController {
     if (biometricLockedOut.value) {
       if (!wasLocked) {
         _showLockoutDialog(
-          title: 'ورود با بیومتریک مسدود شد',
+          title: 'ورود با اثرانگشت مسدود شد',
           description: biometricLockoutMessage,
         );
       }
@@ -310,7 +330,7 @@ class LoginController extends GetxController {
   }
 
   String _biometricRemainingMessage(int remaining) {
-    return 'احراز هویت بیومتریک ناموفق بود. ${_persianCount(remaining)} تلاش باقی مانده است.';
+    return 'ورود با اثرانگشت ناموفق بود. ${_persianCount(remaining)} تلاش باقی مانده است.';
   }
 
   String _persianCount(int value) {

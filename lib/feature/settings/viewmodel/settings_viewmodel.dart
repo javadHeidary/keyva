@@ -133,7 +133,7 @@ class SettingsViewModel extends GetxController {
   final isSecurityBusy = false.obs;
 
   static const _biometricEnableReason =
-      'برای فعال‌سازی باز کردن با اثر انگشت یا چهره';
+      'برای فعال‌سازی ورود با اثرانگشت';
 
   @override
   void onInit() {
@@ -156,10 +156,7 @@ class SettingsViewModel extends GetxController {
     if (auth != null) {
       final loaded = await auth.currentUser();
       if (loaded is Success<UserRecord>) {
-        final value = UserProfile(
-          name: loaded.data.username,
-          avatarId: loaded.data.avatarId,
-        );
+        final value = UserProfile(name: loaded.data.username);
         profile.value = value;
         _applyProfileToHome(value);
         return;
@@ -211,18 +208,13 @@ class SettingsViewModel extends GetxController {
     if (Get.isRegistered<HomeController>()) {
       final home = Get.find<HomeController>();
       profile.value = profile.value.copyWith(name: home.accountOwnerName.value);
-      if (home.accountAvatarId.value.isNotEmpty) {
-        profile.value = profile.value.copyWith(
-          avatarId: home.accountAvatarId.value,
-        );
-      }
     }
   }
 
   void _applyProfileToHome(UserProfile value) {
     if (Get.isRegistered<HomeController>()) {
       final home = Get.find<HomeController>();
-      home.updateAccountProfile(name: value.name, avatarId: value.avatarId);
+      home.updateAccountProfile(name: value.name);
     }
   }
 
@@ -233,10 +225,7 @@ class SettingsViewModel extends GetxController {
     }
     final auth = _auth;
     if (auth != null) {
-      final saved = await auth.updateProfile(
-        username: trimmed.name,
-        avatarId: trimmed.avatarId,
-      );
+      final saved = await auth.updateProfile(username: trimmed.name);
       if (saved is FailureResult<void>) {
         return false;
       }
@@ -280,7 +269,8 @@ class SettingsViewModel extends GetxController {
         if (result.failure is! BiometricCancelledFailure) {
           AppToast.error(
             context,
-            title: vaultUserMessage(result.failure.message),
+            title: 'بیومتریک',
+            message: vaultUserMessage(result.failure.message),
           );
         }
         return;
@@ -305,7 +295,8 @@ class SettingsViewModel extends GetxController {
       if (result is FailureResult<void>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(result.failure.message),
+          title: 'بیومتریک',
+          message: vaultUserMessage(result.failure.message),
         );
         return;
       }
@@ -329,7 +320,8 @@ class SettingsViewModel extends GetxController {
       if (result is FailureResult<void>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(result.failure.message),
+          title: 'کد PIN',
+          message: vaultUserMessage(result.failure.message),
         );
         return;
       }
@@ -358,7 +350,11 @@ class SettingsViewModel extends GetxController {
   Future<bool> openBale(BuildContext context) async {
     if (baleUrl.trim().isEmpty && baleFallbackUrl.trim().isEmpty) {
       if (context.mounted) {
-        AppToast.info(context, title: 'لینک بله کیوا هنوز تنظیم نشده است.');
+        AppToast.info(
+          context,
+          title: 'ارتباط با ما',
+          message: 'لینک بله کیوا هنوز تنظیم نشده است.',
+        );
       }
       return false;
     }
@@ -376,7 +372,8 @@ class SettingsViewModel extends GetxController {
     if (context.mounted) {
       AppToast.info(
         context,
-        title: 'امکان باز کردن بله روی این دستگاه وجود ندارد.',
+        title: 'ارتباط با ما',
+        message: 'امکان باز کردن بله روی این دستگاه وجود ندارد.',
       );
     }
     return false;
@@ -397,7 +394,11 @@ class SettingsViewModel extends GetxController {
   }) async {
     if (url.trim().isEmpty) {
       if (context.mounted) {
-        AppToast.info(context, title: unconfiguredMessage);
+        AppToast.info(
+          context,
+          title: 'ارتباط با ما',
+          message: unconfiguredMessage,
+        );
       }
       return false;
     }
@@ -407,7 +408,8 @@ class SettingsViewModel extends GetxController {
     if (context.mounted) {
       AppToast.info(
         context,
-        title: 'امکان باز کردن این مسیر ارتباطی وجود ندارد.',
+        title: 'ارتباط با ما',
+        message: 'امکان باز کردن این مسیر ارتباطی وجود ندارد.',
       );
     }
     return false;
@@ -427,12 +429,12 @@ class SettingsViewModel extends GetxController {
       final launched = await _launchUrl(uri);
       if (launched) return true;
       if (context.mounted) {
-        AppToast.info(context, title: 'ایمیل: $email');
+        AppToast.info(context, title: 'ایمیل', message: 'ایمیل: $email');
       }
       return false;
     } catch (_) {
       if (context.mounted) {
-        AppToast.info(context, title: 'ایمیل: $email');
+        AppToast.info(context, title: 'ایمیل', message: 'ایمیل: $email');
       }
       return false;
     }
@@ -447,15 +449,23 @@ class SettingsViewModel extends GetxController {
   }
 
   void onOpenOtherApps(BuildContext context) {
-    AppToast.info(context, title: 'لیست اپلیکیشن‌ها به‌زودی');
+    AppToast.info(context, title: 'به‌زودی', message: 'لیست اپلیکیشن‌ها به‌زودی');
   }
 
   void onRateApp(BuildContext context) {
-    AppToast.info(context, title: 'امتیازدهی در فاز بعد فعال می‌شود');
+    AppToast.info(
+      context,
+      title: 'به‌زودی',
+      message: 'امتیازدهی در فاز بعد فعال می‌شود',
+    );
   }
 
   void onShareApp(BuildContext context) {
-    AppToast.info(context, title: 'اشتراک‌گذاری در فاز بعد فعال می‌شود');
+    AppToast.info(
+      context,
+      title: 'به‌زودی',
+      message: 'اشتراک‌گذاری در فاز بعد فعال می‌شود',
+    );
   }
 
   Future<void> setPreventScreenshot(bool value, BuildContext context) async {
@@ -467,7 +477,8 @@ class SettingsViewModel extends GetxController {
     if (auth == null || protection == null) {
       AppToast.error(
         context,
-        title: vaultUserMessage(const AuthenticationFailure().message),
+        title: 'محافظت صفحه',
+        message: vaultUserMessage(const AuthenticationFailure().message),
       );
       return;
     }
@@ -479,7 +490,8 @@ class SettingsViewModel extends GetxController {
         if (context.mounted) {
           AppToast.error(
             context,
-            title: vaultUserMessage(persisted.failure.message),
+            title: 'محافظت صفحه',
+            message: vaultUserMessage(persisted.failure.message),
           );
         }
         return;
@@ -490,7 +502,8 @@ class SettingsViewModel extends GetxController {
         if (context.mounted) {
           AppToast.error(
             context,
-            title: vaultUserMessage(applied.failure.message),
+            title: 'محافظت صفحه',
+            message: vaultUserMessage(applied.failure.message),
           );
         }
         return;
@@ -532,16 +545,24 @@ class SettingsViewModel extends GetxController {
     }
     final policyError = MasterPasswordPolicy.fieldError(newPassword);
     if (policyError != null) {
-      AppToast.error(context, title: policyError);
+      AppToast.error(context, title: 'رمز اصلی', message: policyError);
       return;
     }
     if (newPassword != confirmPassword) {
-      AppToast.error(context, title: 'تکرار رمز با رمز جدید یکسان نیست');
+      AppToast.error(
+        context,
+        title: 'رمز اصلی',
+        message: 'تکرار رمز با رمز جدید یکسان نیست',
+      );
       return;
     }
     final auth = _auth;
     if (auth == null) {
-      AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
+      AppToast.error(
+        context,
+        title: 'رمز اصلی',
+        message: 'عملیات امنیتی انجام نشد.',
+      );
       return;
     }
     isSecurityBusy.value = true;
@@ -556,7 +577,8 @@ class SettingsViewModel extends GetxController {
       if (result is FailureResult<void>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(result.failure.message),
+          title: 'رمز اصلی',
+          message: vaultUserMessage(result.failure.message),
         );
         return;
       }
@@ -580,16 +602,24 @@ class SettingsViewModel extends GetxController {
       return;
     }
     if (!PinPolicy.isValid(pin)) {
-      AppToast.error(context, title: PinPolicy.userMessage);
+      AppToast.error(context, title: 'کد PIN', message: PinPolicy.userMessage);
       return;
     }
     if (pin != confirmPin) {
-      AppToast.error(context, title: 'تکرار PIN یکسان نیست');
+      AppToast.error(
+        context,
+        title: 'کد PIN',
+        message: 'تکرار PIN یکسان نیست',
+      );
       return;
     }
     final pinService = _pin;
     if (pinService == null) {
-      AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
+      AppToast.error(
+        context,
+        title: 'کد PIN',
+        message: 'عملیات امنیتی انجام نشد.',
+      );
       return;
     }
     isSecurityBusy.value = true;
@@ -601,7 +631,8 @@ class SettingsViewModel extends GetxController {
       if (result is FailureResult<void>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(result.failure.message),
+          title: 'کد PIN',
+          message: vaultUserMessage(result.failure.message),
         );
         return;
       }
@@ -623,16 +654,24 @@ class SettingsViewModel extends GetxController {
       return;
     }
     if (!PinPolicy.isValid(pin)) {
-      AppToast.error(context, title: PinPolicy.userMessage);
+      AppToast.error(context, title: 'کد PIN', message: PinPolicy.userMessage);
       return;
     }
     if (pin != confirmPin) {
-      AppToast.error(context, title: 'تکرار PIN یکسان نیست');
+      AppToast.error(
+        context,
+        title: 'کد PIN',
+        message: 'تکرار PIN یکسان نیست',
+      );
       return;
     }
     final pinService = _pin;
     if (pinService == null) {
-      AppToast.error(context, title: 'عملیات امنیتی انجام نشد.');
+      AppToast.error(
+        context,
+        title: 'کد PIN',
+        message: 'عملیات امنیتی انجام نشد.',
+      );
       return;
     }
     isSecurityBusy.value = true;
@@ -647,7 +686,8 @@ class SettingsViewModel extends GetxController {
       if (result is FailureResult<void>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(result.failure.message),
+          title: 'کد PIN',
+          message: vaultUserMessage(result.failure.message),
         );
         return;
       }

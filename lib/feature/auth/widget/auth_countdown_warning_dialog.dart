@@ -63,9 +63,9 @@ Future<void> showAuthCountdownWarningDialog({
                     ),
                     SizedBox(height: AppSpacing.sm.h),
                     Text(
-                      'رمز اصلی مهم‌ترین رمز برنامه است.\n\n'
-                      'در صورت فراموش کردن این رمز، امکان بازیابی اطلاعات شما وجود ندارد.\n\n'
-                      'لطفاً آن را در محل امنی یادداشت کنید یا در یک مدیر رمز عبور ذخیره نمایید.',
+                      'رمز اصلی، کلید حساب شماست و در برنامه ذخیره نمی‌شود.\n\n'
+                      'اگر این رمز را فراموش کنید، هیچ راهی برای بازیابی اطلاعات وجود ندارد.\n\n'
+                      'لطفاً آن را در جایی امن نگه دارید.',
                       textAlign: TextAlign.center,
                       style: AppTypography.bodyMedium.copyWith(
                         color: colors.textSecondary,

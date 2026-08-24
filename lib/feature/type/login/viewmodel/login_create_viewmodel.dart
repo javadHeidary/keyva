@@ -11,10 +11,10 @@ class LoginCreateViewModel extends LoginFormViewModel {
   final VaultItemViewModel _items;
 
   @override
-  String get headerTitle => 'ایجاد ورود';
+  String get headerTitle => 'ایجاد اکانت';
 
   @override
-  String get submitLabel => 'ایجاد ورود';
+  String get submitLabel => 'ایجاد اکانت';
 
   @override
   void onInit() {

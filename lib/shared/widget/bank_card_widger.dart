@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keyva/core/theme/app_colors.dart';
 import 'package:keyva/core/theme/app_radius.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
@@ -16,7 +17,6 @@ class BankCardWidget extends StatelessWidget {
     required this.cvv,
     this.backgroundColor,
     this.textColor,
-    this.accentColor,
     this.leftLogo,
     this.rightLogo,
     this.onTap,
@@ -30,7 +30,6 @@ class BankCardWidget extends StatelessWidget {
 
   final Color? backgroundColor;
   final Color? textColor;
-  final Color? accentColor;
 
   final Widget? leftLogo;
   final Widget? rightLogo;
@@ -42,8 +41,7 @@ class BankCardWidget extends StatelessWidget {
     final colors = context.colors;
 
     final bg = backgroundColor ?? const Color(0xFF0D0D0D);
-    final txt = textColor ?? const Color(0xFFF5E6C8);
-    final accent = accentColor ?? const Color(0xFFD4AF37);
+    final txt = textColor ?? AppColors.onPrimaryLight;
 
     return GestureDetector(
       onTap: onTap,
@@ -134,16 +132,16 @@ class BankCardWidget extends StatelessWidget {
                   ),
                 ),
                 const Spacer(flex: 2),
-                Text(
-                  _formatCardNumber(cardNumber),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: AppTypography.fontFamily,
-                    fontSize: 18.s,
-                    fontWeight: FontWeight.w600,
-                    color: accent,
-                    letterSpacing: 2.2,
-                    height: 1.2,
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text(
+                    _formatCardNumber(cardNumber),
+                    textAlign: TextAlign.center,
+                    style: AppTypography.headlineSmall.copyWith(
+                      color: txt,
+                      letterSpacing: 2.2,
+                      height: 1.2,
+                    ),
                   ),
                 ),
                 const Spacer(flex: 2),

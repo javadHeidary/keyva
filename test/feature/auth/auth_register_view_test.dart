@@ -13,6 +13,7 @@ import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
+import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/auth_widget_harness.dart';
@@ -128,7 +129,10 @@ void main() {
     await pumpAuthFrame(tester);
 
     expect(find.text('تکرار رمز عبور یکسان نیست'), findsOneWidget);
-    expect(find.byKey(const Key('auth-register-warning-confirm')), findsNothing);
+    expect(
+      find.byKey(const Key('auth-register-warning-confirm')),
+      findsNothing,
+    );
     expect(auth.createCount, 0);
   });
 
@@ -165,10 +169,18 @@ void main() {
     await tester.pump();
 
     expect(register.isLoading.value, isTrue);
-    expect(find.byKey(const ValueKey('loading')), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.barrierKey), findsOneWidget);
+    expect(find.text(RegisterController.loadingMessage), findsOneWidget);
+    expect(find.byKey(const ValueKey('loading')), findsNothing);
 
-    await tester.tap(find.byKey(const Key('auth-register-submit')));
+    await tester.tap(find.byKey(AppPageLoadingOverlay.barrierKey));
     await tester.pump();
+    expect(register.isLoading.value, isTrue);
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(auth.createCount, 1);
+
+    await register.createAccount();
     expect(auth.createCount, 1);
 
     unlock.unlockGate!.complete();
@@ -176,6 +188,9 @@ void main() {
 
     expect(session.isAuthenticated, isTrue);
     expect(find.byKey(const Key('shell-page')), findsOneWidget);
+    expect(find.text(RegisterController.successTitle), findsOneWidget);
+    expect(find.text(RegisterController.successBody), findsOneWidget);
+    AppToast.dismiss();
   });
 
   testWidgets('create failure shows a Persian toast and stays on register', (
@@ -192,6 +207,7 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(session.isAuthenticated, isFalse);
+    expect(find.text(RegisterController.errorTitle), findsWidgets);
     expect(find.text('عملیات امنیتی انجام نشد.'), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(register.isLoading.value, isFalse);

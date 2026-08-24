@@ -30,7 +30,7 @@ class LoginFormContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppTitleItemWidget(title: 'مشخصات ورود'),
+          AppTitleItemWidget(title: 'مشخصات اکانت'),
           AppSectionCardWidget(
             children: [
               Padding(

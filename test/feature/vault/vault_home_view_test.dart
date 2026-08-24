@@ -12,7 +12,6 @@ import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
-import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/search/viewmodel/search_viewmodel.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
@@ -27,6 +26,7 @@ import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_search_widget.dart';
+import 'package:keyva/shared/widget/keyva_logo.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/fake_vault_operation_service.dart';
@@ -149,7 +149,7 @@ void main() {
     expect(find.byKey(const Key('home-search-chip')), findsNothing);
     expect(find.byKey(const Key('home-type-selector')), findsOneWidget);
     expect(find.text('انواع آیتم‌ها'), findsOneWidget);
-    expect(find.text('ورود به حساب‌ها'), findsOneWidget);
+    expect(find.text('اکانت‌ها'), findsOneWidget);
     expect(find.text('کارت‌های بانکی'), findsOneWidget);
     expect(find.text('یادداشت‌ها'), findsOneWidget);
     expect(find.byType(AppFabWidget), findsOneWidget);
@@ -277,19 +277,16 @@ void main() {
     );
   });
 
-  testWidgets('account header shows the persisted name and avatar', (
+  testWidgets('account header shows the persisted name and Keyva logo', (
     tester,
   ) async {
     operations.vault = emptyVault();
-    home.updateAccountProfile(name: 'رضا', avatarId: 'star');
+    home.updateAccountProfile(name: 'رضا');
 
     await pumpHome(tester);
 
     expect(find.text('رضا'), findsOneWidget);
-    expect(
-      find.byIcon(SettingsAvatarIcons.iconForId('star')),
-      findsOneWidget,
-    );
+    expect(find.byType(KeyvaLogo), findsOneWidget);
   });
 
   testWidgets('empty vault FAB remains the create entry point', (
@@ -596,6 +593,7 @@ void main() {
     await tester.tap(find.text('سنجاق کردن'));
     await pumpVaultFrame(tester);
 
+    expect(find.text('حداکثر سنجاق'), findsOneWidget);
     expect(find.text('حداکثر ۵ مورد را می‌توانید سنجاق کنید.'), findsOneWidget);
     expect(operations.vault!.logins.last.isPinned, isFalse);
     AppToast.dismiss();
@@ -674,7 +672,7 @@ void main() {
     );
     await pumpVaultFrame(tester);
 
-    expect(find.text('ورود به حساب‌ها'), findsOneWidget);
+    expect(find.text('لیست اکانت‌ها'), findsOneWidget);
     expect(find.byType(VaultListItemIcon), findsOneWidget);
     expect(find.byIcon(AppIcon.search), findsOneWidget);
   });
@@ -688,7 +686,7 @@ void main() {
     );
     await pumpVaultFrame(tester);
 
-    expect(find.text('هنوز ورود به حساب‌ها ثبت نشده'), findsOneWidget);
+    expect(find.text('هنوز اکانتی ثبت نشده'), findsOneWidget);
   });
 }
 

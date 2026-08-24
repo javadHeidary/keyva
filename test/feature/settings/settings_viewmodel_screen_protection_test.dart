@@ -118,6 +118,7 @@ void main() {
     expect(auth.preventScreenshots, isFalse);
     expect(protection.isEnabled, isFalse);
     expect(settings.security.value.preventScreenshot, isFalse);
+    expect(find.text('محافظت صفحه'), findsOneWidget);
     expect(find.text('به‌روزرسانی محافظت صفحه انجام نشد.'), findsOneWidget);
     AppToast.dismiss();
     await tester.pump();

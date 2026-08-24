@@ -181,7 +181,7 @@ void main() {
 
     expect(find.text('لینک تلگرام کیوا هنوز تنظیم نشده است.'), findsOneWidget);
     expect(launched, isEmpty);
-    expect(find.text('ارتباط با ما'), findsOneWidget);
+    expect(find.text('ارتباط با ما'), findsWidgets);
     AppToast.dismiss();
     await tester.pump();
   });
@@ -196,6 +196,7 @@ void main() {
 
     expect(find.text('لینک بله کیوا هنوز تنظیم نشده است.'), findsOneWidget);
     expect(launched, isEmpty);
+    expect(find.text('ارتباط با ما'), findsWidgets);
     AppToast.dismiss();
     await tester.pump();
   });
@@ -226,6 +227,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('ایمیل: ${AppInfo.feedbackEmail}'), findsOneWidget);
+    expect(find.text('ایمیل'), findsWidgets);
     expect(find.text('ارتباط با ما'), findsOneWidget);
     AppToast.dismiss();
     await tester.pump();
@@ -317,7 +319,7 @@ void main() {
       find.text('امکان باز کردن این مسیر ارتباطی وجود ندارد.'),
       findsOneWidget,
     );
-    expect(find.text('ارتباط با ما'), findsOneWidget);
+    expect(find.text('ارتباط با ما'), findsWidgets);
     AppToast.dismiss();
     await tester.pump();
   });

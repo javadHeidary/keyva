@@ -4,107 +4,121 @@ import 'package:get/get.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/pin_policy.dart';
+import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
-import 'package:keyva/feature/auth/widget/auth_account_avatar.dart';
-import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
 import 'package:keyva/feature/auth/widget/auth_method_tile.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
+import 'package:keyva/shared/widget/app_header_widget.dart';
+import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
+import 'package:keyva/shared/widget/keyva_logo.dart';
 
 class AuthLoginView extends GetView<LoginController> {
   const AuthLoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: AuthErrorToastBinder(
         message: controller.errorMessage,
-        child: SafeArea(
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.pagePadding.s,
-                    AppSpacing.pagePadding.h,
-                    AppSpacing.pagePadding.s,
-                    AppSpacing.pagePadding.h + bottomInset,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight -
-                          AppSpacing.pagePadding.h * 2 -
-                          bottomInset,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Obx(() {
-                          if (!controller.canSwitchAccount.value) {
-                            return const SizedBox.shrink();
-                          }
-                          return Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: TextButton(
-                              key: const Key('auth-unlock-change-account'),
-                              onPressed: controller.isLoading.value
-                                  ? null
-                                  : controller.changeAccount,
-                              child: Text(
-                                'تغییر حساب',
-                                style: AppTypography.titleMedium.copyWith(
-                                  color: colors.primary,
-                                ),
+        errorTitle: LoginController.errorTitle,
+        successMessage: controller.successMessage,
+        successTitle: LoginController.successTitle,
+        child: Obx(() {
+          return AppPageLoadingOverlay(
+            visible: controller.isLoading.value,
+            message: LoginController.loadingMessage,
+            child: SafeArea(
+              child: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Column(
+                  children: [
+                    Obx(() => _navigationHeader(context)),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            padding: EdgeInsets.fromLTRB(
+                              AppSpacing.pagePadding.s,
+                              AppSpacing.pagePadding.h,
+                              AppSpacing.pagePadding.s,
+                              AppSpacing.pagePadding.h + bottomInset,
+                            ),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight:
+                                    constraints.maxHeight -
+                                    AppSpacing.pagePadding.h * 2 -
+                                    bottomInset,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Obx(() => _header(context)),
+                                  SizedBox(height: AppSpacing.xxl.h),
+                                  Obx(() {
+                                    if (controller.showMethodPicker.value) {
+                                      return _methodPicker();
+                                    }
+                                    return _unlockForm(context);
+                                  }),
+                                  SizedBox(height: AppSpacing.sectionGap.h),
+                                  Obx(() {
+                                    if (controller.showMethodPicker.value) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return _primaryAction();
+                                  }),
+                                  SizedBox(height: AppSpacing.md.h),
+                                  Obx(() => _secondaryActions(context)),
+                                  SizedBox(height: AppSpacing.sectionGap.h),
+                                  AuthFooterLink(
+                                    prefix: 'حسابی ندارید؟ ',
+                                    actionLabel: 'ایجاد حساب',
+                                    onTap: () =>
+                                        Get.toNamed(AppRoutes.authRegister),
+                                  ),
+                                ],
                               ),
                             ),
                           );
-                        }),
-                        const AuthBrandHeader(),
-                        SizedBox(height: AppSpacing.xxl.h),
-                        Obx(() => _header(context)),
-                        SizedBox(height: AppSpacing.xxl.h),
-                        Obx(() {
-                          if (controller.showMethodPicker.value) {
-                            return _methodPicker();
-                          }
-                          return _unlockForm(context);
-                        }),
-                        SizedBox(height: AppSpacing.sectionGap.h),
-                        Obx(() {
-                          if (controller.showMethodPicker.value) {
-                            return const SizedBox.shrink();
-                          }
-                          return _primaryAction();
-                        }),
-                        SizedBox(height: AppSpacing.md.h),
-                        Obx(() => _secondaryActions(context)),
-                        SizedBox(height: AppSpacing.sectionGap.h),
-                        AuthFooterLink(
-                          prefix: 'اکانتی ندارید؟ ',
-                          actionLabel: 'ثبت‌نام',
-                          onTap: () => Get.toNamed(AppRoutes.authRegister),
-                        ),
-                      ],
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        }),
       ),
+    );
+  }
+
+  Widget _navigationHeader(BuildContext context) {
+    if (!controller.canSwitchAccount.value) {
+      return const SizedBox.shrink();
+    }
+    return AppHeaderWidget(
+      leading: Icon(
+        AppIcon.arrowBack,
+        key: const Key('auth-unlock-back'),
+        size: AppSizes.iconLg.s,
+        color: context.colors.textPrimary,
+      ),
+      onLeadingTap: controller.isLoading.value
+          ? null
+          : controller.changeAccount,
     );
   }
 
@@ -112,7 +126,7 @@ class AuthLoginView extends GetView<LoginController> {
     final username = controller.selectedUsername.value;
     return Row(
       children: [
-        AuthAccountAvatar(username: username),
+        KeyvaLogo(size: AppSizes.itemHeight.s),
         SizedBox(width: AppSpacing.lg.s),
         Expanded(
           child: Column(
@@ -146,7 +160,7 @@ class AuthLoginView extends GetView<LoginController> {
       case UnlockMethod.pin:
         return 'کد PIN خود را وارد کنید';
       case UnlockMethod.biometric:
-        return 'با اثر انگشت یا چهره وارد شوید';
+        return 'با اثرانگشت وارد شوید';
       case UnlockMethod.masterPassword:
         return 'رمز اصلی خود را وارد کنید';
     }
@@ -161,8 +175,7 @@ class AuthLoginView extends GetView<LoginController> {
           AuthMethodTile(
             key: const Key('auth-unlock-method-biometric'),
             icon: AppIcon.fingerprint,
-            title: 'ورود با اثر انگشت یا چهره',
-            isLoading: loading,
+            title: 'ورود با اثرانگشت',
             enabled: !loading,
             onTap: controller.chooseBiometric,
           ),
@@ -274,21 +287,18 @@ class AuthLoginView extends GetView<LoginController> {
         return AppButtonWidget(
           key: const Key('auth-login-pin-submit'),
           title: 'ورود',
-          isLoading: controller.isLoading.value,
           onPressed: controller.unlockWithPin,
         );
       case UnlockMethod.biometric:
         return AppButtonWidget(
           key: const Key('auth-login-biometric'),
-          title: 'ورود با اثر انگشت یا چهره',
-          isLoading: controller.isLoading.value,
+          title: 'ورود با اثرانگشت',
           onPressed: controller.unlockWithBiometric,
         );
       case UnlockMethod.masterPassword:
         return AppButtonWidget(
           key: const Key('auth-login-submit'),
           title: 'ورود',
-          isLoading: controller.isLoading.value,
           onPressed: controller.login,
         );
     }

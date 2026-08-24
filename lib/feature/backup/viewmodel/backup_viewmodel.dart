@@ -39,17 +39,22 @@ class BackupViewModel extends GetxController {
     if (!_session.isAuthenticated) {
       AppToast.error(
         context,
-        title: vaultUserMessage(const AuthenticationFailure().message),
+        title: 'پشتیبان‌گیری',
+        message: vaultUserMessage(const AuthenticationFailure().message),
       );
       return;
     }
     final policyError = BackupPasswordPolicy.fieldError(password);
     if (policyError != null) {
-      AppToast.error(context, title: policyError);
+      AppToast.error(context, title: 'پشتیبان‌گیری', message: policyError);
       return;
     }
     if (password != confirmPassword) {
-      AppToast.error(context, title: 'تکرار رمز با رمز پشتیبان یکسان نیست');
+      AppToast.error(
+        context,
+        title: 'پشتیبان‌گیری',
+        message: 'تکرار رمز با رمز پشتیبان یکسان نیست',
+      );
       return;
     }
 
@@ -62,14 +67,16 @@ class BackupViewModel extends GetxController {
       if (!_session.isAuthenticated) {
         AppToast.error(
           context,
-          title: vaultUserMessage(const AuthenticationFailure().message),
+          title: 'پشتیبان‌گیری',
+          message: vaultUserMessage(const AuthenticationFailure().message),
         );
         return;
       }
       if (created is FailureResult<Uint8List>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(created.failure.message),
+          title: 'پشتیبان‌گیری',
+          message: vaultUserMessage(created.failure.message),
         );
         return;
       }
@@ -85,7 +92,11 @@ class BackupViewModel extends GetxController {
         case BackupFileExportCancelled():
           return;
         case BackupFileExportFailed(:final failure):
-          AppToast.error(context, title: vaultUserMessage(failure.message));
+          AppToast.error(
+            context,
+            title: 'پشتیبان‌گیری',
+            message: vaultUserMessage(failure.message),
+          );
           return;
         case BackupFileExportSaved():
           AppToast.success(

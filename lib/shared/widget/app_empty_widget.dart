@@ -55,8 +55,8 @@ class AppEmptyWidget extends StatelessWidget {
       case VaultItemType.login:
         return const AppEmptyWidget(
           icon: AppIcon.lock,
-          title: 'هنوز ورود به حساب‌ها ثبت نشده',
-          description: 'اولین مورد ورود به حساب‌ها را اضافه کنید.',
+          title: 'هنوز اکانتی ثبت نشده',
+          description: 'اولین اکانت را اضافه کنید.',
           layout: AppEmptyLayout.card,
         );
       case VaultItemType.bankCard:

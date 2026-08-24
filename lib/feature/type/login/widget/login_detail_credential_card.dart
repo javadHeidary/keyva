@@ -19,6 +19,7 @@ class LoginDetailCredentialCard extends StatelessWidget {
     this.trailing,
     this.useFaNumLabel = false,
     this.useFaNumValue = false,
+    this.valueTextDirection,
   }) : assert(icon != null || leading != null, 'icon or leading is required');
 
   final IconData? icon;
@@ -31,6 +32,7 @@ class LoginDetailCredentialCard extends StatelessWidget {
   final Widget? trailing;
   final bool useFaNumLabel;
   final bool useFaNumValue;
+  final TextDirection? valueTextDirection;
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +92,7 @@ class LoginDetailCredentialCard extends StatelessWidget {
                         : valueStyle,
                     maxLines: maxLines,
                     overflow: TextOverflow.ellipsis,
+                    textDirection: valueTextDirection,
                   ),
                 ],
               ),

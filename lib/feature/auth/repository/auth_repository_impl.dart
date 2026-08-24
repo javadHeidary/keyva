@@ -273,16 +273,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Result<void>> updateProfile({
     required String username,
-    required String avatarId,
   }) async {
     final trimmedName = username.trim();
     if (trimmedName.isEmpty) {
       return const FailureResult(ValidationFailure());
     }
-    final trimmedAvatar = avatarId.trim();
-    final resolvedAvatar = trimmedAvatar.isEmpty
-        ? UserRecord.defaultAvatarId
-        : trimmedAvatar;
     final loaded = await _loadCurrentUser();
     if (loaded is FailureResult<UserRecord>) {
       return FailureResult(loaded.failure);
@@ -291,7 +286,6 @@ class AuthRepositoryImpl implements AuthRepository {
     final updated = await _users.update(
       user.copyWith(
         username: trimmedName,
-        avatarId: resolvedAvatar,
         updatedAt: DateTime.now(),
       ),
     );

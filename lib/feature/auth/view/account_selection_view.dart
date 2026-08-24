@@ -8,13 +8,13 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
-import 'package:keyva/feature/auth/widget/auth_account_avatar.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_loading_widger.dart';
+import 'package:keyva/shared/widget/keyva_logo.dart';
 
 class AccountSelectionView extends GetView<AccountSelectionViewModel> {
   const AccountSelectionView({super.key});
@@ -88,7 +88,7 @@ class AccountSelectionView extends GetView<AccountSelectionViewModel> {
             ),
             AppButtonWidget(
               key: const Key('auth-accounts-register'),
-              title: 'ثبت‌نام',
+              title: 'ایجاد حساب',
               onPressed: controller.openRegister,
             ),
             SizedBox(height: AppSpacing.md.h),
@@ -133,8 +133,8 @@ class AccountSelectionView extends GetView<AccountSelectionViewModel> {
               ),
             ),
             AuthFooterLink(
-              prefix: 'اکانتی ندارید؟ ',
-              actionLabel: 'ثبت‌نام',
+              prefix: 'حسابی ندارید؟ ',
+              actionLabel: 'ایجاد حساب',
               onTap: controller.openRegister,
             ),
             SizedBox(height: AppSpacing.md.h),
@@ -169,10 +169,7 @@ class _AccountTile extends StatelessWidget {
           padding: EdgeInsets.all(AppSpacing.lg.s),
           child: Row(
             children: [
-              AuthAccountAvatar(
-                username: account.username,
-                size: AppSizes.appBarHeight.s,
-              ),
+              KeyvaLogo(size: AppSizes.appBarHeight.s),
               SizedBox(width: AppSpacing.lg.s),
               Expanded(
                 child: Column(

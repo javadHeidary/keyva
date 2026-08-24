@@ -18,6 +18,10 @@ Future<void> shareVaultItem({
   final result = await shareSheet.shareText(text: text, subject: subject);
   if (!context.mounted) return;
   if (result == ShareSheetResult.unavailable) {
-    AppToast.error(context, title: 'اشتراک‌گذاری انجام نشد');
+    AppToast.error(
+      context,
+      title: 'اشتراک‌گذاری',
+      message: 'اشتراک‌گذاری انجام نشد',
+    );
   }
 }

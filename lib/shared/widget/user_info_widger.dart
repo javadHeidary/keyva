@@ -5,17 +5,16 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/shared/widget/keyva_logo.dart';
 
 class UserInfoWidget extends StatelessWidget {
   const UserInfoWidget({
     super.key,
     required this.name,
-    this.avatar,
     this.onEdit,
   });
 
   final String name;
-  final Widget? avatar;
   final VoidCallback? onEdit;
 
   @override
@@ -35,23 +34,10 @@ class UserInfoWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.medium),
-            child: SizedBox(
-              width: 48.s,
-              height: 48.s,
-              child:
-                  avatar ??
-                  Container(
-                    color: colors.input,
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 28.s,
-                      color: colors.textTertiary,
-                    ),
-                  ),
-            ),
+          SizedBox(
+            width: 48.s,
+            height: 48.s,
+            child: KeyvaLogo(size: 48.s),
           ),
 
           SizedBox(width: AppSpacing.md.s),

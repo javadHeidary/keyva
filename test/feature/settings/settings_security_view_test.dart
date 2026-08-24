@@ -157,6 +157,7 @@ void main() {
     expect(pin.enableCount, 1);
     expect(pin.lastEnabledPin, '123456');
     expect(settings.security.value.pinEnabled, isTrue);
+    expect(find.text('کد PIN'), findsWidgets);
     expect(find.text('کد PIN تنظیم شد'), findsOneWidget);
     AppToast.dismiss();
   });
@@ -220,6 +221,7 @@ void main() {
     await tester.tap(find.byKey(const Key('settings-pin-save')));
     await pumpAuthSettle(tester);
 
+    expect(find.text('کد PIN'), findsWidgets);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
     expect(find.textContaining('AuthenticationFailure'), findsNothing);
     expect(find.textContaining('Exception'), findsNothing);
@@ -271,6 +273,7 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(pin.changeCount, 1);
+    expect(find.text('کد PIN'), findsWidgets);
     expect(find.text('کد PIN به‌روزرسانی شد'), findsOneWidget);
     AppToast.dismiss();
   });
@@ -300,6 +303,7 @@ void main() {
     await tester.tap(find.byKey(const Key('settings-pin-save')));
     await pumpAuthSettle(tester);
 
+    expect(find.text('کد PIN'), findsWidgets);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
     expect(find.textContaining('AuthenticationFailure'), findsNothing);
     expect(find.text('تغییر کد PIN'), findsOneWidget);

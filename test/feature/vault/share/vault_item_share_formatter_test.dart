@@ -62,7 +62,7 @@ void main() {
       categoryName: 'Work',
     );
 
-    expect(text, startsWith('Keyva — اطلاعات ورود'));
+    expect(text, startsWith('Keyva — اطلاعات اکانت'));
     expect(text, contains('عنوان: Mail'));
     expect(text, contains('نام کاربری: keep-this-user'));
     expect(text, contains('رمز عبور: keep-this-password'));
@@ -141,7 +141,7 @@ void main() {
   });
 
   test('subjects use the Keyva application name', () {
-    expect(VaultItemShareFormatter.loginSubject, 'Keyva — اطلاعات ورود');
+    expect(VaultItemShareFormatter.loginSubject, 'Keyva — اطلاعات اکانت');
     expect(VaultItemShareFormatter.cardSubject, 'Keyva — اطلاعات کارت');
     expect(VaultItemShareFormatter.noteSubject, 'Keyva — یادداشت');
   });

@@ -7,13 +7,13 @@ String vaultUserMessage(String? errorMessage) {
     case 'Unable to unlock your vault.':
       return 'باز کردن گاوصندوق ممکن نشد.';
     case 'Biometric authentication is unavailable.':
-      return 'احراز هویت بیومتریک روی این دستگاه در دسترس نیست.';
+      return 'ورود با اثرانگشت روی این دستگاه در دسترس نیست.';
     case 'Biometric authentication failed.':
-      return 'احراز هویت بیومتریک ناموفق بود.';
+      return 'ورود با اثرانگشت ناموفق بود.';
     case 'Biometric unlock is not set up for this account.':
-      return 'باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.';
+      return 'ورود با اثرانگشت برای این حساب تنظیم نشده است.';
     case 'Biometric unlock is locked. Use your master password.':
-      return 'محدودیت تلاش بیومتریک تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
+      return 'محدودیت تلاش ورود با اثرانگشت تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
     case 'Vault data is invalid':
       return 'اطلاعات وارد شده معتبر نیست.';
     case 'Cryptographic operation failed':

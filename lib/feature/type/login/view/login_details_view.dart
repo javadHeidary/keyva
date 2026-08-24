@@ -81,7 +81,7 @@ class LoginDetailsView extends GetView<LoginDetailsViewModel> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const AppTitleItemWidget(title: 'مشخصات ورود'),
+                      const AppTitleItemWidget(title: 'مشخصات اکانت'),
                       LoginDetailCredentialCard(
                         icon: AppIcon.folder,
                         label: 'دسته‌بندی',

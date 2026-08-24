@@ -163,10 +163,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(shareSheet.shareCount, 1);
-    expect(shareSheet.lastText, contains('Keyva — اطلاعات ورود'));
+    expect(shareSheet.lastText, contains('Keyva — اطلاعات اکانت'));
     expect(shareSheet.lastText, contains('عنوان: Mail'));
     expect(shareSheet.lastText, isNot(contains('وب‌سایت')));
     expect(shareSheet.lastText, isNot(contains('یادداشت')));
-    expect(shareSheet.lastSubject, 'Keyva — اطلاعات ورود');
+    expect(shareSheet.lastSubject, 'Keyva — اطلاعات اکانت');
   });
 }

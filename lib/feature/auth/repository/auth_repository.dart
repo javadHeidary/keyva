@@ -36,7 +36,6 @@ abstract interface class AuthRepository {
 
   Future<Result<void>> updateProfile({
     required String username,
-    required String avatarId,
   });
 
   Future<Result<bool>> hasAnyAccount();

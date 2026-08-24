@@ -46,7 +46,7 @@ class TypeListItemView extends GetView<HomeController> {
           slivers: [
             SliverToBoxAdapter(
               child: AppHeaderWidget(
-                title: vaultType.label,
+                title: vaultType.listTitle,
                 titleAlign: TextAlign.center,
                 leading: Icon(
                   AppIcon.arrowBack,

@@ -22,8 +22,7 @@ void main() {
 
   setUp(() {
     Get.testMode = true;
-    auth = FakeAuthRepository()
-      ..storedUser = _user(username: 'علی', avatarId: UserRecord.defaultAvatarId);
+    auth = FakeAuthRepository()..storedUser = _user(username: 'علی');
     home = HomeController(auth: auth);
     settings = SettingsViewModel(auth: auth);
     Get.put(home);
@@ -31,14 +30,12 @@ void main() {
 
   tearDown(Get.reset);
 
-  test('Home and Settings load the persisted name and icon', () async {
+  test('Home and Settings load the persisted name', () async {
     await home.loadAccountProfile();
     await settings.loadProfile();
 
     expect(home.accountOwnerName.value, 'علی');
-    expect(home.accountAvatarId.value, UserRecord.defaultAvatarId);
     expect(settings.profile.value.name, 'علی');
-    expect(settings.profile.value.avatarId, UserRecord.defaultAvatarId);
   });
 
   test('updating profile persists and refreshes Home and Settings', () async {
@@ -46,17 +43,14 @@ void main() {
     await settings.loadProfile();
 
     final saved = await settings.updateProfile(
-      const UserProfile(name: 'رضا', avatarId: 'shield'),
+      const UserProfile(name: 'رضا'),
     );
 
     expect(saved, isTrue);
     expect(auth.updateProfileCount, 1);
     expect(auth.storedUser!.username, 'رضا');
-    expect(auth.storedUser!.avatarId, 'shield');
     expect(settings.profile.value.name, 'رضا');
-    expect(settings.profile.value.avatarId, 'shield');
     expect(home.accountOwnerName.value, 'رضا');
-    expect(home.accountAvatarId.value, 'shield');
 
     final restoredHome = HomeController(auth: auth);
     final restoredSettings = SettingsViewModel(auth: auth);
@@ -64,13 +58,11 @@ void main() {
     await restoredSettings.loadProfile();
 
     expect(restoredHome.accountOwnerName.value, 'رضا');
-    expect(restoredHome.accountAvatarId.value, 'shield');
     expect(restoredSettings.profile.value.name, 'رضا');
-    expect(restoredSettings.profile.value.avatarId, 'shield');
   });
 }
 
-UserRecord _user({required String username, required String avatarId}) {
+UserRecord _user({required String username}) {
   return UserRecord(
     id: 'user-1',
     username: username,
@@ -91,6 +83,5 @@ UserRecord _user({required String username, required String avatarId}) {
       authenticationTag: Uint8List.fromList(List<int>.filled(16, 4)),
     ),
     securitySettings: SecuritySettings.initial(),
-    avatarId: avatarId,
   );
 }

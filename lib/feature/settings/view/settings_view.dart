@@ -6,7 +6,6 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
-import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
@@ -63,13 +62,6 @@ class SettingsView extends GetView<SettingsViewModel> {
                         final profile = controller.profile.value;
                         return UserInfoWidget(
                           name: profile.name,
-                          avatar: Container(
-                            color: colors.input,
-                            child: SettingsAvatarIcons.avatarWidget(
-                              profile.avatarId,
-                              color: colors.primary,
-                            ),
-                          ),
                           onEdit: () => showAccountEditBottomSheet(context),
                         );
                       }),
@@ -98,7 +90,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                             KeyedSubtree(
                               key: const Key('settings-biometric-toggle'),
                               child: SettingsRow.toggle(
-                                title: 'احراز هویت بیومتریک',
+                                title: 'ورود با اثرانگشت',
                                 icon: AppIcon.fingerprint,
                                 value:
                                     controller.security.value.biometricEnabled,
@@ -289,8 +281,8 @@ class SettingsView extends GetView<SettingsViewModel> {
     AppDialogWidget.show(
       context,
       type: AppDialogType.warning,
-      title: 'غیرفعال کردن بیومتریک',
-      description: 'ورود با اثر انگشت یا چهره روی این دستگاه غیرفعال می‌شود.',
+      title: 'غیرفعال کردن ورود با اثرانگشت',
+      description: 'ورود با اثرانگشت روی این دستگاه غیرفعال می‌شود.',
       buttonText: 'غیرفعال کردن',
       onConfirm: () => controller.disableBiometric(context),
     );

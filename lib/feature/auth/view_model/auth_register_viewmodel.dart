@@ -23,10 +23,16 @@ class RegisterController extends GetxController {
   final confirmPasswordController = TextEditingController();
   final registerFormKey = GlobalKey<FormState>();
 
+  static const loadingMessage = 'در حال ایجاد حساب...';
+  static const errorTitle = 'ایجاد حساب';
+  static const successTitle = 'ایجاد حساب';
+  static const successBody = 'حساب با موفقیت ایجاد شد';
+
   final isPasswordVisible = false.obs;
   final isConfirmPasswordVisible = false.obs;
   final isLoading = false.obs;
   final errorMessage = ''.obs;
+  final successMessage = ''.obs;
   final passwordStrength = 0.0.obs;
   final hasPasswordInput = false.obs;
 
@@ -119,6 +125,7 @@ class RegisterController extends GetxController {
     }
 
     isLoading.value = true;
+    var succeeded = false;
     try {
       final created = await _auth.createAccount(
         username: usernameController.text.trim(),
@@ -137,11 +144,15 @@ class RegisterController extends GetxController {
         errorMessage.value = vaultUserMessage(unlocked.failure.message);
         return;
       }
+      succeeded = true;
+      successMessage.value = successBody;
       Get.offAllNamed(AppRoutes.shell);
     } finally {
       passwordController.clear();
       confirmPasswordController.clear();
-      isLoading.value = false;
+      if (!succeeded) {
+        isLoading.value = false;
+      }
     }
   }
 

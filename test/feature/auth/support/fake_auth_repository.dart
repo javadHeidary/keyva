@@ -128,7 +128,6 @@ class FakeAuthRepository implements AuthRepository {
   AppFailure? updateProfileFailure;
   int updateProfileCount = 0;
   String? lastUpdatedUsername;
-  String? lastUpdatedAvatarId;
 
   @override
   Future<Result<UserRecord>> currentUser() async {
@@ -146,11 +145,9 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<Result<void>> updateProfile({
     required String username,
-    required String avatarId,
   }) async {
     updateProfileCount++;
     lastUpdatedUsername = username;
-    lastUpdatedAvatarId = avatarId;
     final failure = updateProfileFailure;
     if (failure != null) {
       return FailureResult(failure);
@@ -159,12 +156,8 @@ class FakeAuthRepository implements AuthRepository {
     if (trimmedName.isEmpty) {
       return const FailureResult(ValidationFailure());
     }
-    final resolvedAvatar = avatarId.trim().isEmpty
-        ? UserRecord.defaultAvatarId
-        : avatarId.trim();
     storedUser = (storedUser ?? _fakeUser(username: trimmedName)).copyWith(
       username: trimmedName,
-      avatarId: resolvedAvatar,
     );
     accounts = [
       for (final account in accounts)

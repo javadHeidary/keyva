@@ -80,6 +80,7 @@ class BankCardFormContent extends StatelessWidget {
                 hintText: '0000 0000 0000 0000',
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
+                textDirection: TextDirection.ltr,
                 fillColor: fieldFill,
                 inputFormatters: [BankCardNumberInputFormatter()],
                 prefixIcon: Icon(

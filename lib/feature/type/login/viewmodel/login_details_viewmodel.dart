@@ -40,7 +40,7 @@ class LoginDetailsViewModel extends GetxController {
     return found is LoginItem ? found : null;
   }
 
-  String get headerTitle => item?.title ?? 'جزئیات ورود';
+  String get headerTitle => item?.title ?? 'جزئیات اکانت';
 
   String get categoryLabel => vaultCategoryLabel(
     _vaultHome?.vault.value,
@@ -83,7 +83,11 @@ class LoginDetailsViewModel extends GetxController {
   Future<void> openWebsite(BuildContext context, String website) async {
     final normalized = normalizeWebsiteUrl(website);
     if (normalized == null) {
-      AppToast.error(context, title: 'آدرس وب‌سایت معتبر نیست');
+      AppToast.error(
+        context,
+        title: 'باز کردن وب‌سایت',
+        message: 'آدرس وب‌سایت معتبر نیست',
+      );
       return;
     }
 
@@ -91,7 +95,11 @@ class LoginDetailsViewModel extends GetxController {
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!context.mounted) return;
     if (!launched) {
-      AppToast.error(context, title: 'باز کردن وب‌سایت انجام نشد');
+      AppToast.error(
+        context,
+        title: 'باز کردن وب‌سایت',
+        message: 'باز کردن وب‌سایت انجام نشد',
+      );
     }
   }
 

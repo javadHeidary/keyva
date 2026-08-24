@@ -11,7 +11,6 @@ import 'package:keyva/feature/category/controller/category_catalog_controller.da
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/home/util/vault_more_actions.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
-import 'package:keyva/feature/settings/util/settings_avatar_icons.dart';
 import 'package:keyva/feature/shell/util/main_shell_layout.dart';
 import 'package:keyva/feature/vault/view/vault_error_view.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
@@ -22,6 +21,7 @@ import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_list_item_widget.dart';
 import 'package:keyva/shared/widget/app_more_widget.dart';
+import 'package:keyva/shared/widget/keyva_logo.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -134,32 +134,9 @@ class _AccountHeader extends GetView<HomeController> {
       key: const Key('home-account-header'),
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {},
-            borderRadius: BorderRadius.circular(AppRadius.extra),
-            child: Container(
-              width: 40.s,
-              height: 40.s,
-              decoration: BoxDecoration(
-                color: colors.textTertiary,
-                shape: BoxShape.rectangle,
-                borderRadius: BorderRadius.circular(AppRadius.medium),
-              ),
-              alignment: Alignment.center,
-              child: Obx(
-                () => KeyedSubtree(
-                  key: const Key('home-account-avatar'),
-                  child: SettingsAvatarIcons.avatarWidget(
-                    controller.accountAvatarId.value,
-                    color: colors.textPrimary,
-                    size: 22.s,
-                  ),
-                ),
-              ),
-            ),
-          ),
+        KeyedSubtree(
+          key: const Key('home-account-avatar'),
+          child: KeyvaLogo(size: 40.s),
         ),
         SizedBox(width: AppSpacing.sm.s),
         Expanded(

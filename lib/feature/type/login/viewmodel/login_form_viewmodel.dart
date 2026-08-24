@@ -124,7 +124,7 @@ abstract class LoginFormViewModel extends GetxController
 
   String? validateTitle(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'عنوان ورود الزامی است';
+      return 'عنوان اکانت الزامی است';
     }
     if (value.trim().length < 2) {
       return 'عنوان باید حداقل ۲ کاراکتر باشد';

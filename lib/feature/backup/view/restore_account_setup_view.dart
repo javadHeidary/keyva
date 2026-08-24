@@ -72,8 +72,8 @@ class RestoreAccountSetupView extends StatelessWidget {
                             controller: controller.passwordController,
                             obscureText: !controller.isPasswordVisible.value,
                             textInputAction: TextInputAction.next,
-                            labelText: 'Master Password',
-                            hintText: 'رمز اصلی را وارد کنید',
+                            labelText: 'رمز اصلی',
+                            hintText: 'یک رمز اصلی جدید انتخاب کنید',
                             prefixIcon: const Icon(AppIcon.lock),
                             validator: restoreMasterPasswordError,
                             suffixIcon: IconButton(
@@ -94,7 +94,7 @@ class RestoreAccountSetupView extends StatelessWidget {
                             obscureText:
                                 !controller.isConfirmPasswordVisible.value,
                             textInputAction: TextInputAction.done,
-                            labelText: 'تکرار Master Password',
+                            labelText: 'تکرار رمز اصلی',
                             hintText: 'رمز اصلی را دوباره وارد کنید',
                             prefixIcon: const Icon(AppIcon.lock),
                             validator: restoreMasterPasswordError,
@@ -158,9 +158,9 @@ class RestoreAccountSetupView extends StatelessWidget {
           child: AlertDialog(
             title: Text('هشدار مهم امنیتی', style: AppTypography.headlineSmall),
             content: Text(
-              'رمز اصلی (Master Password) مهم‌ترین رمز برنامه است.\n\n'
+              'رمز اصلی، کلید حساب جدید شماست و در برنامه ذخیره نمی‌شود.\n\n'
               'رمز فایل پشتیبان جایگزین این رمز نمی‌شود.\n\n'
-              'در صورت فراموش کردن رمز اصلی، امکان بازیابی اطلاعات شما وجود ندارد.',
+              'اگر رمز اصلی را فراموش کنید، هیچ راهی برای بازیابی اطلاعات وجود ندارد.',
               style: AppTypography.bodyMedium,
             ),
             actions: [

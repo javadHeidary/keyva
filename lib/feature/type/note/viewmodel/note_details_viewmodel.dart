@@ -77,7 +77,11 @@ class NoteDetailsViewModel extends GetxController {
   ) async {
     final uriString = uriForNoteLink(type, raw);
     if (uriString == null) {
-      AppToast.error(context, title: 'لینک معتبر نیست');
+      AppToast.error(
+        context,
+        title: 'باز کردن لینک',
+        message: 'لینک معتبر نیست',
+      );
       return;
     }
 
@@ -85,7 +89,11 @@ class NoteDetailsViewModel extends GetxController {
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!context.mounted) return;
     if (!launched) {
-      AppToast.error(context, title: 'باز کردن لینک انجام نشد');
+      AppToast.error(
+        context,
+        title: 'باز کردن لینک',
+        message: 'باز کردن لینک انجام نشد',
+      );
     }
   }
 

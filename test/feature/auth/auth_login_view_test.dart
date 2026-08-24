@@ -10,7 +10,10 @@ import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
+import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/auth_widget_harness.dart';
@@ -56,6 +59,13 @@ void main() {
     expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
     expect(find.byKey(const Key('auth-login-submit')), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
+    expect(find.byType(AuthBrandHeader), findsNothing);
+    expect(find.text('کی وا'), findsNothing);
+    expect(find.text('Keyva'), findsNothing);
+    expect(find.text('کیوا'), findsNothing);
+    expect(find.text('تغییر حساب'), findsNothing);
+    expect(find.byKey(const Key('auth-unlock-back')), findsNothing);
+    expect(find.byIcon(AppIcon.arrowBack), findsNothing);
   });
 
   testWidgets('empty password shows validation error', (tester) async {
@@ -109,10 +119,18 @@ void main() {
     await tester.pump();
 
     expect(login.isLoading.value, isTrue);
-    expect(find.byKey(const ValueKey('loading')), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.barrierKey), findsOneWidget);
+    expect(find.text(LoginController.loadingMessage), findsOneWidget);
+    expect(find.byKey(const ValueKey('loading')), findsNothing);
 
-    await tester.tap(find.byKey(const Key('auth-login-submit')));
+    await tester.tap(find.byKey(AppPageLoadingOverlay.barrierKey));
     await tester.pump();
+    expect(login.isLoading.value, isTrue);
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(unlock.unlockCount, 1);
+
+    await login.login();
     expect(unlock.unlockCount, 1);
 
     unlock.unlockGate!.complete();
@@ -120,6 +138,9 @@ void main() {
 
     expect(session.isAuthenticated, isTrue);
     expect(find.byKey(const Key('shell-page')), findsOneWidget);
+    expect(find.text(LoginController.successTitle), findsOneWidget);
+    expect(find.text(LoginController.successBody), findsOneWidget);
+    AppToast.dismiss();
   });
 
   testWidgets('successful unlock navigates to Home and establishes session', (
@@ -144,6 +165,9 @@ void main() {
     expect(session.isAuthenticated, isTrue);
     expect(session.vaultKey, isNotNull);
     expect(find.byKey(const Key('shell-page')), findsOneWidget);
+    expect(find.text(LoginController.successTitle), findsOneWidget);
+    expect(find.text(LoginController.successBody), findsOneWidget);
+    AppToast.dismiss();
   });
 
   testWidgets('failed unlock shows a Persian error and stays on Unlock', (
@@ -164,6 +188,7 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(session.isAuthenticated, isFalse);
+    expect(find.text(LoginController.errorTitle), findsWidgets);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(find.textContaining('AuthenticationFailure'), findsNothing);
@@ -188,7 +213,10 @@ void main() {
 
     expect(find.byKey(const Key('auth-login-pin')), findsOneWidget);
     expect(find.byKey(const Key('auth-login-password')), findsNothing);
-    expect(find.byKey(const Key('auth-login-use-master-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('auth-login-use-master-password')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('wrong PIN shows remaining attempts', (tester) async {
@@ -240,7 +268,9 @@ void main() {
     expect(find.byKey(const Key('auth-login-pin')), findsNothing);
   });
 
-  testWidgets('PIN lockout shows Master Password instead of PIN', (tester) async {
+  testWidgets('PIN lockout shows Master Password instead of PIN', (
+    tester,
+  ) async {
     final pin = FakePinService()
       ..enabled = true
       ..lockedOut = true;
@@ -289,18 +319,17 @@ void main() {
     final biometric = FakeBiometricService()
       ..available = true
       ..enabled = true;
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
     );
     await pumpAuthSettle(tester);
 
-    expect(find.byKey(const Key('auth-unlock-method-biometric')), findsOneWidget);
+    expect(
+      find.byKey(const Key('auth-unlock-method-biometric')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('auth-unlock-method-master')), findsOneWidget);
   });
 
@@ -310,11 +339,7 @@ void main() {
     final biometric = FakeBiometricService()
       ..available = true
       ..enabled = true;
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -329,6 +354,9 @@ void main() {
     expect(session.isAuthenticated, isTrue);
     expect(session.current!.userId, 'user-1');
     expect(find.byKey(const Key('shell-page')), findsOneWidget);
+    expect(find.text(LoginController.successTitle), findsOneWidget);
+    expect(find.text(LoginController.successBody), findsOneWidget);
+    AppToast.dismiss();
   });
 
   testWidgets('cancelled biometric does not unlock', (tester) async {
@@ -336,11 +364,7 @@ void main() {
       ..available = true
       ..enabled = true;
     unlock.unlockFailure = const BiometricCancelledFailure();
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -361,11 +385,7 @@ void main() {
       ..enabled = true
       ..remaining = 2;
     unlock.unlockFailure = const BiometricAuthFailedFailure();
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -378,7 +398,7 @@ void main() {
     expect(session.isAuthenticated, isFalse);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(
-      find.text('احراز هویت بیومتریک ناموفق بود. ۲ تلاش باقی مانده است.'),
+      find.text('ورود با اثرانگشت ناموفق بود. ۲ تلاش باقی مانده است.'),
       findsOneWidget,
     );
     AppToast.dismiss();
@@ -389,11 +409,7 @@ void main() {
       ..available = true
       ..enabled = true;
     unlock.unlockFailure = const BiometricAuthFailedFailure();
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -415,11 +431,7 @@ void main() {
       ..available = true
       ..enabled = true;
     unlock.unlockFailure = const BiometricUnavailableFailure();
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -432,7 +444,7 @@ void main() {
     expect(session.isAuthenticated, isFalse);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(
-      find.text('احراز هویت بیومتریک روی این دستگاه در دسترس نیست.'),
+      find.text('ورود با اثرانگشت روی این دستگاه در دسترس نیست.'),
       findsOneWidget,
     );
     AppToast.dismiss();
@@ -445,11 +457,7 @@ void main() {
       ..available = true
       ..enabled = true;
     unlock.unlockFailure = const BiometricNotConfiguredFailure();
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -462,7 +470,7 @@ void main() {
     expect(session.isAuthenticated, isFalse);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(
-      find.text('باز کردن با اثر انگشت یا چهره برای این حساب تنظیم نشده است.'),
+      find.text('ورود با اثرانگشت برای این حساب تنظیم نشده است.'),
       findsOneWidget,
     );
     AppToast.dismiss();
@@ -475,11 +483,7 @@ void main() {
       ..available = true
       ..enabled = true;
     unlock.unlockFailure = const AuthenticationFailure();
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -490,6 +494,7 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(session.isAuthenticated, isFalse);
+    expect(find.text(LoginController.errorTitle), findsWidgets);
     expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
     AppToast.dismiss();
   });
@@ -499,11 +504,7 @@ void main() {
       ..available = true
       ..enabled = true
       ..lockedOut = true;
-    login = LoginController(
-      unlock: unlock,
-      auth: auth,
-      biometric: biometric,
-    );
+    login = LoginController(unlock: unlock, auth: auth, biometric: biometric);
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),

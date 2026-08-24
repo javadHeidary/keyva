@@ -98,7 +98,8 @@ class RestoreViewModel extends GetxController {
     if (!_sessionReady) {
       AppToast.error(
         context,
-        title: vaultUserMessage(const AuthenticationFailure().message),
+        title: 'بازیابی پشتیبان',
+        message: vaultUserMessage(const AuthenticationFailure().message),
       );
       return false;
     }
@@ -116,14 +117,19 @@ class RestoreViewModel extends GetxController {
         case BackupFilePickCancelled():
           return false;
         case BackupFilePickFailed(:final failure):
-          AppToast.error(context, title: vaultUserMessage(failure.message));
+          AppToast.error(
+            context,
+            title: 'بازیابی پشتیبان',
+            message: vaultUserMessage(failure.message),
+          );
           return false;
         case BackupFilePicked(:final bytes):
           final validated = _backup.validateEnvelope(bytes);
           if (validated is FailureResult<void>) {
             AppToast.error(
               context,
-              title: vaultUserMessage(validated.failure.message),
+              title: 'بازیابی پشتیبان',
+              message: vaultUserMessage(validated.failure.message),
             );
             return false;
           }
@@ -149,14 +155,15 @@ class RestoreViewModel extends GetxController {
     if (!_sessionReady) {
       AppToast.error(
         context,
-        title: vaultUserMessage(const AuthenticationFailure().message),
+        title: 'بازیابی پشتیبان',
+        message: vaultUserMessage(const AuthenticationFailure().message),
       );
       _clearPending();
       return null;
     }
     final policyError = BackupPasswordPolicy.fieldError(password);
     if (policyError != null) {
-      AppToast.error(context, title: policyError);
+      AppToast.error(context, title: 'بازیابی پشتیبان', message: policyError);
       return null;
     }
 
@@ -174,14 +181,16 @@ class RestoreViewModel extends GetxController {
         _clearPending();
         AppToast.error(
           context,
-          title: vaultUserMessage(const AuthenticationFailure().message),
+          title: 'بازیابی پشتیبان',
+          message: vaultUserMessage(const AuthenticationFailure().message),
         );
         return null;
       }
       if (decrypted is FailureResult<BackupRestorePlan>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(decrypted.failure.message),
+          title: 'بازیابی پشتیبان',
+          message: vaultUserMessage(decrypted.failure.message),
         );
         return null;
       }
@@ -206,7 +215,8 @@ class RestoreViewModel extends GetxController {
       _clearPending();
       AppToast.error(
         context,
-        title: vaultUserMessage(const AuthenticationFailure().message),
+        title: 'بازیابی پشتیبان',
+        message: vaultUserMessage(const AuthenticationFailure().message),
       );
       return;
     }
@@ -224,7 +234,8 @@ class RestoreViewModel extends GetxController {
       if (restored is FailureResult<void>) {
         AppToast.error(
           context,
-          title: vaultUserMessage(restored.failure.message),
+          title: 'بازیابی پشتیبان',
+          message: vaultUserMessage(restored.failure.message),
         );
         return;
       }

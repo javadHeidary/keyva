@@ -141,7 +141,7 @@ void main() {
     await pumpVaultFrame(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('ایجاد ورود'), findsWidgets);
+    expect(find.text('ایجاد اکانت'), findsWidgets);
     expect(operations.lastAdded, isA<CategoryItem>());
     expect((operations.lastAdded! as CategoryItem).name, 'پروژه');
     expect(form.selectedCategoryId.value, isNotNull);
@@ -160,6 +160,6 @@ void main() {
     expect(operations.addCount, 0);
     expect(form.selectedCategoryId.value, isNull);
     expect(find.byKey(const Key('category-inline-name')), findsNothing);
-    expect(find.text('ایجاد ورود'), findsWidgets);
+    expect(find.text('ایجاد اکانت'), findsWidgets);
   });
 }

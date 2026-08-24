@@ -21,7 +21,7 @@ class LoginEditViewModel extends LoginFormViewModel {
   LoginItem? _original;
 
   @override
-  String get headerTitle => 'ویرایش ورود';
+  String get headerTitle => 'ویرایش اکانت';
 
   @override
   String get submitLabel => 'ذخیره تغییرات';

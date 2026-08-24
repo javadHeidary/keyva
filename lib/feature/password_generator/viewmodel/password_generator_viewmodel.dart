@@ -40,7 +40,7 @@ class PasswordGeneratorViewModel extends GetxController {
       strength.value = 0;
       final context = Get.context;
       if (context != null) {
-        AppToast.error(context, title: e.message);
+        AppToast.error(context, title: 'تولید رمز', message: e.message);
       }
     }
   }
@@ -83,7 +83,11 @@ class PasswordGeneratorViewModel extends GetxController {
     if (!_hasActiveGroup(value)) {
       final context = Get.context;
       if (context != null) {
-        AppToast.error(context, title: 'حداقل یک نوع کاراکتر باید فعال باشد');
+        AppToast.error(
+          context,
+          title: 'تولید رمز',
+          message: 'حداقل یک نوع کاراکتر باید فعال باشد',
+        );
       }
       return;
     }
@@ -108,7 +112,7 @@ class PasswordGeneratorViewModel extends GetxController {
     await Clipboard.setData(ClipboardData(text: password));
     await _historyStore.addFromCopy(password);
     if (!context.mounted) return;
-    AppToast.success(context, title: 'رمز عبور کپی شد', message: 'کپی');
+    AppToast.success(context, title: 'کپی', message: 'رمز عبور کپی شد');
   }
 
   void openHistoryMenu() {

@@ -7,7 +7,7 @@ class VaultItemShareFormatter {
   const VaultItemShareFormatter();
 
   static const appName = 'Keyva';
-  static const loginHeading = 'اطلاعات ورود';
+  static const loginHeading = 'اطلاعات اکانت';
   static const cardHeading = 'اطلاعات کارت';
   static const noteHeading = 'یادداشت';
 

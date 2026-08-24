@@ -178,6 +178,7 @@ void main() {
     await shareFromHost(tester, vm.shareItem);
     await tester.pump();
 
+    expect(find.text('اشتراک‌گذاری'), findsOneWidget);
     expect(find.text('اشتراک‌گذاری انجام نشد'), findsOneWidget);
     AppToast.dismiss();
   });

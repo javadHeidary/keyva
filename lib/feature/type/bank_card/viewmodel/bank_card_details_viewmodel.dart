@@ -90,8 +90,8 @@ class BankCardDetailsViewModel extends GetxController {
   void copyValue(
     BuildContext context,
     String value,
-    String successMessage,
     String title,
+    String successMessage,
   ) {
     if (value.isEmpty) return;
     Clipboard.setData(ClipboardData(text: value));

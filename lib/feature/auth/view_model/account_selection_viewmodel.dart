@@ -12,6 +12,8 @@ class AccountSelectionViewModel extends GetxController {
 
   final AuthRepository _auth;
 
+  static const errorTitle = 'انتخاب حساب';
+
   final status = AccountSelectionStatus.initial.obs;
   final accounts = <AccountSummary>[].obs;
   final errorMessage = ''.obs;

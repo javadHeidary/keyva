@@ -53,6 +53,9 @@ class AppToast {
 
   /// Show a toast. If another toast is already visible, it will be
   /// dismissed first and the new one will appear.
+  ///
+  /// [title] is the short operation heading. [message] is the description
+  /// of what happened or what the user should do next.
   static void show(
     BuildContext context, {
     required String title,
