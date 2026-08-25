@@ -4,6 +4,7 @@ import 'package:keyva/core/session/auto_lock_pause_store.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/widget/view_model/auth_startup_viewmodel.dart';
+import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 class SplashBindings extends Bindings {
@@ -13,6 +14,7 @@ class SplashBindings extends Bindings {
       () => AuthStartupViewModel(
         session: getIt<SessionService>(),
         auth: getIt<AuthRepository>(),
+        settings: getIt<SettingsRepository>(),
         unlock: getIt<VaultUnlockService>(),
         pauseStore: getIt<AutoLockPauseStore>(),
       ),

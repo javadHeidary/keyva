@@ -5,7 +5,7 @@ import 'package:keyva/feature/onboarding/viewmodel/onboarding_viewmodel.dart';
 
 Future<void> precacheOnboardingAssets(BuildContext context) async {
   await Future.wait(
-    OnboardingController().slides.map(
+    onboardingSlides.map(
       (slide) => SvgAssetLoader(slide.imagePath).loadBytes(context),
     ),
   );

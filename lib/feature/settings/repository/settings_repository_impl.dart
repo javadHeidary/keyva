@@ -25,6 +25,20 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
+  Future<bool> loadOnboardingCompleted() async {
+    return _database.appSettings.get(HiveSettingsKeys.onboardingCompleted) ==
+        true;
+  }
+
+  @override
+  Future<void> saveOnboardingCompleted(bool completed) {
+    return _database.appSettings.put(
+      HiveSettingsKeys.onboardingCompleted,
+      completed,
+    );
+  }
+
+  @override
   Future<UserProfile> loadProfile() {
     throw UnimplementedError();
   }

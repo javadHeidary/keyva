@@ -11,6 +11,10 @@ abstract class SettingsRepository {
 
   Future<void> saveThemePreference(ThemePreference preference);
 
+  Future<bool> loadOnboardingCompleted();
+
+  Future<void> saveOnboardingCompleted(bool completed);
+
   Future<SecuritySettingsUiState> loadSecuritySettings();
 
   Future<void> saveSecuritySettings(SecuritySettingsUiState state);

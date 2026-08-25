@@ -6,23 +6,27 @@ import 'package:keyva/core/security/auto_lock_policy.dart';
 import 'package:keyva/core/session/auto_lock_pause_store.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 class AuthStartupViewModel extends GetxController {
   AuthStartupViewModel({
     required SessionService session,
     required AuthRepository auth,
+    required SettingsRepository settings,
     VaultUnlockService? unlock,
     AutoLockPauseStore? pauseStore,
     DateTime Function()? clock,
   }) : _session = session,
        _auth = auth,
+       _settings = settings,
        _unlock = unlock,
        _pauseStore = pauseStore,
        _clock = clock ?? DateTime.now;
 
   final SessionService _session;
   final AuthRepository _auth;
+  final SettingsRepository _settings;
   final VaultUnlockService? _unlock;
   final AutoLockPauseStore? _pauseStore;
   final DateTime Function() _clock;
@@ -36,14 +40,10 @@ class AuthStartupViewModel extends GetxController {
       await _pauseStore?.clearPausedAt();
       return AppRoutes.shell;
     }
-    final result = await _auth.hasAnyAccount();
-    if (result is FailureResult<bool>) {
-      return AppRoutes.authAccounts;
+    if (!await _settings.loadOnboardingCompleted()) {
+      return AppRoutes.onBoarding;
     }
-    if (result is Success<bool> && result.data) {
-      return AppRoutes.authAccounts;
-    }
-    return AppRoutes.onBoarding;
+    return AppRoutes.authAccounts;
   }
 
   Future<bool> _persistedPauseRequiresLock() async {

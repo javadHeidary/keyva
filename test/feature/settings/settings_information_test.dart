@@ -172,6 +172,19 @@ void main() {
   });
 
   testWidgets('unconfigured telegram shows a friendly toast', (tester) async {
+    settings = SettingsViewModel(
+      unlock: unlock,
+      pin: pin,
+      biometric: biometric,
+      session: session,
+      auth: auth,
+      screenProtection: protection,
+      telegramUrl: '',
+      launchUrlFn: (uri) async {
+        launched.add(uri);
+        return launchHandler(uri);
+      },
+    );
     await pumpSettings(tester);
     await reveal(tester, const Key('settings-contact'));
     await tester.tap(find.byKey(const Key('settings-contact')));
@@ -187,6 +200,20 @@ void main() {
   });
 
   testWidgets('unconfigured bale shows a friendly toast', (tester) async {
+    settings = SettingsViewModel(
+      unlock: unlock,
+      pin: pin,
+      biometric: biometric,
+      session: session,
+      auth: auth,
+      screenProtection: protection,
+      baleUrl: '',
+      baleFallbackUrl: '',
+      launchUrlFn: (uri) async {
+        launched.add(uri);
+        return launchHandler(uri);
+      },
+    );
     await pumpSettings(tester);
     await reveal(tester, const Key('settings-contact'));
     await tester.tap(find.byKey(const Key('settings-contact')));
@@ -212,6 +239,7 @@ void main() {
     expect(launched, hasLength(1));
     expect(launched.single.scheme, 'mailto');
     expect(launched.single.path, AppInfo.feedbackEmail);
+    expect(launched.single.path, 'javadheidary.dev@gmail.com');
     expect(find.text('ارتباط با ما'), findsNothing);
   });
 
@@ -233,22 +261,9 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('configured telegram launches and closes the sheet', (
+  testWidgets('telegram launches the configured destination and closes the sheet', (
     tester,
   ) async {
-    settings = SettingsViewModel(
-      unlock: unlock,
-      pin: pin,
-      biometric: biometric,
-      session: session,
-      auth: auth,
-      screenProtection: protection,
-      telegramUrl: 'https://t.me/keyva',
-      launchUrlFn: (uri) async {
-        launched.add(uri);
-        return launchHandler(uri);
-      },
-    );
     await pumpSettings(tester);
     await reveal(tester, const Key('settings-contact'));
     await tester.tap(find.byKey(const Key('settings-contact')));
@@ -256,8 +271,51 @@ void main() {
     await tester.tap(find.byKey(const Key('contact-telegram')));
     await tester.pumpAndSettle();
 
-    expect(launched.single.toString(), 'https://t.me/keyva');
+    expect(launched.single.toString(), AppInfo.telegramUrl);
+    expect(launched.single.toString(), 'https://t.me/dEVHeidary');
     expect(find.text('ارتباط با ما'), findsNothing);
+  });
+
+  testWidgets('bale launches the configured destination and closes the sheet', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+    await reveal(tester, const Key('settings-contact'));
+    await tester.tap(find.byKey(const Key('settings-contact')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('contact-bale')));
+    await tester.pumpAndSettle();
+
+    expect(launched.single.toString(), AppInfo.baleUrl);
+    expect(launched.single.toString(), 'https://ble.ir/devheidary');
+    expect(find.text('ارتباط با ما'), findsNothing);
+  });
+
+  testWidgets('feedback launches mailto with the configured destination', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+    await tester.scrollUntilVisible(
+      find.text('نقد و پیشنهادات'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('نقد و پیشنهادات'));
+    await tester.pumpAndSettle();
+
+    expect(launched, hasLength(1));
+    expect(launched.single.scheme, 'mailto');
+    expect(launched.single.path, AppInfo.feedbackEmail);
+    expect(launched.single.path, 'javadheidary.dev@gmail.com');
+    expect(
+      launched.single.queryParameters['subject'],
+      AppInfo.feedbackEmailSubject,
+    );
+    expect(
+      launched.single.queryParameters['subject'],
+      'نقد و پیشنهاد برای Keyva',
+    );
   });
 
   testWidgets('bale falls back to web url when the app url fails', (
@@ -302,7 +360,6 @@ void main() {
       session: session,
       auth: auth,
       screenProtection: protection,
-      telegramUrl: 'https://t.me/keyva',
       launchUrlFn: (uri) async {
         launched.add(uri);
         throw Exception('unavailable');

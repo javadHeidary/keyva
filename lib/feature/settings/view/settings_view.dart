@@ -10,9 +10,9 @@ import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/change_master_password_dialog.dart';
+import 'package:keyva/feature/settings/widget/contact_us_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/delete_account_dialog.dart';
 import 'package:keyva/feature/settings/widget/faq_guide_bottom_sheet.dart';
-import 'package:keyva/feature/settings/widget/contact_us_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/pin_code_dialog.dart';
 import 'package:keyva/feature/settings/widget/settings_group_card.dart';
 import 'package:keyva/feature/settings/widget/settings_row.dart';
@@ -134,7 +134,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                           KeyedSubtree(
                             key: const Key('settings-prevent-screenshot'),
                             child: SettingsRow.toggle(
-                              title: 'جلوگیری از اسکرین‌شات و ضبط صفحه',
+                              title: 'جلوگیری از اسکرین شات',
                               icon: AppIcon.noPhotography,
                               value:
                                   controller.security.value.preventScreenshot,
@@ -248,14 +248,7 @@ class SettingsView extends GetView<SettingsViewModel> {
                           ),
                         ],
                       ),
-                      SizedBox(height: AppSpacing.sectionGap.h),
-                      AppButtonWidget(
-                        key: const Key('settings-logout'),
-                        title: 'خروج از حساب',
-                        backgroundColor: colors.error.withValues(alpha: 0.12),
-                        foregroundColor: colors.error,
-                        onPressed: () => _confirmLogout(context),
-                      ),
+
                       SizedBox(height: AppSpacing.sectionGap.h),
                       AppButtonWidget(
                         key: const Key('settings-delete-account'),
@@ -294,19 +287,6 @@ class SettingsView extends GetView<SettingsViewModel> {
       description: 'ورود با اثرانگشت روی این دستگاه غیرفعال می‌شود.',
       buttonText: 'غیرفعال کردن',
       onConfirm: () => controller.disableBiometric(context),
-    );
-  }
-
-  void _confirmLogout(BuildContext context) {
-    AppDialogWidget.show(
-      context,
-      type: AppDialogType.warning,
-      title: 'خروج از حساب',
-      description:
-          'با خروج، فقط دسترسی فعلی پایان می‌یابد. داده‌های رمزنگاری‌شده '
-          'روی دستگاه باقی می‌مانند.',
-      buttonText: 'خروج',
-      onConfirm: controller.onLogoutConfirmed,
     );
   }
 }

@@ -4,15 +4,16 @@ class AppInfo {
   static const version = '1.0.0';
   static const buildNumber = '1';
   static const displayVersion = '$version+$buildNumber';
-  static const feedbackEmail = 'support@keyva.app';
+  static const feedbackEmail = 'javadheidary.dev@gmail.com';
   static const supportEmailSubject = 'موضوع: ارتباط با پشتیبانی Keyva';
+  static const feedbackEmailSubject = 'نقد و پیشنهاد برای Keyva';
 
-  /// Official Telegram destination. Empty until a real URL is configured.
-  static const telegramUrl = '';
+  /// Official Telegram destination.
+  static const telegramUrl = 'https://t.me/dEVHeidary';
 
-  /// Preferred Bale app destination (custom scheme or https). Empty if unset.
-  static const baleUrl = '';
+  /// Official Bale destination (https opens in the Bale app or browser).
+  static const baleUrl = 'https://ble.ir/devheidary';
 
-  /// https fallback when the Bale app cannot be opened. Empty if unset.
+  /// Optional extra Bale destination when [baleUrl] cannot be opened.
   static const baleFallbackUrl = '';
 }

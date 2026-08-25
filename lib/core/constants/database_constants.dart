@@ -9,6 +9,7 @@ abstract final class HiveSettingsKeys {
   static const activeUserId = 'activeUserId';
   static const themePreference = 'themePreference';
   static const lastBackgroundedAt = 'lastBackgroundedAt';
+  static const onboardingCompleted = 'onboardingCompleted';
 
   static String pinFailedAttempts(String userId) => 'pinFailedAttempts:$userId';
 

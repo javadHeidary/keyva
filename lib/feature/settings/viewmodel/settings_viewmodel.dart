@@ -133,8 +133,7 @@ class SettingsViewModel extends GetxController {
   final showBiometricSetting = false.obs;
   final isSecurityBusy = false.obs;
 
-  static const _biometricEnableReason =
-      'برای فعال‌سازی ورود با اثرانگشت';
+  static const _biometricEnableReason = 'برای فعال‌سازی ورود با اثرانگشت';
 
   @override
   void onInit() {
@@ -336,7 +335,7 @@ class SettingsViewModel extends GetxController {
     await _openMailto(
       context,
       email: AppInfo.feedbackEmail,
-      subject: 'نقد و پیشنهادات — کیوا',
+      subject: AppInfo.feedbackEmailSubject,
     );
   }
 
@@ -450,7 +449,11 @@ class SettingsViewModel extends GetxController {
   }
 
   void onOpenOtherApps(BuildContext context) {
-    AppToast.info(context, title: 'به‌زودی', message: 'لیست اپلیکیشن‌ها به‌زودی');
+    AppToast.info(
+      context,
+      title: 'به‌زودی',
+      message: 'لیست اپلیکیشن‌ها به‌زودی',
+    );
   }
 
   void onRateApp(BuildContext context) {
@@ -644,11 +647,7 @@ class SettingsViewModel extends GetxController {
       return;
     }
     if (pin != confirmPin) {
-      AppToast.error(
-        context,
-        title: 'کد PIN',
-        message: 'تکرار PIN یکسان نیست',
-      );
+      AppToast.error(context, title: 'کد PIN', message: 'تکرار PIN یکسان نیست');
       return;
     }
     final pinService = _pin;
@@ -696,11 +695,7 @@ class SettingsViewModel extends GetxController {
       return;
     }
     if (pin != confirmPin) {
-      AppToast.error(
-        context,
-        title: 'کد PIN',
-        message: 'تکرار PIN یکسان نیست',
-      );
+      AppToast.error(context, title: 'کد PIN', message: 'تکرار PIN یکسان نیست');
       return;
     }
     final pinService = _pin;
@@ -792,8 +787,6 @@ class SettingsViewModel extends GetxController {
         );
         return;
       }
-      final remaining =
-          (result as Success<AccountDeletionOutcome>).data.hasRemainingAccounts;
       AppToast.success(
         context,
         title: 'حساب حذف شد',
@@ -801,8 +794,7 @@ class SettingsViewModel extends GetxController {
       );
       Navigator.of(context).pop();
       await _unlock.lock();
-      final route = remaining ? AppRoutes.authAccounts : AppRoutes.onBoarding;
-      await Get.offAllNamed(route);
+      await Get.offAllNamed(AppRoutes.authAccounts);
     } finally {
       _endCriticalSection();
       isSecurityBusy.value = false;

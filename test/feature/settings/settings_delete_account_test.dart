@@ -60,10 +60,7 @@ void main() {
         locale: const Locale('fa', 'IR'),
         initialRoute: '/settings-home',
         getPages: [
-          GetPage(
-            name: '/settings-home',
-            page: () => const SettingsView(),
-          ),
+          GetPage(name: '/settings-home', page: () => const SettingsView()),
           GetPage(
             name: AppRoutes.onBoarding,
             page: () => const Scaffold(
@@ -117,17 +114,23 @@ void main() {
     await openDeleteDialog(tester);
 
     expect(find.text('حذف حساب'), findsWidgets);
+    expect(find.textContaining('قابل بازگشت نیست'), findsOneWidget);
     expect(
-      find.textContaining('قابل بازگشت نیست'),
+      find.byKey(const Key('settings-delete-account-password')),
       findsOneWidget,
     );
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
-    expect(find.byKey(const Key('settings-delete-account-cancel')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-cancel')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const Key('settings-delete-account-cancel')));
     await pumpAuthSettle(tester);
 
-    expect(find.byKey(const Key('settings-delete-account-password')), findsNothing);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsNothing,
+    );
     expect(auth.deleteAccountCount, 0);
     expect(unlock.lockCount, 0);
     expect(session.isAuthenticated, isTrue);
@@ -142,7 +145,10 @@ void main() {
     await tester.binding.handlePopRoute();
     await pumpAuthSettle(tester);
 
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('settings-delete-account')), findsOneWidget);
   });
 
@@ -162,15 +168,24 @@ void main() {
     await tester.pump();
 
     expect(settings.isSecurityBusy.value, isTrue);
-    expect(find.byKey(const Key('settings-delete-account-stay-open')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-stay-open')),
+      findsOneWidget,
+    );
 
     await tester.binding.handlePopRoute();
     await tester.pump();
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const Key('settings-delete-account-cancel')));
     await tester.pump();
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
 
     auth.deleteAccountGate!.complete();
     await pumpAuthSettle(tester);
@@ -186,7 +201,10 @@ void main() {
 
     expect(auth.deleteAccountCount, 0);
     expect(find.textContaining('رمز اصلی را وارد کنید'), findsOneWidget);
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
     AppToast.dismiss();
   });
 
@@ -209,11 +227,14 @@ void main() {
     expect(unlock.lockCount, 0);
     expect(session.isAuthenticated, isTrue);
     expect(find.textContaining('رمز اصلی صحیح نیست'), findsOneWidget);
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
     AppToast.dismiss();
   });
 
-  testWidgets('deleting the last account navigates to onboarding', (
+  testWidgets('deleting the last account navigates to account selection', (
     tester,
   ) async {
     auth.deleteHasRemainingAccounts = false;
@@ -230,29 +251,34 @@ void main() {
     expect(auth.deleteAccountCount, 1);
     expect(unlock.lockCount, 1);
     expect(session.isAuthenticated, isFalse);
-    expect(find.byKey(const Key('onboarding-page')), findsOneWidget);
+    expect(find.byKey(const Key('accounts-page')), findsOneWidget);
+    expect(find.byKey(const Key('onboarding-page')), findsNothing);
     expect(find.textContaining('حساب حذف شد'), findsOneWidget);
     AppToast.dismiss();
   });
 
-  testWidgets('deleting one of several accounts navigates to account selection',
-      (tester) async {
-    auth.deleteHasRemainingAccounts = true;
-    await pumpSettings(tester);
-    await openDeleteDialog(tester);
+  testWidgets(
+    'deleting one of several accounts navigates to account selection',
+    (tester) async {
+      auth.deleteHasRemainingAccounts = true;
+      await pumpSettings(tester);
+      await openDeleteDialog(tester);
 
-    await tester.enterText(
-      find.byKey(const Key('settings-delete-account-password')),
-      'correct-master-password',
-    );
-    await tester.tap(find.byKey(const Key('settings-delete-account-confirm')));
-    await pumpAuthSettle(tester);
+      await tester.enterText(
+        find.byKey(const Key('settings-delete-account-password')),
+        'correct-master-password',
+      );
+      await tester.tap(
+        find.byKey(const Key('settings-delete-account-confirm')),
+      );
+      await pumpAuthSettle(tester);
 
-    expect(unlock.lockCount, 1);
-    expect(find.byKey(const Key('accounts-page')), findsOneWidget);
-    expect(find.byKey(const Key('onboarding-page')), findsNothing);
-    AppToast.dismiss();
-  });
+      expect(unlock.lockCount, 1);
+      expect(find.byKey(const Key('accounts-page')), findsOneWidget);
+      expect(find.byKey(const Key('onboarding-page')), findsNothing);
+      AppToast.dismiss();
+    },
+  );
 
   testWidgets('incomplete deletion stays in settings', (tester) async {
     auth.deleteAccountFailure = const DatabaseFailure();
@@ -268,7 +294,10 @@ void main() {
 
     expect(unlock.lockCount, 0);
     expect(session.isAuthenticated, isTrue);
-    expect(find.byKey(const Key('settings-delete-account-password')), findsOneWidget);
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
     expect(find.textContaining('حذف حساب کامل نشد'), findsOneWidget);
     AppToast.dismiss();
   });

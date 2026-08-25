@@ -13,10 +13,6 @@ import 'package:keyva/shared/widget/app_textfield_widget.dart';
 
 enum PinCodeDialogMode { setup, change }
 
-const pinSetupSecurityInfo =
-    'حداکثر ۳ تلاش ناموفق. پس از قفل شدن، ورود فقط با رمز اصلی ممکن است. '
-    'قفل پس از ۱۵ دقیقه برداشته می‌شود و ورود موفق با رمز اصلی هم فوراً آن را باز می‌کند.';
-
 Future<void> showPinCodeDialog(
   BuildContext context, {
   PinCodeDialogMode mode = PinCodeDialogMode.setup,
@@ -84,15 +80,7 @@ class _PinCodeDialogState extends State<_PinCodeDialog> {
                   color: colors.textPrimary,
                 ),
               ),
-              SizedBox(height: AppSpacing.md.h),
-              Text(
-                pinSetupSecurityInfo,
-                key: const Key('settings-pin-security-info'),
-                textAlign: TextAlign.center,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: colors.textSecondary,
-                ),
-              ),
+
               SizedBox(height: AppSpacing.lg.h),
               if (isChange) ...[
                 AppTextFieldWidget(
