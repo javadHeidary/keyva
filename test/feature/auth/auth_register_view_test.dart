@@ -11,7 +11,10 @@ import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/widget/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/settings/model/privacy_policy_content.dart';
+import 'package:keyva/feature/settings/view/privacy_policy_view.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
@@ -64,6 +67,11 @@ void main() {
             ),
             transition: Transition.noTransition,
           ),
+          GetPage(
+            name: AppRoutes.privacyPolicy,
+            page: () => const PrivacyPolicyView(),
+            transition: Transition.noTransition,
+          ),
         ],
       ),
     );
@@ -94,6 +102,12 @@ void main() {
     expect(find.byKey(const Key('auth-register-confirm')), findsOneWidget);
     expect(find.byKey(const Key('auth-register-submit')), findsOneWidget);
     expect(find.text('رمز اصلی'), findsWidgets);
+    expect(
+      find.byKey(const Key('auth-register-privacy-policy')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('با ایجاد حساب'), findsOneWidget);
+    expect(find.text(PrivacyPolicyContent.title), findsOneWidget);
     expect(session.isAuthenticated, isFalse);
   });
 
@@ -236,5 +250,29 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(find.byKey(const Key('restore-page')), findsOneWidget);
+  });
+
+  testWidgets('privacy policy link opens the page and returns to register', (
+    tester,
+  ) async {
+    await pumpRegister(tester);
+    await tester.ensureVisible(
+      find.byKey(const Key('auth-register-privacy-policy')),
+    );
+    await tester.tap(find.text(PrivacyPolicyContent.title));
+    await pumpAuthSettle(tester);
+
+    expect(find.byType(PrivacyPolicyView), findsOneWidget);
+    expect(find.text(PrivacyPolicyContent.title), findsWidgets);
+    expect(find.text('ذخیره‌سازی داده‌ها'), findsOneWidget);
+    expect(session.isAuthenticated, isFalse);
+
+    await tester.tap(find.byIcon(AppIcon.arrowBack));
+    await pumpAuthSettle(tester);
+
+    expect(find.byType(PrivacyPolicyView), findsNothing);
+    expect(find.text('ایجاد حساب جدید'), findsOneWidget);
+    expect(find.byKey(const Key('auth-register-submit')), findsOneWidget);
+    expect(session.isAuthenticated, isFalse);
   });
 }

@@ -10,7 +10,9 @@ import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
 import 'package:keyva/feature/auth/widget/auth_countdown_warning_dialog.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
+import 'package:keyva/feature/auth/widget/auth_privacy_consent_link.dart';
 import 'package:keyva/feature/auth/widget/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/settings/model/privacy_policy_content.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
@@ -160,6 +162,14 @@ class AuthRegisterView extends GetView<RegisterController> {
                         key: const Key('auth-register-submit'),
                         title: 'ایجاد حساب',
                         onPressed: _onRegisterPressed,
+                      ),
+                      SizedBox(height: AppSpacing.md.h),
+                      AuthPrivacyConsentLink(
+                        key: const Key('auth-register-privacy-policy'),
+                        prefix: 'با ایجاد حساب، ',
+                        linkLabel: PrivacyPolicyContent.title,
+                        suffix: ' را می‌پذیرید.',
+                        onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
                       ),
                       SizedBox(height: AppSpacing.sectionGap.h),
                       AuthFooterLink(

@@ -379,7 +379,6 @@ class AppRoutes {
     GetPage(
       name: privacyPolicy,
       page: () => const PrivacyPolicyView(),
-      middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,
       transitionDuration: _pageTransitionDuration,
