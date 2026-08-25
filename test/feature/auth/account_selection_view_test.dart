@@ -3,17 +3,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/routes/app_routing.dart';
+import 'package:keyva/core/security/biometric_service.dart';
+import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
+import 'package:keyva/core/theme/app_responsive.dart';
+import 'package:keyva/core/theme/app_theme.dart';
+import 'package:keyva/feature/auth/bindings/auth_bindings.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
-import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/view/account_selection_view.dart';
+import 'package:keyva/feature/auth/view/auth_login_view.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import 'support/auth_widget_harness.dart';
 import 'support/fake_auth_repository.dart';
+import 'support/fake_biometric_service.dart';
+import 'support/fake_pin_service.dart';
 import 'support/fake_vault_unlock_service.dart';
 
 void main() {
@@ -155,4 +164,72 @@ void main() {
     expect(find.byKey(const Key('auth-account-item-user-b')), findsOneWidget);
     expect(find.byKey(const Key('auth-login-password')), findsNothing);
   });
+
+  testWidgets(
+    'password field focus after account select keeps LoginController',
+    (tester) async {
+      auth.accounts = const [
+        AccountSummary(id: 'user-a', username: 'علی'),
+        AccountSummary(id: 'user-b', username: 'رضا'),
+      ];
+      getIt.registerSingleton<PinService>(FakePinService());
+      getIt.registerSingleton<BiometricService>(FakeBiometricService());
+      setupAuthWidgetSurface(tester);
+      addTearDown(tester.view.resetViewInsets);
+
+      await tester.pumpWidget(
+        GetMaterialApp(
+          theme: AppTheme.light,
+          locale: const Locale('fa', 'IR'),
+          initialRoute: AppRoutes.authAccounts,
+          getPages: [
+            GetPage(
+              name: AppRoutes.authAccounts,
+              page: () => const AccountSelectionView(),
+              binding: AccountSelectionBindings(),
+              transition: Transition.noTransition,
+            ),
+            GetPage(
+              name: AppRoutes.authUnlock,
+              page: () => const AuthLoginView(),
+              binding: UnlockBindings(),
+              transition: Transition.noTransition,
+            ),
+          ],
+          builder: (context, child) {
+            AppResponsive.init(context);
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: child!,
+            );
+          },
+        ),
+      );
+      await pumpAuthSettle(tester);
+
+      await tester.tap(find.byKey(const Key('auth-account-item-user-b')));
+      await pumpAuthSettle(tester);
+
+      expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+      expect(Get.isRegistered<LoginController>(), isTrue);
+
+      await tester.tap(find.byKey(const Key('auth-login-password')));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 320);
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(Get.isRegistered<LoginController>(), isTrue);
+      expect(find.byKey(const Key('auth-login-password')), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('auth-login-password')),
+        'reza-password',
+      );
+      expect(tester.takeException(), isNull);
+      expect(
+        Get.find<LoginController>().passwordController.text,
+        'reza-password',
+      );
+    },
+  );
 }

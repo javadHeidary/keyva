@@ -120,6 +120,9 @@ void initDependencies(HiveDatabase database) {
       keys: getIt<KeyManagementService>(),
       session: getIt<SessionService>(),
       database: getIt<HiveDatabase>(),
+      vaults: getIt<VaultDataSource>(),
+      secureStorage: getIt<SecureStorageService>(),
+      attempts: getIt<UnlockAttemptLimiter>(),
     ),
   );
   getIt.registerLazySingleton<SettingsRepository>(

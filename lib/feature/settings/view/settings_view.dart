@@ -10,6 +10,7 @@ import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/change_master_password_dialog.dart';
+import 'package:keyva/feature/settings/widget/delete_account_dialog.dart';
 import 'package:keyva/feature/settings/widget/faq_guide_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/contact_us_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/pin_code_dialog.dart';
@@ -254,6 +255,14 @@ class SettingsView extends GetView<SettingsViewModel> {
                         backgroundColor: colors.error.withValues(alpha: 0.12),
                         foregroundColor: colors.error,
                         onPressed: () => _confirmLogout(context),
+                      ),
+                      SizedBox(height: AppSpacing.sectionGap.h),
+                      AppButtonWidget(
+                        key: const Key('settings-delete-account'),
+                        title: 'حذف حساب',
+                        backgroundColor: colors.error.withValues(alpha: 0.12),
+                        foregroundColor: colors.error,
+                        onPressed: () => showDeleteAccountDialog(context),
                       ),
                     ],
                   ),

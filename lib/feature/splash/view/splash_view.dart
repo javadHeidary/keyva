@@ -4,7 +4,7 @@ import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-import 'package:keyva/feature/auth/view_model/auth_startup_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_startup_viewmodel.dart';
 import 'package:keyva/feature/onboarding/util/onboarding_precache.dart';
 import 'package:keyva/shared/widget/app_loading_widger.dart';
 
@@ -42,10 +42,7 @@ class _SplashViewState extends State<SplashView> {
   }
 
   Future<void> _prepareThenGo(Future<void> typewriter) async {
-    await Future.wait([
-      typewriter,
-      precacheOnboardingAssets(context),
-    ]);
+    await Future.wait([typewriter, precacheOnboardingAssets(context)]);
     if (!mounted) return;
     await Future.delayed(_pauseBeforeNavigate);
     if (!mounted) return;

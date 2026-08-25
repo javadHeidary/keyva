@@ -395,6 +395,25 @@ void main() {
 
     guarded.onClose();
   });
+
+  test('critical section holds lock until it is released', () async {
+    auth.autoLockTimeout = AutoLockPolicy.immediate;
+    lock.beginCriticalSection();
+
+    lock.handleLifecycle(AppLifecycleState.paused);
+    await settle();
+
+    expect(unlock.lockCount, 0);
+    expect(session.isAuthenticated, isTrue);
+    expect(navigated, 0);
+
+    lock.endCriticalSection();
+    await settle();
+
+    expect(unlock.lockCount, 1);
+    expect(session.isAuthenticated, isFalse);
+    expect(navigated, 1);
+  });
 }
 
 class _FakeTimer implements Timer {

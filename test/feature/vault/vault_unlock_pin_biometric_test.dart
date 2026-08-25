@@ -56,6 +56,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
     pin = PinServiceImpl(
       crypto: crypto,

@@ -9,7 +9,7 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
-import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/icons/app_icons.dart';

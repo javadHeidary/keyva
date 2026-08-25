@@ -7,9 +7,9 @@ import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
-import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
+import 'package:keyva/feature/auth/widget/view_model/account_selection_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
@@ -192,7 +192,7 @@ class _AccountTile extends StatelessWidget {
                 ),
               ),
               Icon(
-                AppIcon.chevronLeft,
+                AppIcon.chevronRight,
                 size: AppSizes.iconMd.s,
                 color: colors.textTertiary,
               ),

@@ -9,6 +9,7 @@ import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service_impl.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/hive_user_data_source.dart';
+import 'package:keyva/core/database/hive_vault_data_source.dart';
 import 'package:keyva/core/database/models/kdf_parameters.dart';
 import 'package:keyva/core/database/models/security_settings.dart';
 import 'package:keyva/core/database/models/user_record.dart';
@@ -43,6 +44,7 @@ void main() {
       keys: KeyManagementServiceImpl(crypto),
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
   });
 
@@ -378,6 +380,7 @@ void main() {
       keys: KeyManagementServiceImpl(crypto),
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
     expect(
       _expectSuccess(await restarted.currentSecuritySettings()).autoLockTimeout,
@@ -427,6 +430,7 @@ void main() {
         keys: KeyManagementServiceImpl(crypto),
         session: session,
         database: database!,
+        vaults: HiveVaultDataSource(database!),
       );
       final result = await failingAuth.setAutoLockTimeout(
         const Duration(minutes: 5),

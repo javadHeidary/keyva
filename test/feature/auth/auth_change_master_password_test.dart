@@ -53,6 +53,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
   });
 
@@ -197,6 +198,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
 
     final result = await failingAuth.changeMasterPassword(
@@ -222,6 +224,7 @@ void main() {
       keys: _FailingWrapKeys(keys),
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
 
     final result = await failingAuth.changeMasterPassword(

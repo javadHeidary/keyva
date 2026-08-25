@@ -57,7 +57,7 @@ class BackupRestoreView extends StatelessWidget {
                     if (!createAccountMode) ...[
                       const AppTitleItemWidget(title: 'پشتیبان‌گیری'),
                       Text(
-                        'یک فایل رمزنگاری‌شده از اطلاعات Vault ایجاد کنید.',
+                        'یک فایل رمزنگاری‌شده از اطلاعات حساب خود ایجاد کنید.',
                         textAlign: TextAlign.right,
                         style: AppTypography.bodySmall.copyWith(
                           color: colors.textSecondary,
@@ -82,7 +82,7 @@ class BackupRestoreView extends StatelessWidget {
                     Text(
                       createAccountMode
                           ? 'فایل پشتیبان را انتخاب کنید. سپس برای این دستگاه یک رمز اصلی جدید می‌سازید.'
-                          : 'اطمینان حاصل کنید که فایل پشتیبان متعلق به Keyva است.',
+                          : 'اطمینان حاصل کنید که فایل پشتیبان متعلق به حساب خود .Keyva است.',
                       textAlign: TextAlign.right,
                       style: AppTypography.bodySmall.copyWith(
                         color: colors.textSecondary,

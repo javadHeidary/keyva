@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:keyva/core/constants/security_constants.dart';
@@ -7,6 +8,7 @@ import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/auth/model/account_deletion_outcome.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 
@@ -35,6 +37,11 @@ class FakeAuthRepository implements AuthRepository {
   AppFailure? setPreventScreenshotsFailure;
   bool userRecordDeleted = false;
   bool vaultRecordDeleted = false;
+  int deleteAccountCount = 0;
+  String? lastDeletePassword;
+  AppFailure? deleteAccountFailure;
+  bool deleteHasRemainingAccounts = false;
+  Completer<void>? deleteAccountGate;
   List<AccountSummary> accounts = const [
     AccountSummary(id: 'user-1', username: 'علی'),
   ];
@@ -207,6 +214,31 @@ class FakeAuthRepository implements AuthRepository {
   Future<Result<void>> logout() async {
     logoutCount++;
     return const Success(null);
+  }
+
+  @override
+  Future<Result<AccountDeletionOutcome>> deleteAccount({
+    required String masterPassword,
+  }) async {
+    deleteAccountCount++;
+    lastDeletePassword = masterPassword;
+    final gate = deleteAccountGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    final failure = deleteAccountFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    userRecordDeleted = true;
+    vaultRecordDeleted = true;
+    if (!deleteHasRemainingAccounts) {
+      accounts = const [];
+      anyAccount = false;
+    }
+    return Success(
+      AccountDeletionOutcome(hasRemainingAccounts: deleteHasRemainingAccounts),
+    );
   }
 }
 

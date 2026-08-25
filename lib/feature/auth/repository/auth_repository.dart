@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:keyva/core/database/models/security_settings.dart';
 import 'package:keyva/core/database/models/user_record.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/auth/model/account_deletion_outcome.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 
 abstract interface class AuthRepository {
@@ -47,4 +48,8 @@ abstract interface class AuthRepository {
   Future<Result<String>> resolveUnlockUserId();
 
   Future<Result<void>> logout();
+
+  Future<Result<AccountDeletionOutcome>> deleteAccount({
+    required String masterPassword,
+  });
 }

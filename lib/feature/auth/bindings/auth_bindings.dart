@@ -3,9 +3,9 @@ import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
-import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
-import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
-import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/account_selection_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_register_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 
 class AccountSelectionBindings extends Bindings {
@@ -47,5 +47,8 @@ void _replace<T>(T Function() create) {
   if (Get.isRegistered<T>()) {
     Get.delete<T>(force: true);
   }
-  Get.put<T>(create());
+  // offAllNamed can dispose the previous route after this page is built.
+  // Without permanent, SmartManagement then deletes the new controller and
+  // GetView fails on the next rebuild (keyboard / text-field focus).
+  Get.put<T>(create(), permanent: true);
 }

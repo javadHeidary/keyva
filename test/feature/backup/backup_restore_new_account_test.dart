@@ -105,6 +105,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: vaultRecords,
     );
     serializer = VaultSerializerImpl();
     vaults = _InterceptingVaultRepository(

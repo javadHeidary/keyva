@@ -34,10 +34,22 @@ class _ChangeMasterPasswordDialogState
 
   @override
   void dispose() {
+    _currentController.clear();
+    _newController.clear();
+    _confirmController.clear();
     _currentController.dispose();
     _newController.dispose();
     _confirmController.dispose();
     super.dispose();
+  }
+
+  void _submit(SettingsViewModel controller) {
+    controller.onChangeMasterPasswordSubmitted(
+      currentPassword: _currentController.text,
+      newPassword: _newController.text,
+      confirmPassword: _confirmController.text,
+      context: context,
+    );
   }
 
   @override
@@ -47,6 +59,7 @@ class _ChangeMasterPasswordDialogState
 
     return Dialog(
       backgroundColor: colors.card,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.modal),
       ),
@@ -64,6 +77,15 @@ class _ChangeMasterPasswordDialogState
                   color: colors.textPrimary,
                 ),
               ),
+              SizedBox(height: AppSpacing.md.h),
+              Text(
+                'رمز اصلی ذخیره نمی‌شود. پس از تغییر، برای ورود با رمز باید از '
+                'رمز جدید استفاده کنید.',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
               SizedBox(height: AppSpacing.lg.h),
               AppTextFieldWidget(
                 key: const Key('settings-change-mp-current'),
@@ -71,6 +93,7 @@ class _ChangeMasterPasswordDialogState
                 labelText: 'رمز اصلی فعلی',
                 obscureText: true,
                 textDirection: TextDirection.ltr,
+                textInputAction: TextInputAction.next,
               ),
               SizedBox(height: AppSpacing.md.h),
               AppTextFieldWidget(
@@ -79,6 +102,7 @@ class _ChangeMasterPasswordDialogState
                 labelText: 'رمز اصلی جدید',
                 obscureText: true,
                 textDirection: TextDirection.ltr,
+                textInputAction: TextInputAction.next,
               ),
               SizedBox(height: AppSpacing.md.h),
               AppTextFieldWidget(
@@ -87,6 +111,8 @@ class _ChangeMasterPasswordDialogState
                 labelText: 'تکرار رمز جدید',
                 obscureText: true,
                 textDirection: TextDirection.ltr,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _submit(controller),
               ),
               SizedBox(height: AppSpacing.xl.h),
               Obx(() {
@@ -97,12 +123,7 @@ class _ChangeMasterPasswordDialogState
                       key: const Key('settings-change-mp-submit'),
                       title: 'تأیید',
                       isLoading: controller.isSecurityBusy.value,
-                      onPressed: () => controller.onChangeMasterPasswordSubmitted(
-                        currentPassword: _currentController.text,
-                        newPassword: _newController.text,
-                        confirmPassword: _confirmController.text,
-                        context: context,
-                      ),
+                      onPressed: () => _submit(controller),
                     ),
                     SizedBox(height: AppSpacing.sm.h),
                     TextButton(

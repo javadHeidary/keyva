@@ -72,6 +72,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: vaultRecords,
     );
     final serializer = VaultSerializerImpl();
     final repository = VaultRepositoryImpl(

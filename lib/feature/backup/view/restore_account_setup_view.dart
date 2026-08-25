@@ -197,7 +197,7 @@ class RestoreAccountSetupView extends StatelessWidget {
                 child: Text(
                   controller.canConfirmDialog.value
                       ? 'متوجه شدم و ادامه می‌دهم'
-                      : 'متوجه شدم (${controller.dialogCountdown.value})',
+                      : 'متوجه شدم',
                   style: AppTypography.button,
                 ),
               ),

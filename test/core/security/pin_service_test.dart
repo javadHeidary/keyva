@@ -7,6 +7,7 @@ import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service_impl.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/hive_user_data_source.dart';
+import 'package:keyva/core/database/hive_vault_data_source.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
@@ -46,6 +47,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: HiveVaultDataSource(database!),
     );
     now = DateTime.utc(2026, 8, 23, 12);
     pin = PinServiceImpl(

@@ -13,6 +13,7 @@ import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/session/app_lock_controller.dart';
 import 'package:keyva/core/session/session_service.dart';
+import 'package:keyva/feature/auth/model/account_deletion_outcome.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
@@ -534,6 +535,8 @@ class SettingsViewModel extends GetxController {
     }
   }
 
+  static const _changeMasterPasswordTitle = 'تغییر رمز اصلی';
+
   Future<void> onChangeMasterPasswordSubmitted({
     required String currentPassword,
     required String newPassword,
@@ -543,16 +546,16 @@ class SettingsViewModel extends GetxController {
     if (isSecurityBusy.value) {
       return;
     }
-    final policyError = MasterPasswordPolicy.fieldError(newPassword);
-    if (policyError != null) {
-      AppToast.error(context, title: 'رمز اصلی', message: policyError);
-      return;
-    }
-    if (newPassword != confirmPassword) {
+    final validationMessage = _changeMasterPasswordValidationMessage(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+    if (validationMessage != null) {
       AppToast.error(
         context,
-        title: 'رمز اصلی',
-        message: 'تکرار رمز با رمز جدید یکسان نیست',
+        title: _changeMasterPasswordTitle,
+        message: validationMessage,
       );
       return;
     }
@@ -560,8 +563,8 @@ class SettingsViewModel extends GetxController {
     if (auth == null) {
       AppToast.error(
         context,
-        title: 'رمز اصلی',
-        message: 'عملیات امنیتی انجام نشد.',
+        title: _changeMasterPasswordTitle,
+        message: 'تغییر رمز اصلی انجام نشد. لطفاً دوباره تلاش کنید.',
       );
       return;
     }
@@ -577,20 +580,55 @@ class SettingsViewModel extends GetxController {
       if (result is FailureResult<void>) {
         AppToast.error(
           context,
-          title: 'رمز اصلی',
-          message: vaultUserMessage(result.failure.message),
+          title: _changeMasterPasswordTitle,
+          message: _changeMasterPasswordFailureMessage(result.failure),
         );
         return;
       }
       AppToast.success(
         context,
-        title: 'رمز اصلی',
-        message: 'رمز اصلی به‌روزرسانی شد',
+        title: 'رمز اصلی تغییر کرد',
+        message: 'از این به بعد برای ورود با رمز، از رمز جدید استفاده کنید.',
       );
       Get.back();
     } finally {
       isSecurityBusy.value = false;
     }
+  }
+
+  String? _changeMasterPasswordValidationMessage({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) {
+    if (currentPassword.isEmpty) {
+      return 'رمز اصلی فعلی را وارد کنید.';
+    }
+    switch (MasterPasswordPolicy.validate(newPassword)) {
+      case MasterPasswordValidationError.empty:
+        return 'رمز اصلی جدید را وارد کنید.';
+      case MasterPasswordValidationError.tooShort:
+        return 'رمز اصلی جدید باید حداقل ۸ کاراکتر باشد.';
+      case null:
+        break;
+    }
+    if (confirmPassword.isEmpty) {
+      return 'تکرار رمز اصلی جدید را وارد کنید.';
+    }
+    if (newPassword != confirmPassword) {
+      return 'تکرار رمز با رمز اصلی جدید یکسان نیست.';
+    }
+    if (newPassword == currentPassword) {
+      return 'رمز اصلی جدید باید با رمز فعلی متفاوت باشد.';
+    }
+    return null;
+  }
+
+  String _changeMasterPasswordFailureMessage(AppFailure failure) {
+    if (failure is AuthenticationFailure) {
+      return 'رمز اصلی فعلی صحیح نیست.';
+    }
+    return 'تغییر رمز اصلی انجام نشد. لطفاً دوباره تلاش کنید.';
   }
 
   Future<void> onPinSubmitted({
@@ -710,5 +748,76 @@ class SettingsViewModel extends GetxController {
   Future<void> onLogoutConfirmed() async {
     await _unlock.lock();
     Get.offAllNamed(AppRoutes.authAccounts);
+  }
+
+  Future<void> onDeleteAccountConfirmed({
+    required String masterPassword,
+    required BuildContext context,
+  }) async {
+    if (isSecurityBusy.value) {
+      return;
+    }
+    if (masterPassword.isEmpty) {
+      AppToast.error(
+        context,
+        title: 'حذف حساب',
+        message: 'رمز اصلی را وارد کنید.',
+      );
+      return;
+    }
+    final auth = _auth;
+    if (auth == null) {
+      AppToast.error(
+        context,
+        title: 'حذف حساب',
+        message: 'عملیات امنیتی انجام نشد.',
+      );
+      return;
+    }
+    isSecurityBusy.value = true;
+    _beginCriticalSection();
+    try {
+      final result = await auth.deleteAccount(masterPassword: masterPassword);
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<AccountDeletionOutcome>) {
+        final failure = result.failure;
+        AppToast.error(
+          context,
+          title: 'حذف حساب',
+          message: failure is AuthenticationFailure
+              ? 'رمز اصلی صحیح نیست'
+              : 'حذف حساب کامل نشد. لطفاً دوباره تلاش کنید.',
+        );
+        return;
+      }
+      final remaining =
+          (result as Success<AccountDeletionOutcome>).data.hasRemainingAccounts;
+      AppToast.success(
+        context,
+        title: 'حساب حذف شد',
+        message: 'اطلاعات این حساب از روی دستگاه پاک شد.',
+      );
+      Navigator.of(context).pop();
+      await _unlock.lock();
+      final route = remaining ? AppRoutes.authAccounts : AppRoutes.onBoarding;
+      await Get.offAllNamed(route);
+    } finally {
+      _endCriticalSection();
+      isSecurityBusy.value = false;
+    }
+  }
+
+  void _beginCriticalSection() {
+    if (Get.isRegistered<AppLockController>()) {
+      Get.find<AppLockController>().beginCriticalSection();
+    }
+  }
+
+  void _endCriticalSection() {
+    if (Get.isRegistered<AppLockController>()) {
+      Get.find<AppLockController>().endCriticalSection();
+    }
   }
 }

@@ -50,6 +50,7 @@ class AppLockController extends GetxController with WidgetsBindingObserver {
   Duration _pausedTimeout = AutoLockPolicy.oneMinute;
   Timer? _timer;
   bool _locking = false;
+  int _criticalHoldCount = 0;
 
   @override
   void onInit() {
@@ -85,6 +86,24 @@ class AppLockController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.detached:
         _showOverlay();
         unawaited(_onBackground());
+    }
+  }
+
+  void beginCriticalSection() {
+    _criticalHoldCount++;
+  }
+
+  void endCriticalSection() {
+    if (_criticalHoldCount == 0) {
+      return;
+    }
+    _criticalHoldCount--;
+    if (_criticalHoldCount > 0 || !_isBackground || !_session.isAuthenticated) {
+      return;
+    }
+    final pausedAt = _pausedAt;
+    if (pausedAt != null && _clock().difference(pausedAt) >= _pausedTimeout) {
+      unawaited(_lock());
     }
   }
 
@@ -204,7 +223,7 @@ class AppLockController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> _lock() async {
-    if (_locking || !_session.isAuthenticated) {
+    if (_locking || !_session.isAuthenticated || _criticalHoldCount > 0) {
       return;
     }
     _locking = true;

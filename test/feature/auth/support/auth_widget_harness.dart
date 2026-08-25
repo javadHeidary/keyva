@@ -10,9 +10,9 @@ import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view/account_selection_view.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
-import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
-import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
-import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/account_selection_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_register_viewmodel.dart';
 
 Widget authTestApp({
   required String initialRoute,
@@ -78,19 +78,15 @@ Widget authTestApp({
       ),
       GetPage(
         name: AppRoutes.shell,
-        page: () => const Scaffold(
-          key: Key('shell-page'),
-          body: SizedBox.shrink(),
-        ),
+        page: () =>
+            const Scaffold(key: Key('shell-page'), body: SizedBox.shrink()),
         middlewares: [SessionGuard()],
         transition: Transition.noTransition,
       ),
       GetPage(
         name: AppRoutes.home,
-        page: () => const Scaffold(
-          key: Key('home-page'),
-          body: SizedBox.shrink(),
-        ),
+        page: () =>
+            const Scaffold(key: Key('home-page'), body: SizedBox.shrink()),
         middlewares: [SessionGuard()],
         transition: Transition.noTransition,
       ),
@@ -98,10 +94,7 @@ Widget authTestApp({
     ],
     builder: (context, child) {
       AppResponsive.init(context);
-      return Directionality(
-        textDirection: TextDirection.rtl,
-        child: child!,
-      );
+      return Directionality(textDirection: TextDirection.rtl, child: child!);
     },
   );
 }

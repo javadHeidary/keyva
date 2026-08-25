@@ -6,12 +6,18 @@ import 'package:keyva/core/crypto/key_management_service.dart';
 import 'package:keyva/core/database/hive_database.dart';
 import 'package:keyva/core/database/models/security_settings.dart';
 import 'package:keyva/core/database/models/user_record.dart';
+import 'package:keyva/core/database/models/vault_record.dart';
 import 'package:keyva/core/database/models/wrapped_vault_key.dart';
 import 'package:keyva/core/database/user_data_source.dart';
+import 'package:keyva/core/database/vault_data_source.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/security/fast_unlock_storage_keys.dart';
 import 'package:keyva/core/security/master_password_policy.dart';
+import 'package:keyva/core/security/secure_storage_service.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service.dart';
+import 'package:keyva/feature/auth/model/account_deletion_outcome.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 
@@ -22,17 +28,26 @@ class AuthRepositoryImpl implements AuthRepository {
     required KeyManagementService keys,
     required SessionService session,
     required HiveDatabase database,
+    required VaultDataSource vaults,
+    SecureStorageService? secureStorage,
+    UnlockAttemptLimiter? attempts,
   }) : _users = users,
        _crypto = crypto,
        _keys = keys,
        _session = session,
-       _database = database;
+       _database = database,
+       _vaults = vaults,
+       _secureStorage = secureStorage,
+       _attempts = attempts;
 
   final UserDataSource _users;
   final CryptoService _crypto;
   final KeyManagementService _keys;
   final SessionService _session;
   final HiveDatabase _database;
+  final VaultDataSource _vaults;
+  final SecureStorageService? _secureStorage;
+  final UnlockAttemptLimiter? _attempts;
 
   @override
   Future<Result<UserRecord>> createAccount({
@@ -390,6 +405,65 @@ class AuthRepositoryImpl implements AuthRepository {
     return const Success<void>(null);
   }
 
+  @override
+  Future<Result<AccountDeletionOutcome>> deleteAccount({
+    required String masterPassword,
+  }) async {
+    final sessionVaultKey = _sessionVaultKey();
+    final userId = _session.current?.userId;
+    if (sessionVaultKey == null || userId == null) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    if (masterPassword.isEmpty) {
+      return const FailureResult(ValidationFailure());
+    }
+
+    final loaded = await _loadCurrentUser();
+    if (loaded is FailureResult<UserRecord>) {
+      return FailureResult(loaded.failure);
+    }
+    final user = (loaded as Success<UserRecord>).data;
+
+    final verified = await _verifyMasterPassword(
+      user: user,
+      masterPassword: masterPassword,
+      sessionVaultKey: sessionVaultKey,
+    );
+    if (verified is FailureResult<void>) {
+      return FailureResult(verified.failure);
+    }
+
+    final remaining = await _remainingAccountCount(excludingUserId: userId);
+    if (remaining is FailureResult<int>) {
+      return FailureResult(remaining.failure);
+    }
+
+    await _purgeDeviceCredentials(userId);
+
+    final vaultDeleted = await _vaults.delete(userId);
+    if (vaultDeleted is FailureResult<void>) {
+      return FailureResult(vaultDeleted.failure);
+    }
+
+    final userDeleted = await _users.delete(userId);
+    if (userDeleted is FailureResult<void>) {
+      return FailureResult(userDeleted.failure);
+    }
+
+    final verifiedWipe = await _verifyAccountDeleted(userId);
+    if (verifiedWipe is FailureResult<void>) {
+      return FailureResult(verifiedWipe.failure);
+    }
+
+    await _clearActiveUserIdIfMatch(userId);
+    _session.clear();
+    return Success(
+      AccountDeletionOutcome(
+        hasRemainingAccounts: (remaining as Success<int>).data > 0,
+      ),
+    );
+  }
+
   Future<void> _rememberActiveUserId(String userId) async {
     try {
       await _database.appSettings.put(HiveSettingsKeys.activeUserId, userId);
@@ -444,6 +518,95 @@ class AuthRepositoryImpl implements AuthRepository {
       return const FailureResult(AuthenticationFailure());
     }
     return Success(user);
+  }
+
+  Future<Result<void>> _verifyMasterPassword({
+    required UserRecord user,
+    required String masterPassword,
+    required Uint8List sessionVaultKey,
+  }) async {
+    final derived = await _crypto.deriveKey(
+      masterPassword: masterPassword,
+      salt: user.kdfSalt,
+      parameters: user.kdfParameters,
+    );
+    if (derived is FailureResult<Uint8List>) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final derivedKey = (derived as Success<Uint8List>).data;
+
+    final unwrapped = await _keys.unwrapVaultKey(
+      wrappedVaultKey: user.wrappedVaultKey,
+      derivedKey: derivedKey,
+    );
+    derivedKey.fillRange(0, derivedKey.length, 0);
+    if (unwrapped is FailureResult<Uint8List>) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    final recoveredKey = (unwrapped as Success<Uint8List>).data;
+    final matches = _sameKey(recoveredKey, sessionVaultKey);
+    recoveredKey.fillRange(0, recoveredKey.length, 0);
+    if (!matches) {
+      return const FailureResult(AuthenticationFailure());
+    }
+    return const Success<void>(null);
+  }
+
+  Future<Result<int>> _remainingAccountCount({
+    required String excludingUserId,
+  }) async {
+    final ids = await _users.listIds();
+    if (ids is FailureResult<List<String>>) {
+      return FailureResult(ids.failure);
+    }
+    final remaining = (ids as Success<List<String>>).data
+        .where((id) => id != excludingUserId)
+        .length;
+    return Success(remaining);
+  }
+
+  Future<void> _purgeDeviceCredentials(String userId) async {
+    final storage = _secureStorage;
+    if (storage != null) {
+      try {
+        await storage.delete(FastUnlockStorageKeys.pinMaterial(userId));
+      } catch (_) {}
+      try {
+        await storage.delete(FastUnlockStorageKeys.biometricMaterial(userId));
+      } catch (_) {}
+    }
+    final attempts = _attempts;
+    if (attempts != null) {
+      await attempts.reset(UnlockAttemptMethod.pin, userId);
+      await attempts.reset(UnlockAttemptMethod.biometric, userId);
+    }
+  }
+
+  Future<Result<void>> _verifyAccountDeleted(String userId) async {
+    final exists = await _users.exists(userId);
+    if (exists is FailureResult<bool>) {
+      return const FailureResult(DatabaseFailure());
+    }
+    if ((exists as Success<bool>).data) {
+      return const FailureResult(DatabaseFailure());
+    }
+    final vault = await _vaults.findByUserId(userId);
+    if (vault is FailureResult<VaultRecord?>) {
+      return const FailureResult(DatabaseFailure());
+    }
+    if ((vault as Success<VaultRecord?>).data != null) {
+      return const FailureResult(DatabaseFailure());
+    }
+    return const Success<void>(null);
+  }
+
+  Future<void> _clearActiveUserIdIfMatch(String userId) async {
+    try {
+      final stored = _database.appSettings.get(HiveSettingsKeys.activeUserId);
+      if (stored == userId) {
+        await _database.appSettings.delete(HiveSettingsKeys.activeUserId);
+      }
+    } catch (_) {}
   }
 
   Uint8List? _sessionVaultKey() {

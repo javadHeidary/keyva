@@ -61,6 +61,7 @@ void main() {
       keys: keys,
       session: session,
       database: database!,
+      vaults: vaults,
     );
     pin = PinServiceImpl(
       crypto: crypto,
