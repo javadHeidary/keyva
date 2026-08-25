@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/constants/layout_constants.dart';
 import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -20,6 +21,7 @@ class CategoryFormScaffold extends StatelessWidget {
     final colors = context.colors;
 
     return Scaffold(
+      resizeToAvoidBottomInset: LayoutConstants.resizeToAvoidBottomInset,
       backgroundColor: colors.pageBackground,
       body: SafeArea(
         child: CustomScrollView(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/constants/layout_constants.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
@@ -20,6 +21,7 @@ class RestoreAccountSetupView extends StatelessWidget {
     final controller = Get.find<RestoreViewModel>();
 
     return Scaffold(
+      resizeToAvoidBottomInset: LayoutConstants.resizeToAvoidBottomInset,
       backgroundColor: colors.pageBackground,
       body: SafeArea(
         child: Column(
@@ -197,7 +199,7 @@ class RestoreAccountSetupView extends StatelessWidget {
                 child: Text(
                   controller.canConfirmDialog.value
                       ? 'متوجه شدم و ادامه می‌دهم'
-                      : 'متوجه شدم',
+                      : 'متوجه شدم (${controller.dialogCountdown.value})',
                   style: AppTypography.button,
                 ),
               ),

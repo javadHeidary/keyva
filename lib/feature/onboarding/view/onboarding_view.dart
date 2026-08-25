@@ -38,11 +38,14 @@ class OnboardingView extends GetView<OnboardingController> {
                             flex: 3,
                             child: Center(
                               child: SvgPicture.asset(
+                                slide.imagePath,
                                 width: 220.w,
                                 height: 220.h,
-
-                                slide.imagePath,
                                 fit: BoxFit.contain,
+                                colorFilter: ColorFilter.mode(
+                                  context.colors.textPrimary,
+                                  BlendMode.srcIn,
+                                ),
                               ),
                             ),
                           ),
@@ -50,7 +53,9 @@ class OnboardingView extends GetView<OnboardingController> {
                           Text(
                             slide.title,
                             textAlign: TextAlign.right,
-                            style: AppTypography.displaySmall,
+                            style: AppTypography.displaySmall.copyWith(
+                              color: context.colors.textPrimary,
+                            ),
                           ),
 
                           SizedBox(height: 16.h),
@@ -58,7 +63,9 @@ class OnboardingView extends GetView<OnboardingController> {
                           Text(
                             slide.description,
                             textAlign: TextAlign.right,
-                            style: AppTypography.titleMedium,
+                            style: AppTypography.bodyLarge.copyWith(
+                              color: context.colors.textSecondary,
+                            ),
                           ),
 
                           const Spacer(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/constants/layout_constants.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/master_password_policy.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
@@ -28,7 +29,7 @@ class AuthRegisterView extends GetView<RegisterController> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: LayoutConstants.resizeToAvoidBottomInset,
       body: AuthErrorToastBinder(
         message: controller.errorMessage,
         errorTitle: RegisterController.errorTitle,

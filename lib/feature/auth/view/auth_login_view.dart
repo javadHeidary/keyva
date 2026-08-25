@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:keyva/core/constants/layout_constants.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/pin_policy.dart';
@@ -9,10 +10,10 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
 import 'package:keyva/feature/auth/widget/auth_method_tile.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -28,7 +29,7 @@ class AuthLoginView extends GetView<LoginController> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: LayoutConstants.resizeToAvoidBottomInset,
       body: AuthErrorToastBinder(
         message: controller.errorMessage,
         errorTitle: LoginController.errorTitle,
@@ -43,6 +44,7 @@ class AuthLoginView extends GetView<LoginController> {
                 textDirection: TextDirection.rtl,
                 child: Column(
                   children: [
+                    SizedBox(height: AppSpacing.huge.h),
                     Obx(() => _navigationHeader(context)),
                     Expanded(
                       child: LayoutBuilder(
@@ -83,7 +85,7 @@ class AuthLoginView extends GetView<LoginController> {
                                   Obx(() => _secondaryActions(context)),
                                   SizedBox(height: AppSpacing.sectionGap.h),
                                   AuthFooterLink(
-                                    prefix: 'حسابی ندارید؟ ',
+                                    prefix: 'نیاز به حساب دارید؟ ',
                                     actionLabel: 'ایجاد حساب',
                                     onTap: () =>
                                         Get.toNamed(AppRoutes.authRegister),

@@ -133,7 +133,7 @@ class AccountSelectionView extends GetView<AccountSelectionViewModel> {
               ),
             ),
             AuthFooterLink(
-              prefix: 'حسابی ندارید؟ ',
+              prefix: 'نیاز به حساب دارید؟ ',
               actionLabel: 'ایجاد حساب',
               onTap: controller.openRegister,
             ),

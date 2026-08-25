@@ -76,7 +76,7 @@ Future<void> showAuthCountdownWarningDialog({
                       key: const Key('auth-register-warning-confirm'),
                       title: canSubmit
                           ? 'متوجه شدم و ادامه می‌دهم'
-                          : 'متوجه شدم (${countdown.value})',
+                          : 'متوجه شدم',
                       textStyle: AppTypography.withFaNum(AppTypography.button),
                       enabled: canSubmit,
                       onPressed: canSubmit

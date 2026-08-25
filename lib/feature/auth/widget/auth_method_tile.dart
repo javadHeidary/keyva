@@ -71,7 +71,7 @@ class AuthMethodTile extends StatelessWidget {
                   AppLoadingWidget.inline(color: colors.primary)
                 else
                   Icon(
-                    AppIcon.chevronLeft,
+                    AppIcon.chevronRight,
                     size: AppSizes.iconMd.s,
                     color: colors.textTertiary,
                   ),

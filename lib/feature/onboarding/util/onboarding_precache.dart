@@ -13,7 +13,7 @@ Future<void> precacheOnboardingAssets(BuildContext context) async {
 }
 
 void _warmOnboardingTypography() {
-  final styles = [AppTypography.displaySmall, AppTypography.titleMedium];
+  final styles = [AppTypography.displaySmall, AppTypography.bodyLarge];
   for (final style in styles) {
     final painter = TextPainter(
       text: TextSpan(text: 'گاوصندوق امن', style: style),
