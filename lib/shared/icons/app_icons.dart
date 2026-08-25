@@ -24,6 +24,9 @@ class AppIcon {
   static const creditCard = LucideIcons.creditCard;
   static const note = LucideIcons.fileText;
   static const stickyNote = LucideIcons.stickyNote;
+  static const images = LucideIcons.image;
+  static const image = LucideIcons.image;
+  static const camera = LucideIcons.camera;
   static const folder = LucideIcons.folder;
   static const folderPlus = LucideIcons.folderPlus;
   static const tag = LucideIcons.tag;

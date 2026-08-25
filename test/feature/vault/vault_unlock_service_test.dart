@@ -388,6 +388,8 @@ void main() {
       'bankCards',
       'secureNotes',
       'categories',
+      'imageFolders',
+      'images',
     ]);
     expect(_containsSequence(serialized, session.vaultKey!), isFalse);
   }, timeout: kdfTimeout);

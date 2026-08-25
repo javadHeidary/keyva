@@ -522,6 +522,8 @@ void main() {
     await pumpVaultFrame(tester);
 
     expect(find.text('حذف آیتم'), findsOneWidget);
+    expect(find.byKey(const Key('app-dialog-cancel')), findsOneWidget);
+    expect(find.text('انصراف'), findsOneWidget);
 
     await tester.tap(find.text('حذف').last);
     await pumpVaultFrame(tester);

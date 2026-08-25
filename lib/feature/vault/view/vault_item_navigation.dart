@@ -8,6 +8,7 @@ String vaultItemDetailsRoute(VaultItemType type) {
     VaultItemType.login => AppRoutes.loginDetails,
     VaultItemType.bankCard => AppRoutes.bankCardDetails,
     VaultItemType.secureNote => AppRoutes.noteDetails,
+    VaultItemType.image => AppRoutes.imageFolder,
   };
 }
 

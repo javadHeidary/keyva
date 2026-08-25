@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 
-enum VaultItemType { login, bankCard, secureNote }
+enum VaultItemType { login, bankCard, secureNote, image }
 
 extension VaultItemTypeX on VaultItemType {
   String get label {
@@ -12,6 +12,8 @@ extension VaultItemTypeX on VaultItemType {
         return 'کارت‌های بانکی';
       case VaultItemType.secureNote:
         return 'یادداشت‌ها';
+      case VaultItemType.image:
+        return 'تصاویر';
     }
   }
 
@@ -21,6 +23,7 @@ extension VaultItemTypeX on VaultItemType {
         return 'لیست اکانت‌ها';
       case VaultItemType.bankCard:
       case VaultItemType.secureNote:
+      case VaultItemType.image:
         return label;
     }
   }
@@ -33,6 +36,8 @@ extension VaultItemTypeX on VaultItemType {
         return AppIcon.creditCard;
       case VaultItemType.secureNote:
         return AppIcon.stickyNote;
+      case VaultItemType.image:
+        return AppIcon.images;
     }
   }
 }

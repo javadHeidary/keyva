@@ -81,7 +81,7 @@ Backup Key derivation uses a **fresh salt** and `KeyManagementService.defaultKdf
 
 ## Exact envelope format
 
-UTF-8 JSON. Exact keys only. Binary fields are Base64. `formatVersion` **must be `1`**. Any other version is rejected.
+UTF-8 JSON. Exact keys only. Binary fields are Base64. `formatVersion` **must be `1` or `2`**. Current writes use `SecurityConstants.backupFormatVersion` (`2`). Version `1` files remain readable. Any other version is rejected.
 
 ```text
 {
@@ -104,19 +104,19 @@ Suggested filename: `keyva_backup_YYYY-MM-DD.keyva`. Date-only; no username or i
 
 ## Exact payload
 
-The encrypted ciphertext is `VaultSerializer` bytes of `VaultData`:
+The encrypted ciphertext is versioned:
 
-- `version`
-- `logins`
-- `bankCards`
-- `secureNotes`
-- `categories`
+**v1 (legacy):** raw `VaultSerializer` bytes of `VaultData` (`version`, `logins`, `bankCards`, `secureNotes`, `categories`). Missing `imageFolders` / `images` deserialize as empty lists.
 
-Empty lists are valid. An empty Vault is not treated as corruption.
+**v2 (current):** JSON `{ "vault": <VaultData JSON>, "imageBlobs": { blobId: base64 } }`. `vault` includes `imageFolders` and `images` metadata. `imageBlobs` holds plaintext photo bytes that were decrypted from sidecar files with the **session Vault Key** at create time. A missing referenced blob fails closed (`BackupExportFailure`); no file is written.
 
-**Restored:** Vault item collections and category records inside `VaultData`.
+Empty lists and an empty `imageBlobs` map are valid.
 
-**Not restored:** `UserRecord`, Master Password, PIN, biometric configuration, account identity, `SecuritySettings`, Hive `activeUserId`, session state.
+**Restored:** Vault item collections (including image folders and photo metadata) and sidecar bytes rewritten with the **current** session Vault Key, then `replaceVault`.
+
+**Not restored:** `UserRecord`, Master Password, PIN, biometric configuration, account identity, `SecuritySettings`, Hive `activeUserId`, session state, the original Vault Key.
+
+Task 21 owns the image blob store. Task 14 owns the envelope and Backup Password crypto.
 
 ---
 
@@ -129,13 +129,15 @@ Backup password + confirm
  ↓
 VaultOperationService.getVault()
  ↓
-VaultSerializer.serialize
+Decrypt sidecar blobs with the session Vault Key (fail closed if missing)
+ ↓
+BackupPayloadCodec.encode ({ vault, imageBlobs })
  ↓
 Argon2id(Backup Password) → Backup Key
  ↓
 AES-256-GCM encrypt
  ↓
-BackupEnvelope JSON
+BackupEnvelope JSON (formatVersion 2)
  ↓
 BackupFileService.export (system save dialog)
 ```
@@ -151,10 +153,12 @@ Fail-closed. Decrypt and validate fully in memory before any persist. Logged-in 
 Shared steps:
 
 1. `BackupFileService.pick` (in-memory bytes, or path fallback)
-2. Envelope validation (`formatVersion == 1`)
+2. Envelope validation (`formatVersion` 1 or 2)
 3. Backup Password → Argon2id → AES-GCM decrypt
-4. `VaultSerializer.deserialize` + `VaultData` validation
-5. Preview (item counts only)
+4. `BackupPayloadCodec.decode` (v2 `{ vault, imageBlobs }` or v1 raw `VaultData`) + validation
+5. Preview (item counts, including `پوشه تصویر` and `تصویر`)
+
+Both restore paths then **stage** restored sidecar files next to the live `vault_blobs/{userId}` directory, call `replaceVault`, and only then swap the staged files into place. If blob staging fails, the live vault and live blobs are unchanged. If `replaceVault` fails, staged/new blobs are rolled back so current metadata is never left pointing at missing files. A failed new-account persist also deletes that user’s blob directory.
 
 ### Scenario A — no account / new device
 
@@ -169,16 +173,20 @@ RestoreAccountSetup (username + new Master Password)
  ↓
 AuthRepository.createAccount
  ↓
-VaultUnlockService.unlock
+VaultUnlockService.unlock (new Vault Key)
+ ↓
+EncryptedBlobStore.installReplace (sidecars re-encrypted with the new key)
  ↓
 VaultDataService.replaceVault
+ ↓
+EncryptedBlobStore.finalizeReplace
  ↓
 shell / Home
 ```
 
 The Backup Password is used only to decrypt. It does not become the Master Password. The restored account gets a new `userId` and a new Vault Key wrapped by the new Master Password.
 
-If persist fails after `createAccount`, restore locks the session and deletes the just-created `UserRecord` and vault row.
+If persist fails after `createAccount`, restore locks the session, deletes the just-created blob directory, and deletes the just-created `UserRecord` and vault row.
 
 ### Scenario B — logged-in replace
 
@@ -187,7 +195,11 @@ Entry: Settings → Backup & Restore.
 ```text
 preview + replacement confirmation (جایگزینی / انصراف)
  ↓
+EncryptedBlobStore.installReplace (sidecars re-encrypted with the current Vault Key)
+ ↓
 VaultDataService.replaceVault
+ ↓
+EncryptedBlobStore.finalizeReplace
  ↓
 VaultRepository.saveVaultData (current Vault Key)
  ↓
@@ -211,9 +223,10 @@ Sequence:
 3. `saveVaultData()` with the **current** Vault Key (create-or-update, never delete first).
 4. After Hive success, apply `VaultSession.unlock(restoredVault)` **only if** `VaultSession` is still unlocked.
 5. Never clear or replace the Vault Key.
-6. If persistence fails, keep the previous `VaultSession` state and the previous Hive `VaultRecord`.
+6. If persistence fails, keep the previous `VaultSession` state and the previous Hive `VaultRecord`, and roll image sidecars back to the previous directory.
+7. If persistence succeeds, discard the previous sidecar directory.
 
-`BackupService` does not write Hive, mutate `VaultSession`, or open file pickers. It coordinates restore by calling `replaceVault`.
+`BackupService` does not write Hive, mutate `VaultSession`, or open file pickers. It coordinates restore by staging image sidecars, calling `replaceVault`, then committing or rolling back those sidecars.
 
 ---
 
@@ -307,7 +320,8 @@ Raw Hive/crypto exceptions are never shown.
 | `backup_file_service_test.dart` | In-memory bytes; path fallback; unreadable path; cancelled picker |
 | `backup_restore_lock_test.dart` | Hive: persist Vault A, fail save, Hive still A; lock before save keeps Hive A; lock after save does not rehydrate `VaultSession` |
 | `backup_restore_auth_test.dart` | After logged-in restore: same Vault Key; PIN unwrap; biometric unwrap; Master Password unlock |
-| `backup_restore_new_account_test.dart` | No-account restore; backup password ≠ master password; old master not required; persist failure rolls back the new account |
+| `backup_restore_new_account_test.dart` | No-account restore; backup password ≠ master password; old master not required; persist failure rolls back the new account; image blobs re-encrypted with the new Vault Key |
+| `backup_images_test.dart` | v2 folders + photo bytes; missing blob fails closed; v1 without images still restores |
 | `backup_restore_multi_account_test.dart` | Restore into B leaves A unchanged |
 | `backup_restore_view_test.dart` | Settings row; hub copy; password validation; confirm mismatch; cancel export; preview counts without secrets; replacement cancel; lock races; persist failure; logged-out hub; new-account commit uses new master password |
 | `backup_restore_home_test.dart` | Home shows Vault A, restore Vault B, Home and Search show Vault B |

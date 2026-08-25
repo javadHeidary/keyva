@@ -154,7 +154,10 @@ class HomeController extends GetxController {
   List<VaultListItem> get vaultItems {
     vault.status.value;
     vault.searchQuery.value;
-    return mapVaultVisibleItems(vault.visibleItems);
+    return mapVaultVisibleItems(
+      vault.visibleItems,
+      vault: vault.vault.value,
+    );
   }
 
   List<VaultTypeSummary> get typeSummaries {
@@ -455,9 +458,11 @@ class HomeController extends GetxController {
       context,
       type: AppDialogType.warning,
       title: 'حذف آیتم',
-      description:
-          '«${item.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
+      description: item.type == VaultItemType.image
+          ? '«${item.title}» و همه عکس‌های داخل آن برای همیشه حذف می‌شوند. این کار قابل بازگشت نیست.'
+          : '«${item.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
       buttonText: 'حذف',
+      cancelText: 'انصراف',
       onConfirm: () {
         if (isVaultSubmitting) {
           return;
@@ -483,6 +488,9 @@ class HomeController extends GetxController {
         break;
       case VaultItemType.secureNote:
         Get.toNamed(AppRoutes.noteCreate, arguments: arguments);
+        break;
+      case VaultItemType.image:
+        Get.toNamed(AppRoutes.imageFolderCreate, arguments: arguments);
         break;
     }
   }

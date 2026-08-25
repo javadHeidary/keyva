@@ -3,6 +3,7 @@ import 'package:keyva/feature/home/model/item_type_sample_factory.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/type/bank_card/util/bank_card_util.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 
@@ -44,5 +45,13 @@ void main() {
 
     expect(item.title, ItemTypeSampleFactory.noteTitle);
     expect(item.content, ItemTypeSampleFactory.noteContent);
+  });
+
+  test('creates a demo image folder', () {
+    final item =
+        factory.create(VaultItemType.image, now: now) as ImageFolder;
+
+    expect(item.title, ItemTypeSampleFactory.imageFolderTitle);
+    expect(item.categoryId, isNull);
   });
 }

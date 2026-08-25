@@ -29,4 +29,12 @@ void main() {
     expect(content.title, 'یادداشت چیست؟');
     expect(content.examples, contains('یادداشت‌های خصوصی'));
   });
+
+  test('image content explains folders first', () {
+    final content = ItemTypeGuideContent.forType(VaultItemType.image);
+
+    expect(content.title, 'پوشه تصاویر چیست؟');
+    expect(content.description, contains('پوشه'));
+    expect(content.examples, contains('عکس‌های شناسنامه'));
+  });
 }

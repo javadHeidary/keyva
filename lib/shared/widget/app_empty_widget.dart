@@ -73,6 +73,13 @@ class AppEmptyWidget extends StatelessWidget {
           description: 'اولین یادداشت امن خود را اضافه کنید.',
           layout: AppEmptyLayout.card,
         );
+      case VaultItemType.image:
+        return const AppEmptyWidget(
+          icon: AppIcon.images,
+          title: 'هنوز پوشه‌ای برای تصاویر نساخته‌اید',
+          description: 'اولین پوشه را بسازید و عکس‌های مهم را در آن نگه دارید.',
+          layout: AppEmptyLayout.card,
+        );
     }
   }
 

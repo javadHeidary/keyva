@@ -1,7 +1,10 @@
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/feature/vault/blob/encrypted_blob_store.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -13,11 +16,14 @@ class VaultOperationServiceImpl implements VaultOperationService {
   VaultOperationServiceImpl({
     required VaultDataService vaultData,
     required VaultSession vaultSession,
+    EncryptedBlobStore? blobs,
   }) : _vaultData = vaultData,
-       _vaultSession = vaultSession;
+       _vaultSession = vaultSession,
+       _blobs = blobs;
 
   final VaultDataService _vaultData;
   final VaultSession _vaultSession;
+  final EncryptedBlobStore? _blobs;
 
   @override
   Future<Result<VaultData>> getVault() async {
@@ -51,6 +57,8 @@ class VaultOperationServiceImpl implements VaultOperationService {
       BankCardItem card => _vaultData.addBankCard(card),
       SecureNoteItem note => _vaultData.addSecureNote(note),
       CategoryItem category => _vaultData.addCategory(category),
+      ImageFolder folder => _vaultData.addImageFolder(folder),
+      ImageItem image => _vaultData.addImage(image),
       _ => Future.value(const FailureResult(ValidationFailure())),
     };
   }
@@ -62,6 +70,8 @@ class VaultOperationServiceImpl implements VaultOperationService {
       BankCardItem card => _vaultData.updateBankCard(card),
       SecureNoteItem note => _vaultData.updateSecureNote(note),
       CategoryItem category => _vaultData.updateCategory(category),
+      ImageFolder folder => _vaultData.updateImageFolder(folder),
+      ImageItem image => _vaultData.updateImage(image),
       _ => Future.value(const FailureResult(ValidationFailure())),
     };
   }
@@ -84,6 +94,30 @@ class VaultOperationServiceImpl implements VaultOperationService {
     }
     if (vault.categories.any((category) => category.id == id)) {
       return _vaultData.deleteCategory(id);
+    }
+
+    final folder = _folderById(vault, id);
+    if (folder != null) {
+      final blobIds = [
+        for (final image in vault.images)
+          if (image.folderId == id) ...[image.blobId, image.thumbnailBlobId],
+      ];
+      final deleted = await _vaultData.deleteImageFolder(id);
+      if (deleted is FailureResult<void>) {
+        return deleted;
+      }
+      await _blobs?.deleteMany(blobIds);
+      return deleted;
+    }
+
+    final image = _imageById(vault, id);
+    if (image != null) {
+      final deleted = await _vaultData.deleteImage(id);
+      if (deleted is FailureResult<void>) {
+        return deleted;
+      }
+      await _blobs?.deleteMany([image.blobId, image.thumbnailBlobId]);
+      return deleted;
     }
     return const FailureResult(ValidationFailure());
   }
@@ -121,8 +155,29 @@ class VaultOperationServiceImpl implements VaultOperationService {
       SecureNoteItem note => _vaultData.updateSecureNote(
         note.copyWith(isPinned: isPinned),
       ),
+      ImageFolder folder => _vaultData.updateImageFolder(
+        folder.copyWith(isPinned: isPinned),
+      ),
       _ => const FailureResult(ValidationFailure()),
     };
+  }
+
+  static ImageFolder? _folderById(VaultData vault, String id) {
+    for (final folder in vault.imageFolders) {
+      if (folder.id == id) {
+        return folder;
+      }
+    }
+    return null;
+  }
+
+  static ImageItem? _imageById(VaultData vault, String id) {
+    for (final image in vault.images) {
+      if (image.id == id) {
+        return image;
+      }
+    }
+    return null;
   }
 
   static Object? _findVaultEntry(VaultData vault, String id) {
@@ -141,6 +196,11 @@ class VaultOperationServiceImpl implements VaultOperationService {
         return note;
       }
     }
+    for (final folder in vault.imageFolders) {
+      if (folder.id == id) {
+        return folder;
+      }
+    }
     return null;
   }
 
@@ -149,6 +209,7 @@ class VaultOperationServiceImpl implements VaultOperationService {
       LoginItem login => login.isPinned,
       BankCardItem card => card.isPinned,
       SecureNoteItem note => note.isPinned,
+      ImageFolder folder => folder.isPinned,
       _ => false,
     };
   }
@@ -167,6 +228,16 @@ class VaultOperationServiceImpl implements VaultOperationService {
     for (final note in vault.secureNotes) {
       if (note.id == id) {
         return note;
+      }
+    }
+    for (final folder in vault.imageFolders) {
+      if (folder.id == id) {
+        return folder;
+      }
+    }
+    for (final image in vault.images) {
+      if (image.id == id) {
+        return image;
       }
     }
     for (final category in vault.categories) {

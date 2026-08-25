@@ -66,6 +66,14 @@ class CategoryItemsView extends GetView<HomeController> {
               categoryId: categoryId,
             ),
           ),
+          AppFabChildButton(
+            key: const Key('category-items-fab-image'),
+            icon: Icon(AppIcon.images),
+            onPressed: () => controller.onAddItemForType(
+              VaultItemType.image,
+              categoryId: categoryId,
+            ),
+          ),
         ],
       ),
       body: SafeArea(

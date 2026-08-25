@@ -33,6 +33,12 @@ import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/settings/repository/settings_repository_impl.dart';
+import 'package:keyva/feature/type/image/service/image_capture_service.dart';
+import 'package:keyva/feature/type/image/service/image_capture_service_impl.dart';
+import 'package:keyva/feature/type/image/service/image_photo_service.dart';
+import 'package:keyva/feature/type/image/service/image_prepare_service.dart';
+import 'package:keyva/feature/vault/blob/encrypted_blob_store.dart';
+import 'package:keyva/feature/vault/blob/encrypted_blob_store_impl.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository_impl.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
@@ -74,6 +80,12 @@ void initDependencies(HiveDatabase database) {
     () => KeyManagementServiceImpl(getIt<CryptoService>()),
   );
   getIt.registerLazySingleton<SessionService>(SessionServiceImpl.new);
+  getIt.registerLazySingleton<EncryptedBlobStore>(
+    () => EncryptedBlobStoreImpl(
+      crypto: getIt<CryptoService>(),
+      session: getIt<SessionService>(),
+    ),
+  );
   getIt.registerLazySingleton<AutoLockPauseStore>(
     () => HiveAutoLockPauseStore(getIt<HiveDatabase>()),
   );
@@ -126,6 +138,7 @@ void initDependencies(HiveDatabase database) {
       vaults: getIt<VaultDataSource>(),
       secureStorage: getIt<SecureStorageService>(),
       attempts: getIt<UnlockAttemptLimiter>(),
+      blobs: getIt<EncryptedBlobStore>(),
     ),
   );
   getIt.registerLazySingleton<SettingsRepository>(
@@ -148,6 +161,7 @@ void initDependencies(HiveDatabase database) {
       pin: getIt<PinService>(),
       biometric: getIt<BiometricService>(),
       screenProtection: getIt<ScreenProtectionService>(),
+      blobs: getIt<EncryptedBlobStore>(),
     ),
   );
   getIt.registerLazySingleton<VaultDataService>(
@@ -161,6 +175,19 @@ void initDependencies(HiveDatabase database) {
     () => VaultOperationServiceImpl(
       vaultData: getIt<VaultDataService>(),
       vaultSession: getIt<VaultSession>(),
+      blobs: getIt<EncryptedBlobStore>(),
+    ),
+  );
+  getIt.registerLazySingleton<ImagePrepareService>(
+    ImagePrepareServiceImpl.new,
+  );
+  getIt.registerLazySingleton<ImageCaptureService>(
+    () => ImageCaptureServiceImpl(prepare: getIt<ImagePrepareService>()),
+  );
+  getIt.registerLazySingleton<ImagePhotoService>(
+    () => ImagePhotoService(
+      operations: getIt<VaultOperationService>(),
+      blobs: getIt<EncryptedBlobStore>(),
     ),
   );
   getIt.registerLazySingleton<StoreConfig>(StoreConfig.fromEnvironment);
@@ -178,6 +205,7 @@ void initDependencies(HiveDatabase database) {
       unlock: getIt<VaultUnlockService>(),
       users: getIt<UserDataSource>(),
       vaults: getIt<VaultDataSource>(),
+      blobs: getIt<EncryptedBlobStore>(),
     ),
   );
   getIt.registerFactory<VaultHomeViewModel>(

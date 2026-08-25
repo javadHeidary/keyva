@@ -90,7 +90,8 @@ void main() {
       find.byKey(const Key('item-type-guide-info-secureNote')),
       findsOneWidget,
     );
-    expect(find.byIcon(AppIcon.chevronRight), findsNWidgets(3));
+    expect(find.byKey(const Key('item-type-guide-info-image')), findsOneWidget);
+    expect(find.byIcon(AppIcon.chevronRight), findsNWidgets(4));
   });
 
   testWidgets('tapping login info opens the login guide dialog', (
@@ -126,6 +127,7 @@ void main() {
       find.byKey(const Key('item-type-guide-info-secureNote')),
       findsOneWidget,
     );
+    expect(find.byKey(const Key('item-type-guide-info-image')), findsOneWidget);
     expect(settings.itemTypeGuideStatuses['login'], 'dismissed');
   });
 
@@ -186,5 +188,6 @@ void main() {
       find.byKey(const Key('item-type-guide-info-bankCard')),
       findsOneWidget,
     );
+    expect(find.byKey(const Key('item-type-guide-info-image')), findsOneWidget);
   });
 }

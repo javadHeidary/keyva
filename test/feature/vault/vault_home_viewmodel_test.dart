@@ -6,6 +6,8 @@ import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/category/model/category_defaults.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -134,6 +136,47 @@ void main() {
       expect(viewModel.vault.value, operations.vault);
       expect(viewModel.visibleItems, [login(), card(), note(), category()]);
       expect(viewModel.errorMessage.value, isNull);
+    });
+
+    test('lists image folders and hides individual photos', () async {
+      final album = ImageFolder(
+        id: 'folder-1',
+        title: 'ID photos',
+        categoryId: null,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+      operations.vault = VaultData(
+        version: VaultData.currentVersion,
+        logins: const [],
+        bankCards: const [],
+        secureNotes: const [],
+        categories: const [],
+        imageFolders: [album],
+        images: [
+          ImageItem(
+            id: 'photo-1',
+            folderId: 'folder-1',
+            note: 'hidden-from-home',
+            blobId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            thumbnailBlobId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+            mimeType: 'image/jpeg',
+            width: 10,
+            height: 10,
+            createdAt: createdAt,
+          ),
+        ],
+      );
+
+      await viewModel.loadVault();
+
+      expect(viewModel.visibleItems, [album]);
+      expect(viewModel.visibleItems.whereType<ImageItem>(), isEmpty);
+
+      viewModel.searchItems('ID photos');
+      expect(viewModel.visibleItems, [album]);
+      viewModel.searchItems('hidden-from-home');
+      expect(viewModel.visibleItems, isEmpty);
     });
 
     test('sets empty when the vault has no items', () async {

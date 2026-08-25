@@ -176,9 +176,14 @@ class _HomeAwareBackupService extends FakeBackupService {
   @override
   Future<Result<void>> restoreVault(
     VaultData vault, {
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   }) async {
-    final restored = await super.restoreVault(vault, onProgress: onProgress);
+    final restored = await super.restoreVault(
+      vault,
+      imageBlobs: imageBlobs,
+      onProgress: onProgress,
+    );
     if (restored is Success<void>) {
       operations.vault = vault;
     }

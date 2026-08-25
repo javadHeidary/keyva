@@ -5,6 +5,7 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -174,6 +175,17 @@ void main() {
       expect(operations.addCount, 0);
 
       await viewModel.create(category(name: ''));
+      expect(operations.addCount, 0);
+
+      await viewModel.create(
+        ImageFolder(
+          id: '',
+          title: 'Photos',
+          categoryId: null,
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+        ),
+      );
       expect(operations.addCount, 0);
     });
   });

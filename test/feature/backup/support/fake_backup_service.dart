@@ -85,6 +85,7 @@ class FakeBackupService implements BackupService {
   @override
   Future<Result<void>> restoreVault(
     VaultData vault, {
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   }) async {
     restoreCount++;
@@ -106,6 +107,7 @@ class FakeBackupService implements BackupService {
     required String username,
     required String masterPassword,
     required VaultData vault,
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   }) async {
     restoreNewAccountCount++;

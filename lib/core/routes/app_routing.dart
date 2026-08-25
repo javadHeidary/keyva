@@ -42,6 +42,12 @@ import 'package:keyva/feature/type/note/bindings/note_bindings.dart';
 import 'package:keyva/feature/type/note/view/note_create_view.dart';
 import 'package:keyva/feature/type/note/view/note_details_view.dart';
 import 'package:keyva/feature/type/note/view/note_edit_view.dart';
+import 'package:keyva/feature/type/image/bindings/image_bindings.dart';
+import 'package:keyva/feature/type/image/view/image_add_photo_view.dart';
+import 'package:keyva/feature/type/image/view/image_details_view.dart';
+import 'package:keyva/feature/type/image/view/image_folder_create_view.dart';
+import 'package:keyva/feature/type/image/view/image_folder_edit_view.dart';
+import 'package:keyva/feature/type/image/view/image_folder_view.dart';
 import 'package:keyva/shared/icons/app_icon_test.dart';
 import 'package:keyva/shared/widget/app_search_widget.dart';
 
@@ -74,6 +80,11 @@ class AppRoutes {
   static const String noteCreate = '/note/create';
   static const String noteEdit = '/note/edit';
   static const String noteDetails = '/note/details';
+  static const String imageFolderCreate = '/image/folder/create';
+  static const String imageFolderEdit = '/image/folder/edit';
+  static const String imageFolder = '/image/folder';
+  static const String imageAddPhoto = '/image/add';
+  static const String imageDetails = '/image/details';
   static const String passwordGenerator = '/password-generator';
   static const String passwordGeneratorHistory = '/password-generator/history';
   static const String settings = '/settings';
@@ -314,6 +325,59 @@ class AppRoutes {
       name: noteDetails,
       page: () => const NoteDetailsView(),
       binding: NoteDetailsBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    // -------------------------------------------------------------------------
+    // Images
+    // -------------------------------------------------------------------------
+    GetPage(
+      name: imageFolderCreate,
+      page: () => const ImageFolderCreateView(),
+      binding: ImageFolderCreateBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: imageFolderEdit,
+      page: () => const ImageFolderEditView(),
+      binding: ImageFolderEditBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: imageFolder,
+      page: () => const ImageFolderView(),
+      binding: ImageFolderBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: imageAddPhoto,
+      page: () => const ImageAddPhotoView(),
+      binding: ImageAddPhotoBindings(),
+      middlewares: _sessionGuard,
+      transition: _pageTransition,
+      curve: _pageCurve,
+      transitionDuration: _pageTransitionDuration,
+    ),
+
+    GetPage(
+      name: imageDetails,
+      page: () => const ImageDetailsView(),
+      binding: ImageDetailsBindings(),
       middlewares: _sessionGuard,
       transition: _pageTransition,
       curve: _pageCurve,

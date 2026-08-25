@@ -59,6 +59,11 @@ class HomeView extends GetView<HomeController> {
             icon: Icon(AppIcon.lock),
             onPressed: () => controller.onAddItemForType(VaultItemType.login),
           ),
+          AppFabChildButton(
+            key: const Key('home-fab-image'),
+            icon: Icon(AppIcon.images),
+            onPressed: () => controller.onAddItemForType(VaultItemType.image),
+          ),
         ],
       ),
       body: SafeArea(

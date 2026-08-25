@@ -18,6 +18,7 @@ abstract interface class BackupService {
 
   Future<Result<void>> restoreVault(
     VaultData vault, {
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   });
 
@@ -25,6 +26,7 @@ abstract interface class BackupService {
     required String username,
     required String masterPassword,
     required VaultData vault,
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   });
 }

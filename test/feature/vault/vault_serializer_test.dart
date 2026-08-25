@@ -6,6 +6,8 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -434,6 +436,74 @@ void main() {
         'password',
       ],
     );
+  });
+
+  test('image folder and photo round-trip', () async {
+    final vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: const [],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+      imageFolders: [
+        ImageFolder(
+          id: 'folder-1',
+          title: 'ID photos',
+          categoryId: null,
+          createdAt: createdAt,
+          updatedAt: updatedAt,
+        ),
+      ],
+      images: [
+        ImageItem(
+          id: 'photo-1',
+          folderId: 'folder-1',
+          note: 'passport',
+          blobId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          thumbnailBlobId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          mimeType: 'image/jpeg',
+          width: 800,
+          height: 600,
+          createdAt: createdAt,
+        ),
+      ],
+    );
+    expect(await roundTrip(vault), vault);
+  });
+
+  test('legacy vault json without image keys still deserializes', () async {
+    final json = await _serializedJson(serializer, emptyVault());
+    json.remove('imageFolders');
+    json.remove('images');
+    final restored = _expectSuccess(
+      await serializer.deserialize(_jsonBytes(json)),
+    );
+    expect(restored.imageFolders, isEmpty);
+    expect(restored.images, isEmpty);
+  });
+
+  test('photo with missing folder fails closed', () async {
+    final vault = VaultData(
+      version: VaultData.currentVersion,
+      logins: const [],
+      bankCards: const [],
+      secureNotes: const [],
+      categories: const [],
+      images: [
+        ImageItem(
+          id: 'photo-1',
+          folderId: 'missing',
+          note: null,
+          blobId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          thumbnailBlobId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          mimeType: 'image/jpeg',
+          width: 10,
+          height: 10,
+          createdAt: createdAt,
+        ),
+      ],
+    );
+    _expectValidationFailure(await serializer.serialize(vault));
   });
 }
 

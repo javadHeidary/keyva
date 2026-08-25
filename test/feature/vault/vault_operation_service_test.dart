@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -11,9 +15,12 @@ import 'package:keyva/feature/vault/service/vault_operation_service.dart';
 import 'package:keyva/feature/vault/service/vault_operation_service_impl.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
 
+import 'support/fake_encrypted_blob_store.dart';
+
 void main() {
   late _FakeVaultSession session;
   late _FakeVaultDataService dataService;
+  late FakeEncryptedBlobStore blobs;
   late VaultOperationService operations;
 
   final createdAt = DateTime.utc(2026, 7, 1, 10);
@@ -87,6 +94,40 @@ void main() {
     );
   }
 
+  ImageFolder folder({
+    String id = 'folder-1',
+    String title = 'ID photos',
+    bool isPinned = false,
+  }) {
+    return ImageFolder(
+      id: id,
+      title: title,
+      categoryId: null,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      isPinned: isPinned,
+    );
+  }
+
+  ImageItem photo({
+    String id = 'photo-1',
+    String folderId = 'folder-1',
+    String blobId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    String thumbnailBlobId = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+  }) {
+    return ImageItem(
+      id: id,
+      folderId: folderId,
+      note: null,
+      blobId: blobId,
+      thumbnailBlobId: thumbnailBlobId,
+      mimeType: 'image/jpeg',
+      width: 100,
+      height: 80,
+      createdAt: createdAt,
+    );
+  }
+
   VaultData emptyVault() {
     return VaultData(
       version: VaultData.currentVersion,
@@ -104,9 +145,11 @@ void main() {
   setUp(() {
     session = _FakeVaultSession();
     dataService = _FakeVaultDataService(session);
+    blobs = FakeEncryptedBlobStore();
     operations = VaultOperationServiceImpl(
       vaultData: dataService,
       vaultSession: session,
+      blobs: blobs,
     );
   });
 
@@ -556,6 +599,59 @@ void main() {
       expect(session.vaultData!.logins.single.isPinned, isTrue);
     });
   });
+
+  group('image folders', () {
+    test('adds a folder and a photo into it', () async {
+      await unlockWith(emptyVault());
+      _expectSuccess(await operations.addItem(folder()));
+      blobs.files[photo().blobId] = Uint8List.fromList([1]);
+      blobs.files[photo().thumbnailBlobId] = Uint8List.fromList([2]);
+      _expectSuccess(await operations.addItem(photo()));
+
+      expect(session.vaultData!.imageFolders.single.title, 'ID photos');
+      expect(session.vaultData!.images.single.folderId, 'folder-1');
+    });
+
+    test('deleting a folder removes child photos and blobs', () async {
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: const [],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+          imageFolders: [folder()],
+          images: [photo()],
+        ),
+      );
+      blobs.files[photo().blobId] = Uint8List.fromList([1]);
+      blobs.files[photo().thumbnailBlobId] = Uint8List.fromList([2]);
+
+      _expectSuccess(await operations.deleteItem('folder-1'));
+
+      expect(session.vaultData!.imageFolders, isEmpty);
+      expect(session.vaultData!.images, isEmpty);
+      expect(blobs.files, isEmpty);
+    });
+
+    test('pins an image folder', () async {
+      await unlockWith(
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: const [],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+          imageFolders: [folder()],
+        ),
+      );
+
+      _expectSuccess(
+        await operations.setItemPinned(id: 'folder-1', isPinned: true),
+      );
+      expect(session.vaultData!.imageFolders.single.isPinned, isTrue);
+    });
+  });
 }
 
 class _FakeVaultSession implements VaultSession {
@@ -723,6 +819,85 @@ class _FakeVaultDataService implements VaultDataService {
   }
 
   @override
+  Future<Result<void>> addImageFolder(ImageFolder item) {
+    return _mutate(
+      item,
+      (current) => _withCollection(
+        _addItem(current.imageFolders, item, (folder) => folder.id),
+        (imageFolders) => _rebuild(current, imageFolders: imageFolders),
+      ),
+    );
+  }
+
+  @override
+  Future<Result<void>> updateImageFolder(ImageFolder item) {
+    return _mutate(
+      item,
+      (current) => _withCollection(
+        _replaceItem(current.imageFolders, item, (folder) => folder.id),
+        (imageFolders) => _rebuild(current, imageFolders: imageFolders),
+      ),
+    );
+  }
+
+  @override
+  Future<Result<void>> deleteImageFolder(String id) {
+    return _mutate(id, (current) {
+      final folders = _removeItem(
+        current.imageFolders,
+        id,
+        (folder) => folder.id,
+      );
+      if (folders is FailureResult<List<ImageFolder>>) {
+        return FailureResult(folders.failure);
+      }
+      return Success(
+        _rebuild(
+          current,
+          imageFolders: (folders as Success<List<ImageFolder>>).data,
+          images: [
+            for (final image in current.images)
+              if (image.folderId != id) image,
+          ],
+        ),
+      );
+    });
+  }
+
+  @override
+  Future<Result<void>> addImage(ImageItem item) {
+    return _mutate(
+      item,
+      (current) => _withCollection(
+        _addItem(current.images, item, (image) => image.id),
+        (images) => _rebuild(current, images: images),
+      ),
+    );
+  }
+
+  @override
+  Future<Result<void>> updateImage(ImageItem item) {
+    return _mutate(
+      item,
+      (current) => _withCollection(
+        _replaceItem(current.images, item, (image) => image.id),
+        (images) => _rebuild(current, images: images),
+      ),
+    );
+  }
+
+  @override
+  Future<Result<void>> deleteImage(String id) {
+    return _mutate(
+      id,
+      (current) => _withCollection(
+        _removeItem(current.images, id, (image) => image.id),
+        (images) => _rebuild(current, images: images),
+      ),
+    );
+  }
+
+  @override
   Future<Result<void>> replaceVault(VaultData restoredVault) {
     return _mutate(restoredVault, (_) => Success(restoredVault));
   }
@@ -810,6 +985,8 @@ class _FakeVaultDataService implements VaultDataService {
     List<BankCardItem>? bankCards,
     List<SecureNoteItem>? secureNotes,
     List<CategoryItem>? categories,
+    List<ImageFolder>? imageFolders,
+    List<ImageItem>? images,
   }) {
     return VaultData(
       version: current.version,
@@ -817,6 +994,8 @@ class _FakeVaultDataService implements VaultDataService {
       bankCards: bankCards ?? current.bankCards,
       secureNotes: secureNotes ?? current.secureNotes,
       categories: categories ?? current.categories,
+      imageFolders: imageFolders ?? current.imageFolders,
+      images: images ?? current.images,
     );
   }
 }

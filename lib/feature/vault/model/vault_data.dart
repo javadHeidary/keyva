@@ -1,6 +1,8 @@
 import 'package:keyva/feature/category/model/category_defaults.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 
@@ -11,10 +13,14 @@ class VaultData {
     required List<BankCardItem> bankCards,
     required List<SecureNoteItem> secureNotes,
     required List<CategoryItem> categories,
+    List<ImageFolder> imageFolders = const [],
+    List<ImageItem> images = const [],
   }) : logins = List<LoginItem>.unmodifiable(logins),
        bankCards = List<BankCardItem>.unmodifiable(bankCards),
        secureNotes = List<SecureNoteItem>.unmodifiable(secureNotes),
-       categories = List<CategoryItem>.unmodifiable(categories);
+       categories = List<CategoryItem>.unmodifiable(categories),
+       imageFolders = List<ImageFolder>.unmodifiable(imageFolders),
+       images = List<ImageItem>.unmodifiable(images);
 
   static const int currentVersion = 1;
   static const int maxPinnedItems = 5;
@@ -34,6 +40,8 @@ class VaultData {
   final List<BankCardItem> bankCards;
   final List<SecureNoteItem> secureNotes;
   final List<CategoryItem> categories;
+  final List<ImageFolder> imageFolders;
+  final List<ImageItem> images;
 
   int get pinnedItemCount {
     var count = 0;
@@ -46,7 +54,27 @@ class VaultData {
     for (final item in secureNotes) {
       if (item.isPinned) count++;
     }
+    for (final item in imageFolders) {
+      if (item.isPinned) count++;
+    }
     return count;
+  }
+
+  int photoCountForFolder(String folderId) {
+    var count = 0;
+    for (final image in images) {
+      if (image.folderId == folderId) count++;
+    }
+    return count;
+  }
+
+  Set<String> get imageBlobIds {
+    final ids = <String>{};
+    for (final image in images) {
+      ids.add(image.blobId);
+      ids.add(image.thumbnailBlobId);
+    }
+    return ids;
   }
 
   @override
@@ -56,7 +84,9 @@ class VaultData {
         _listEquals(logins, other.logins) &&
         _listEquals(bankCards, other.bankCards) &&
         _listEquals(secureNotes, other.secureNotes) &&
-        _listEquals(categories, other.categories);
+        _listEquals(categories, other.categories) &&
+        _listEquals(imageFolders, other.imageFolders) &&
+        _listEquals(images, other.images);
   }
 
   @override
@@ -66,6 +96,8 @@ class VaultData {
     Object.hashAll(bankCards),
     Object.hashAll(secureNotes),
     Object.hashAll(categories),
+    Object.hashAll(imageFolders),
+    Object.hashAll(images),
   );
 }
 

@@ -169,7 +169,7 @@ void main() {
     );
     expect(
       jsonDecode(utf8.decode(bytes))['formatVersion'],
-      1,
+      2,
     );
 
     await vaultSession.unlock(otherVault());
@@ -260,7 +260,7 @@ void main() {
     final object = Map<String, Object?>.from(
       jsonDecode(utf8.decode(bytes)) as Map,
     );
-    object['formatVersion'] = 2;
+    object['formatVersion'] = 99;
     final unsupported = Uint8List.fromList(utf8.encode(jsonEncode(object)));
 
     final result = backup.validateEnvelope(unsupported);

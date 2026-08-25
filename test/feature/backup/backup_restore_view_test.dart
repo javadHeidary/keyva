@@ -179,11 +179,11 @@ void main() {
   testWidgets('hub shows backup and restore copy', (tester) async {
     await pumpHub(tester);
     expect(
-      find.text('یک فایل رمزنگاری‌شده از اطلاعات Vault ایجاد کنید.'),
+      find.text('یک فایل رمزنگاری‌شده از اطلاعات حساب خود ایجاد کنید.'),
       findsOneWidget,
     );
     expect(
-      find.text('اطمینان حاصل کنید که فایل پشتیبان متعلق به Keyva است.'),
+      find.text('اطمینان حاصل کنید که فایل پشتیبان متعلق به حساب خود .Keyva است.'),
       findsOneWidget,
     );
   });
@@ -344,6 +344,8 @@ void main() {
     expect(find.textContaining('اکانت: 1'), findsOneWidget);
     expect(find.textContaining('کارت بانکی: 1'), findsOneWidget);
     expect(find.textContaining('یادداشت امن: 1'), findsOneWidget);
+    expect(find.textContaining('پوشه تصویر: 0'), findsOneWidget);
+    expect(find.textContaining('تصویر: 0'), findsOneWidget);
     expect(find.textContaining('دسته‌بندی: 1'), findsOneWidget);
     expect(find.text('must-not-appear'), findsNothing);
     expect(find.text('6219860000000000'), findsNothing);

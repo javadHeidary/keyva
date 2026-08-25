@@ -60,7 +60,8 @@ abstract final class BackupEnvelopeCodec {
       _requireExactKeys(object, _envelopeKeys);
 
       final formatVersion = _requireInt(object['formatVersion']);
-      if (formatVersion != SecurityConstants.backupFormatVersion) {
+      if (formatVersion < SecurityConstants.minSupportedBackupFormatVersion ||
+          formatVersion > SecurityConstants.backupFormatVersion) {
         return const FailureResult(UnsupportedBackupVersionFailure());
       }
 

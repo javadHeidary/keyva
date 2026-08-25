@@ -4,6 +4,8 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -101,6 +103,7 @@ class FakeVaultOperationService implements VaultOperationService {
     if (current == null) {
       return const FailureResult(AuthenticationFailure());
     }
+    final deletingFolder = current.imageFolders.any((folder) => folder.id == id);
     vault = VaultData(
       version: current.version,
       logins: [
@@ -118,6 +121,14 @@ class FakeVaultOperationService implements VaultOperationService {
       categories: [
         for (final item in current.categories)
           if (item.id != id) item,
+      ],
+      imageFolders: [
+        for (final item in current.imageFolders)
+          if (item.id != id) item,
+      ],
+      images: [
+        for (final item in current.images)
+          if (item.id != id && !(deletingFolder && item.folderId == id)) item,
       ],
     );
     return const Success(null);
@@ -147,6 +158,7 @@ class FakeVaultOperationService implements VaultOperationService {
       LoginItem login => login.copyWith(isPinned: isPinned),
       BankCardItem card => card.copyWith(isPinned: isPinned),
       SecureNoteItem note => note.copyWith(isPinned: isPinned),
+      ImageFolder folder => folder.copyWith(isPinned: isPinned),
       _ => found,
     };
     _replace(lastUpdated!);
@@ -163,6 +175,9 @@ class FakeVaultOperationService implements VaultOperationService {
     for (final note in current.secureNotes) {
       if (note.id == id) return note;
     }
+    for (final folder in current.imageFolders) {
+      if (folder.id == id) return folder;
+    }
     return null;
   }
 
@@ -171,6 +186,7 @@ class FakeVaultOperationService implements VaultOperationService {
       LoginItem login => login.isPinned,
       BankCardItem card => card.isPinned,
       SecureNoteItem note => note.isPinned,
+      ImageFolder folder => folder.isPinned,
       _ => false,
     };
   }
@@ -198,6 +214,14 @@ class FakeVaultOperationService implements VaultOperationService {
       categories: [
         for (final category in current.categories)
           if (item is CategoryItem && category.id == item.id) item else category,
+      ],
+      imageFolders: [
+        for (final folder in current.imageFolders)
+          if (item is ImageFolder && folder.id == item.id) item else folder,
+      ],
+      images: [
+        for (final image in current.images)
+          if (item is ImageItem && image.id == item.id) item else image,
       ],
     );
   }
@@ -229,6 +253,14 @@ class FakeVaultOperationService implements VaultOperationService {
       categories: [
         ...current.categories,
         if (item is CategoryItem) item,
+      ],
+      imageFolders: [
+        ...current.imageFolders,
+        if (item is ImageFolder) item,
+      ],
+      images: [
+        ...current.images,
+        if (item is ImageItem) item,
       ],
     );
   }

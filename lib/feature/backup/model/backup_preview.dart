@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:keyva/feature/vault/model/vault_data.dart';
 
 class BackupPreview {
@@ -5,6 +7,8 @@ class BackupPreview {
     required this.loginCount,
     required this.bankCardCount,
     required this.secureNoteCount,
+    required this.imageFolderCount,
+    required this.imageCount,
     required this.categoryCount,
   });
 
@@ -13,6 +17,8 @@ class BackupPreview {
       loginCount: vault.logins.length,
       bankCardCount: vault.bankCards.length,
       secureNoteCount: vault.secureNotes.length,
+      imageFolderCount: vault.imageFolders.length,
+      imageCount: vault.images.length,
       categoryCount: vault.categories.length,
     );
   }
@@ -20,12 +26,16 @@ class BackupPreview {
   final int loginCount;
   final int bankCardCount;
   final int secureNoteCount;
+  final int imageFolderCount;
+  final int imageCount;
   final int categoryCount;
 
   List<String> get countLines => [
     'اکانت: $loginCount',
     'کارت بانکی: $bankCardCount',
     'یادداشت امن: $secureNoteCount',
+    'پوشه تصویر: $imageFolderCount',
+    'تصویر: $imageCount',
     'دسته‌بندی: $categoryCount',
   ];
 
@@ -47,8 +57,10 @@ class BackupRestorePlan {
   const BackupRestorePlan({
     required this.vault,
     required this.preview,
+    this.imageBlobs = const {},
   });
 
   final VaultData vault;
   final BackupPreview preview;
+  final Map<String, Uint8List> imageBlobs;
 }

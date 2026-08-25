@@ -17,7 +17,9 @@ import 'package:keyva/feature/backup/model/backup_envelope.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
 import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/serialization/backup_envelope_codec.dart';
+import 'package:keyva/feature/backup/serialization/backup_payload_codec.dart';
 import 'package:keyva/feature/backup/service/backup_service.dart';
+import 'package:keyva/feature/vault/blob/encrypted_blob_store.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 import 'package:keyva/feature/vault/service/vault_data_service.dart';
@@ -35,6 +37,7 @@ class BackupServiceImpl implements BackupService {
     VaultUnlockService? unlock,
     UserDataSource? users,
     VaultDataSource? vaults,
+    EncryptedBlobStore? blobs,
   }) : _operations = operations,
        _vaultData = vaultData,
        _serializer = serializer,
@@ -43,7 +46,8 @@ class BackupServiceImpl implements BackupService {
        _auth = auth,
        _unlock = unlock,
        _users = users,
-       _vaults = vaults;
+       _vaults = vaults,
+       _blobs = blobs;
 
   final VaultOperationService _operations;
   final VaultDataService _vaultData;
@@ -54,6 +58,7 @@ class BackupServiceImpl implements BackupService {
   final VaultUnlockService? _unlock;
   final UserDataSource? _users;
   final VaultDataSource? _vaults;
+  final EncryptedBlobStore? _blobs;
 
   @override
   Future<Result<Uint8List>> createBackup({
@@ -68,8 +73,16 @@ class BackupServiceImpl implements BackupService {
       return FailureResult(current.failure);
     }
 
-    final serialized = await _serializer.serialize(
-      (current as Success<VaultData>).data,
+    final vault = (current as Success<VaultData>).data;
+    final imageBlobs = await _readImageBlobs(vault);
+    if (imageBlobs is FailureResult<Map<String, Uint8List>>) {
+      return FailureResult(imageBlobs.failure);
+    }
+
+    final serialized = await BackupPayloadCodec.encode(
+      serializer: _serializer,
+      vault: vault,
+      imageBlobs: (imageBlobs as Success<Map<String, Uint8List>>).data,
     );
     if (serialized is FailureResult<Uint8List>) {
       return FailureResult(serialized.failure);
@@ -170,19 +183,21 @@ class BackupServiceImpl implements BackupService {
     }
 
     _emit(onProgress, RestoreProgress.decryptDeserializing());
-    final deserialized = await _serializer.deserialize(
-      (decrypted as Success<Uint8List>).data,
+    final deserialized = await BackupPayloadCodec.decode(
+      serializer: _serializer,
+      plaintext: (decrypted as Success<Uint8List>).data,
     );
-    if (deserialized is FailureResult<VaultData>) {
+    if (deserialized is FailureResult<BackupPayload>) {
       _log('restore validation failed');
       return const FailureResult(BackupPayloadValidationFailure());
     }
-    final vault = (deserialized as Success<VaultData>).data;
+    final payload = (deserialized as Success<BackupPayload>).data;
     _emit(onProgress, RestoreProgress.decryptCompleted());
     return Success(
       BackupRestorePlan(
-        vault: vault,
-        preview: BackupPreview.fromVault(vault),
+        vault: payload.vault,
+        preview: BackupPreview.fromVault(payload.vault),
+        imageBlobs: payload.imageBlobs,
       ),
     );
   }
@@ -190,16 +205,23 @@ class BackupServiceImpl implements BackupService {
   @override
   Future<Result<void>> restoreVault(
     VaultData vault, {
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   }) async {
     _emit(onProgress, RestoreProgress.replacePersisting());
+    final blobsInstalled = await _installImageBlobs(vault, imageBlobs);
+    if (blobsInstalled is FailureResult<void>) {
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
     final replaced = await _vaultData.replaceVault(vault);
     if (replaced is FailureResult<void>) {
+      await _blobs?.rollbackReplace();
       if (replaced.failure is AuthenticationFailure) {
         return replaced;
       }
       return const FailureResult(BackupRestorePersistenceFailure());
     }
+    await _blobs?.finalizeReplace();
     _log('restore committed');
     return replaced;
   }
@@ -209,6 +231,7 @@ class BackupServiceImpl implements BackupService {
     required String username,
     required String masterPassword,
     required VaultData vault,
+    Map<String, Uint8List> imageBlobs = const {},
     RestoreProgressCallback? onProgress,
   }) async {
     final auth = _auth;
@@ -250,15 +273,66 @@ class BackupServiceImpl implements BackupService {
     }
 
     _emit(onProgress, RestoreProgress.newAccountPersisting());
+    final blobsInstalled = await _installImageBlobs(vault, imageBlobs);
+    if (blobsInstalled is FailureResult<void>) {
+      await _rollbackNewAccount(user.id);
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
     final replaced = await _vaultData.replaceVault(vault);
     if (replaced is FailureResult<void>) {
       await _rollbackNewAccount(user.id);
       return const FailureResult(BackupRestorePersistenceFailure());
     }
+    await _blobs?.finalizeReplace();
 
     _emit(onProgress, RestoreProgress.commitCompleted());
     _log('restore committed');
     return const Success<void>(null);
+  }
+
+  Future<Result<Map<String, Uint8List>>> _readImageBlobs(VaultData vault) async {
+    final ids = vault.imageBlobIds;
+    if (ids.isEmpty) {
+      return const Success(<String, Uint8List>{});
+    }
+    final blobs = _blobs;
+    if (blobs == null) {
+      return const FailureResult(BackupExportFailure());
+    }
+    final collected = <String, Uint8List>{};
+    for (final id in ids) {
+      final read = await blobs.read(id);
+      if (read is FailureResult<Uint8List>) {
+        return const FailureResult(BackupExportFailure());
+      }
+      collected[id] = (read as Success<Uint8List>).data;
+    }
+    return Success(collected);
+  }
+
+  Future<Result<void>> _installImageBlobs(
+    VaultData vault,
+    Map<String, Uint8List> imageBlobs,
+  ) async {
+    final expected = vault.imageBlobIds;
+    final blobs = _blobs;
+    if (expected.isEmpty && imageBlobs.isEmpty) {
+      if (blobs == null) {
+        return const Success(null);
+      }
+      return blobs.installReplace(const {});
+    }
+    for (final id in expected) {
+      if (!imageBlobs.containsKey(id) || imageBlobs[id]!.isEmpty) {
+        return const FailureResult(BackupRestorePersistenceFailure());
+      }
+    }
+    if (blobs == null) {
+      return const FailureResult(BackupRestorePersistenceFailure());
+    }
+    return blobs.installReplace({
+      for (final id in expected) id: imageBlobs[id]!,
+    });
   }
 
   static void _emit(
@@ -269,6 +343,12 @@ class BackupServiceImpl implements BackupService {
   }
 
   Future<void> _rollbackNewAccount(String userId) async {
+    try {
+      await _blobs?.rollbackReplace();
+    } catch (_) {}
+    try {
+      await _blobs?.deleteAllForUser(userId);
+    } catch (_) {}
     try {
       await _unlock?.lock();
     } catch (_) {}

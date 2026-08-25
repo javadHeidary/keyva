@@ -34,13 +34,23 @@ void main() {
     return Map<String, Object?>.from(jsonDecode(utf8.decode(bytes)) as Map);
   }
 
-  test('round-trips a version 1 envelope', () {
-    final encoded = BackupEnvelopeCodec.encode(sampleEnvelope());
+  test('round-trips a supported envelope', () {
+    final encoded = BackupEnvelopeCodec.encode(
+      sampleEnvelope(formatVersion: SecurityConstants.backupFormatVersion),
+    );
     expect(encoded, isA<Success<Uint8List>>());
     final decoded = BackupEnvelopeCodec.decode((encoded as Success<Uint8List>).data);
     expect(decoded, isA<Success<BackupEnvelope>>());
     final envelope = (decoded as Success<BackupEnvelope>).data;
     expect(envelope.formatVersion, SecurityConstants.backupFormatVersion);
+  });
+
+  test('accepts a version 1 envelope', () {
+    final encoded = BackupEnvelopeCodec.encode(sampleEnvelope());
+    expect(encoded, isA<Success<Uint8List>>());
+    final decoded = BackupEnvelopeCodec.decode((encoded as Success<Uint8List>).data);
+    expect(decoded, isA<Success<BackupEnvelope>>());
+    expect((decoded as Success<BackupEnvelope>).data.formatVersion, 1);
   });
 
   test('rejects extra envelope keys', () {
@@ -59,7 +69,7 @@ void main() {
   test('rejects unsupported format versions', () {
     final encoded = (BackupEnvelopeCodec.encode(sampleEnvelope()) as Success<Uint8List>).data;
     final object = decodeJson(encoded);
-    object['formatVersion'] = 2;
+    object['formatVersion'] = 99;
     final bytes = Uint8List.fromList(utf8.encode(jsonEncode(object)));
     final result = BackupEnvelopeCodec.decode(bytes);
     expect(result, isA<FailureResult<BackupEnvelope>>());

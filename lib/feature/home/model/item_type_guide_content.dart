@@ -19,6 +19,8 @@ class ItemTypeGuideContent {
         return bankCard;
       case VaultItemType.secureNote:
         return secureNote;
+      case VaultItemType.image:
+        return image;
     }
   }
 
@@ -52,6 +54,18 @@ class ItemTypeGuideContent {
       'اطلاعات شخصی مهم',
       'اطلاعات مربوط به مدارک',
       'یادداشت‌های خصوصی',
+    ],
+  );
+
+  static const image = ItemTypeGuideContent(
+    title: 'پوشه تصاویر چیست؟',
+    description:
+        'پوشه تصاویر برای نگهداری عکس‌های مهم شخصی است. '
+        'ابتدا یک پوشه می‌سازید و بعد عکس‌ها را از دوربین یا گالری داخل آن می‌گذارید.',
+    examples: [
+      'عکس‌های شناسنامه',
+      'مدارک شناسایی',
+      'اسناد مهم',
     ],
   );
 }

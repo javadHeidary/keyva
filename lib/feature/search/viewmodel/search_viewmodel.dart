@@ -78,7 +78,10 @@ class SearchViewModel extends GetxController {
       return;
     }
 
-    final mapped = mapVaultVisibleItems(_vault.visibleItems);
+    final mapped = mapVaultVisibleItems(
+      _vault.visibleItems,
+      vault: _vault.vault.value,
+    );
     final type = filterType;
     if (type == null) {
       results.assignAll(mapped);
@@ -97,7 +100,8 @@ class SearchViewModel extends GetxController {
     }
     return data.logins.isEmpty &&
         data.bankCards.isEmpty &&
-        data.secureNotes.isEmpty;
+        data.secureNotes.isEmpty &&
+        data.imageFolders.isEmpty;
   }
 
   void reloadFromVault() {

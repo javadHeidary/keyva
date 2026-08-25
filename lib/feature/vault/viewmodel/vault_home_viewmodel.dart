@@ -4,6 +4,7 @@ import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -116,7 +117,8 @@ class VaultHomeViewModel extends GetxController {
   static bool _isEmpty(VaultData data) {
     return data.logins.isEmpty &&
         data.bankCards.isEmpty &&
-        data.secureNotes.isEmpty;
+        data.secureNotes.isEmpty &&
+        data.imageFolders.isEmpty;
   }
 
   static List<Object> _flatten(VaultData data) {
@@ -124,6 +126,7 @@ class VaultHomeViewModel extends GetxController {
       ...data.logins,
       ...data.bankCards,
       ...data.secureNotes,
+      ...data.imageFolders,
     ];
     return <Object>[
       ...items.where(vaultItemIsPinned),
@@ -151,6 +154,7 @@ class VaultHomeViewModel extends GetxController {
         card.notes,
       ]),
       SecureNoteItem note => _contains(needle, [note.title, note.content]),
+      ImageFolder folder => _contains(needle, [folder.title]),
       CategoryItem category => _contains(needle, [category.name]),
       _ => false,
     };

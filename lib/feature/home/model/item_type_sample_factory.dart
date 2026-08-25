@@ -1,5 +1,6 @@
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 
@@ -21,6 +22,7 @@ class ItemTypeSampleFactory {
   static const noteTitle = 'Example Note';
   static const noteContent =
       'This is an example note created to demonstrate how Keyva works.';
+  static const imageFolderTitle = 'Example Photos';
 
   Object create(VaultItemType type, {DateTime? now}) {
     final createdAt = now ?? DateTime.now();
@@ -55,6 +57,13 @@ class ItemTypeSampleFactory {
         id: id,
         title: noteTitle,
         content: noteContent,
+        categoryId: null,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      ),
+      VaultItemType.image => ImageFolder(
+        id: id,
+        title: imageFolderTitle,
         categoryId: null,
         createdAt: createdAt,
         updatedAt: createdAt,

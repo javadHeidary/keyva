@@ -20,6 +20,7 @@ import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/feature/auth/model/account_deletion_outcome.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
+import 'package:keyva/feature/vault/blob/encrypted_blob_store.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -31,6 +32,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required VaultDataSource vaults,
     SecureStorageService? secureStorage,
     UnlockAttemptLimiter? attempts,
+    EncryptedBlobStore? blobs,
   }) : _users = users,
        _crypto = crypto,
        _keys = keys,
@@ -38,7 +40,8 @@ class AuthRepositoryImpl implements AuthRepository {
        _database = database,
        _vaults = vaults,
        _secureStorage = secureStorage,
-       _attempts = attempts;
+       _attempts = attempts,
+       _blobs = blobs;
 
   final UserDataSource _users;
   final CryptoService _crypto;
@@ -48,6 +51,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final VaultDataSource _vaults;
   final SecureStorageService? _secureStorage;
   final UnlockAttemptLimiter? _attempts;
+  final EncryptedBlobStore? _blobs;
 
   @override
   Future<Result<UserRecord>> createAccount({
@@ -439,6 +443,8 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     await _purgeDeviceCredentials(userId);
+    await _blobs?.deleteAllForUser(userId);
+    _blobs?.clearCache();
 
     final vaultDeleted = await _vaults.delete(userId);
     if (vaultDeleted is FailureResult<void>) {

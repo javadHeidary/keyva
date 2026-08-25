@@ -4,6 +4,8 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
@@ -172,6 +174,99 @@ class VaultDataServiceImpl implements VaultDataService {
   }
 
   @override
+  Future<Result<void>> addImageFolder(ImageFolder item) {
+    return _enqueue(
+      () => _mutate((current) {
+        return _withCollection(
+          _addItem(current.imageFolders, item, (folder) => folder.id),
+          (imageFolders) => _rebuild(current, imageFolders: imageFolders),
+        );
+      }),
+    );
+  }
+
+  @override
+  Future<Result<void>> updateImageFolder(ImageFolder item) {
+    return _enqueue(
+      () => _mutate((current) {
+        return _withCollection(
+          _replaceItem(current.imageFolders, item, (folder) => folder.id),
+          (imageFolders) => _rebuild(current, imageFolders: imageFolders),
+        );
+      }),
+    );
+  }
+
+  @override
+  Future<Result<void>> deleteImageFolder(String id) {
+    return _enqueue(
+      () => _mutate((current) {
+        final folders = _removeItem(
+          current.imageFolders,
+          id,
+          (folder) => folder.id,
+        );
+        if (folders is FailureResult<List<ImageFolder>>) {
+          return FailureResult(folders.failure);
+        }
+        final remainingImages = [
+          for (final image in current.images)
+            if (image.folderId != id) image,
+        ];
+        return Success(
+          _rebuild(
+            current,
+            imageFolders: (folders as Success<List<ImageFolder>>).data,
+            images: remainingImages,
+          ),
+        );
+      }),
+    );
+  }
+
+  @override
+  Future<Result<void>> addImage(ImageItem item) {
+    return _enqueue(
+      () => _mutate((current) {
+        if (!current.imageFolders.any((folder) => folder.id == item.folderId)) {
+          return const FailureResult(ValidationFailure());
+        }
+        return _withCollection(
+          _addItem(current.images, item, (image) => image.id),
+          (images) => _rebuild(current, images: images),
+        );
+      }),
+    );
+  }
+
+  @override
+  Future<Result<void>> updateImage(ImageItem item) {
+    return _enqueue(
+      () => _mutate((current) {
+        if (!current.imageFolders.any((folder) => folder.id == item.folderId)) {
+          return const FailureResult(ValidationFailure());
+        }
+        return _withCollection(
+          _replaceItem(current.images, item, (image) => image.id),
+          (images) => _rebuild(current, images: images),
+        );
+      }),
+    );
+  }
+
+  @override
+  Future<Result<void>> deleteImage(String id) {
+    return _enqueue(
+      () => _mutate((current) {
+        return _withCollection(
+          _removeItem(current.images, id, (image) => image.id),
+          (images) => _rebuild(current, images: images),
+        );
+      }),
+    );
+  }
+
+  @override
   Future<Result<void>> replaceVault(VaultData restoredVault) {
     return _enqueue(() => _replaceVault(restoredVault));
   }
@@ -298,6 +393,8 @@ class VaultDataServiceImpl implements VaultDataService {
     List<BankCardItem>? bankCards,
     List<SecureNoteItem>? secureNotes,
     List<CategoryItem>? categories,
+    List<ImageFolder>? imageFolders,
+    List<ImageItem>? images,
   }) {
     return VaultData(
       version: current.version,
@@ -305,6 +402,8 @@ class VaultDataServiceImpl implements VaultDataService {
       bankCards: bankCards ?? current.bankCards,
       secureNotes: secureNotes ?? current.secureNotes,
       categories: categories ?? current.categories,
+      imageFolders: imageFolders ?? current.imageFolders,
+      images: images ?? current.images,
     );
   }
 }

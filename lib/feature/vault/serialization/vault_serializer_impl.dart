@@ -5,19 +5,23 @@ import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
 import 'package:keyva/feature/vault/model/category_item.dart';
+import 'package:keyva/feature/vault/model/image_folder.dart';
+import 'package:keyva/feature/vault/model/image_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/serialization/vault_serializer.dart';
 
 class VaultSerializerImpl implements VaultSerializer {
-  static const _vaultKeys = {
+  static const _requiredVaultKeys = {
     'version',
     'logins',
     'bankCards',
     'secureNotes',
     'categories',
   };
+
+  static const _optionalVaultKeys = {'imageFolders', 'images'};
 
   static const _loginKeys = {
     'id',
@@ -56,6 +60,26 @@ class VaultSerializerImpl implements VaultSerializer {
 
   static const _categoryKeys = {'id', 'name', 'icon', 'createdAt'};
 
+  static const _imageFolderKeys = {
+    'id',
+    'title',
+    'categoryId',
+    'createdAt',
+    'updatedAt',
+  };
+
+  static const _imageItemKeys = {
+    'id',
+    'folderId',
+    'note',
+    'blobId',
+    'thumbnailBlobId',
+    'mimeType',
+    'width',
+    'height',
+    'createdAt',
+  };
+
   @override
   Future<Result<Uint8List>> serialize(VaultData vault) async {
     try {
@@ -72,7 +96,7 @@ class VaultSerializerImpl implements VaultSerializer {
     try {
       final decoded = jsonDecode(utf8.decode(bytes));
       final object = _requireObject(decoded);
-      _requireExactKeys(object, _vaultKeys);
+      _requireVaultKeys(object);
       final vault = VaultData(
         version: _requireInt(object['version']),
         logins: _requireObjectList(object['logins'], _loginFromMap),
@@ -82,6 +106,12 @@ class VaultSerializerImpl implements VaultSerializer {
           _secureNoteFromMap,
         ),
         categories: _requireObjectList(object['categories'], _categoryFromMap),
+        imageFolders: object.containsKey('imageFolders')
+            ? _requireObjectList(object['imageFolders'], _imageFolderFromMap)
+            : const [],
+        images: object.containsKey('images')
+            ? _requireObjectList(object['images'], _imageItemFromMap)
+            : const [],
       );
       _validateVault(vault);
       return Success(vault);
@@ -101,6 +131,10 @@ class VaultSerializerImpl implements VaultSerializer {
       'categories': [
         for (final item in vault.categories) _categoryToMap(item),
       ],
+      'imageFolders': [
+        for (final item in vault.imageFolders) _imageFolderToMap(item),
+      ],
+      'images': [for (final item in vault.images) _imageItemToMap(item)],
     };
   }
 
@@ -153,6 +187,31 @@ class VaultSerializerImpl implements VaultSerializer {
       'id': item.id,
       'name': item.name,
       'icon': item.icon,
+      'createdAt': _formatTimestamp(item.createdAt),
+    };
+  }
+
+  Map<String, Object?> _imageFolderToMap(ImageFolder item) {
+    return <String, Object?>{
+      'id': item.id,
+      'title': item.title,
+      'categoryId': item.categoryId,
+      'isPinned': item.isPinned,
+      'createdAt': _formatTimestamp(item.createdAt),
+      'updatedAt': _formatTimestamp(item.updatedAt),
+    };
+  }
+
+  Map<String, Object?> _imageItemToMap(ImageItem item) {
+    return <String, Object?>{
+      'id': item.id,
+      'folderId': item.folderId,
+      'note': item.note,
+      'blobId': item.blobId,
+      'thumbnailBlobId': item.thumbnailBlobId,
+      'mimeType': item.mimeType,
+      'width': item.width,
+      'height': item.height,
       'createdAt': _formatTimestamp(item.createdAt),
     };
   }
@@ -214,6 +273,33 @@ class VaultSerializerImpl implements VaultSerializer {
     );
   }
 
+  ImageFolder _imageFolderFromMap(Map<String, Object?> object) {
+    final isPinned = _readPinnedFlag(object, _imageFolderKeys);
+    return ImageFolder(
+      id: _requireString(object['id']),
+      title: _requireString(object['title']),
+      categoryId: _requireNullableString(object['categoryId']),
+      createdAt: _requireTimestamp(object['createdAt']),
+      updatedAt: _requireTimestamp(object['updatedAt']),
+      isPinned: isPinned,
+    );
+  }
+
+  ImageItem _imageItemFromMap(Map<String, Object?> object) {
+    _requireExactKeys(object, _imageItemKeys);
+    return ImageItem(
+      id: _requireString(object['id']),
+      folderId: _requireString(object['folderId']),
+      note: _requireNullableString(object['note']),
+      blobId: _requireString(object['blobId']),
+      thumbnailBlobId: _requireString(object['thumbnailBlobId']),
+      mimeType: _requireString(object['mimeType']),
+      width: _requireInt(object['width']),
+      height: _requireInt(object['height']),
+      createdAt: _requireTimestamp(object['createdAt']),
+    );
+  }
+
   void _validateVault(VaultData vault) {
     if (vault.version != VaultData.currentVersion) {
       throw const _VaultSchemaException();
@@ -222,6 +308,40 @@ class VaultSerializerImpl implements VaultSerializer {
     _requireUniqueIds(vault.bankCards.map((item) => item.id));
     _requireUniqueIds(vault.secureNotes.map((item) => item.id));
     _requireUniqueIds(vault.categories.map((item) => item.id));
+    _requireUniqueIds(vault.imageFolders.map((item) => item.id));
+    _requireUniqueIds(vault.images.map((item) => item.id));
+    _requireUniqueIds([
+      ...vault.images.map((item) => item.blobId),
+      ...vault.images.map((item) => item.thumbnailBlobId),
+    ]);
+    final folderIds = vault.imageFolders.map((item) => item.id).toSet();
+    for (final image in vault.images) {
+      if (!folderIds.contains(image.folderId)) {
+        throw const _VaultSchemaException();
+      }
+      if (image.width <= 0 || image.height <= 0) {
+        throw const _VaultSchemaException();
+      }
+      if (image.mimeType.isEmpty ||
+          image.blobId.isEmpty ||
+          image.thumbnailBlobId.isEmpty) {
+        throw const _VaultSchemaException();
+      }
+    }
+  }
+
+  void _requireVaultKeys(Map<String, Object?> object) {
+    for (final key in _requiredVaultKeys) {
+      if (!object.containsKey(key)) {
+        throw const _VaultSchemaException();
+      }
+    }
+    for (final key in object.keys) {
+      if (!_requiredVaultKeys.contains(key) &&
+          !_optionalVaultKeys.contains(key)) {
+        throw const _VaultSchemaException();
+      }
+    }
   }
 
   void _requireUniqueIds(Iterable<String> ids) {

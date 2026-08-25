@@ -52,6 +52,7 @@ class RestoreViewModel extends GetxController {
 
   Uint8List? _selectedBytes;
   VaultData? _pendingVault;
+  Map<String, Uint8List> _pendingImageBlobs = const {};
   BackupPreview? _pendingPreview;
   bool _newAccountRestoreSucceeded = false;
   bool _successDialogShown = false;
@@ -108,6 +109,7 @@ class RestoreViewModel extends GetxController {
     try {
       _selectedBytes = null;
       _pendingVault = null;
+      _pendingImageBlobs = const {};
       _pendingPreview = null;
       final picked = await _files.pick();
       if (!context.mounted) {
@@ -196,6 +198,7 @@ class RestoreViewModel extends GetxController {
       }
       final plan = (decrypted as Success<BackupRestorePlan>).data;
       _pendingVault = plan.vault;
+      _pendingImageBlobs = plan.imageBlobs;
       _pendingPreview = plan.preview;
       return plan.preview;
     } finally {
@@ -225,6 +228,7 @@ class RestoreViewModel extends GetxController {
     try {
       final restored = await _backup.restoreVault(
         vault,
+        imageBlobs: _pendingImageBlobs,
         onProgress: _onProgress,
       );
       if (!context.mounted || !_session.isAuthenticated) {
@@ -290,6 +294,7 @@ class RestoreViewModel extends GetxController {
         username: usernameController.text.trim(),
         masterPassword: passwordController.text,
         vault: vault,
+        imageBlobs: _pendingImageBlobs,
         onProgress: _onProgress,
       );
       if (restored is FailureResult<void>) {
@@ -352,6 +357,7 @@ class RestoreViewModel extends GetxController {
   void _clearPending() {
     _selectedBytes = null;
     _pendingVault = null;
+    _pendingImageBlobs = const {};
     _pendingPreview = null;
   }
 

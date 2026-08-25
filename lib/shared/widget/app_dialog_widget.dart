@@ -13,9 +13,11 @@ class AppDialogWidget extends StatelessWidget {
   final String title;
   final String description;
   final String buttonText;
+  final String? cancelText;
   final VoidCallback? onConfirm;
   final Widget? customIcon;
   final Key? buttonKey;
+  final Key? cancelKey;
 
   const AppDialogWidget({
     super.key,
@@ -23,9 +25,11 @@ class AppDialogWidget extends StatelessWidget {
     required this.title,
     required this.description,
     this.buttonText = 'متوجه شدم',
+    this.cancelText,
     this.onConfirm,
     this.customIcon,
     this.buttonKey,
+    this.cancelKey,
   });
 
   static Future<void> show(
@@ -36,9 +40,11 @@ class AppDialogWidget extends StatelessWidget {
     required String title,
     required String description,
     String buttonText = 'متوجه شدم',
+    String? cancelText,
     VoidCallback? onConfirm,
     Widget? customIcon,
     bool barrierDismissible = false,
+    Key? cancelKey,
   }) {
     return showDialog(
       context: context,
@@ -50,9 +56,11 @@ class AppDialogWidget extends StatelessWidget {
         title: title,
         description: description,
         buttonText: buttonText,
+        cancelText: cancelText,
         onConfirm: onConfirm,
         customIcon: customIcon,
         buttonKey: buttonKey,
+        cancelKey: cancelKey,
       ),
     );
   }
@@ -138,6 +146,19 @@ class AppDialogWidget extends StatelessWidget {
                 ),
               ),
             ),
+            if (cancelText != null) ...[
+              SizedBox(height: AppSpacing.sm.s),
+              TextButton(
+                key: cancelKey ?? const Key('app-dialog-cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  cancelText!,
+                  style: AppTypography.button.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
