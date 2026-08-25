@@ -6,6 +6,7 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
+import 'package:keyva/feature/settings/model/support_us_content.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
 import 'package:keyva/feature/settings/widget/account_edit_bottom_sheet.dart';
 import 'package:keyva/feature/settings/widget/auto_lock_timeout_bottom_sheet.dart';
@@ -232,17 +233,17 @@ class SettingsView extends GetView<SettingsViewModel> {
                       SettingsGroupCard(
                         children: [
                           SettingsRow.nav(
-                            title: 'اپلیکیشن‌های دیگر ما',
-                            icon: AppIcon.apps,
-                            onTap: () => controller.onOpenOtherApps(context),
-                          ),
-                          SettingsRow.nav(
-                            title: 'امتیاز به ما',
+                            title: SupportUsContent.rateTitle,
                             icon: AppIcon.star,
                             onTap: () => controller.onRateApp(context),
                           ),
                           SettingsRow.nav(
-                            title: 'اشتراک‌گذاری با دوستان',
+                            title: SupportUsContent.otherAppsTitle,
+                            icon: AppIcon.apps,
+                            onTap: () => controller.onOpenOtherApps(context),
+                          ),
+                          SettingsRow.nav(
+                            title: SupportUsContent.shareTitle,
                             icon: AppIcon.share,
                             onTap: () => controller.onShareApp(context),
                           ),

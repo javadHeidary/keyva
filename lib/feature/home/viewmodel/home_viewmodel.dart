@@ -8,7 +8,12 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/category/controller/category_catalog_controller.dart';
 import 'package:keyva/feature/category/model/category_constants.dart';
+import 'package:keyva/feature/home/model/item_type_guide_content.dart';
+import 'package:keyva/feature/home/model/item_type_guide_status.dart';
+import 'package:keyva/feature/home/model/item_type_sample_factory.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
+import 'package:keyva/feature/home/widget/item_type_guide_dialog.dart';
+import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
@@ -28,15 +33,21 @@ class HomeController extends GetxController {
     VaultUnlockService? unlock,
     AuthRepository? auth,
     VaultSession? session,
+    SettingsRepository? settings,
+    ItemTypeSampleFactory sampleFactory = const ItemTypeSampleFactory(),
   }) : _vaultOverride = vault,
        _unlockOverride = unlock,
        _authOverride = auth,
-       _sessionOverride = session;
+       _sessionOverride = session,
+       _settingsOverride = settings,
+       _sampleFactory = sampleFactory;
 
   final VaultHomeViewModel? _vaultOverride;
   final VaultUnlockService? _unlockOverride;
   final AuthRepository? _authOverride;
   final VaultSession? _sessionOverride;
+  final SettingsRepository? _settingsOverride;
+  final ItemTypeSampleFactory _sampleFactory;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final createFabKey = GlobalKey<ExpandableFabState>();
   final selectedType = Rxn<VaultItemType>();
@@ -45,6 +56,8 @@ class HomeController extends GetxController {
 
   final accountOwnerName = UserProfile.defaultName.obs;
   final accountGreeting = 'گاوصندوق شخصی شما';
+  final typeGuideStatuses = <VaultItemType, ItemTypeGuideStatus>{}.obs;
+  final isCreatingTypeGuideSample = false.obs;
 
   VaultHomeViewModel get vault =>
       _vaultOverride ?? Get.find<VaultHomeViewModel>();
@@ -70,6 +83,16 @@ class HomeController extends GetxController {
     }
     if (getIt.isRegistered<AuthRepository>()) {
       return getIt<AuthRepository>();
+    }
+    return null;
+  }
+
+  SettingsRepository? get _settings {
+    if (_settingsOverride != null) {
+      return _settingsOverride;
+    }
+    if (getIt.isRegistered<SettingsRepository>()) {
+      return getIt<SettingsRepository>();
     }
     return null;
   }
@@ -216,7 +239,11 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     selectedCategoryId.value = CategoryConstants.filterAllId;
+    for (final type in VaultItemType.values) {
+      typeGuideStatuses.putIfAbsent(type, () => ItemTypeGuideStatus.unseen);
+    }
     loadAccountProfile();
+    loadTypeGuideStatuses();
   }
 
   @override
@@ -247,6 +274,145 @@ class HomeController extends GetxController {
   void onOpenDrawer() {}
 
   void onTypeMoreActions(VaultItemType type) {}
+
+  ItemTypeGuideStatus typeGuideStatus(VaultItemType type) {
+    typeGuideStatuses[type];
+    return typeGuideStatuses[type] ?? ItemTypeGuideStatus.unseen;
+  }
+
+  bool isTypeGuideVisible(VaultItemType type) {
+    return typeGuideStatus(type).isVisible;
+  }
+
+  Future<void> loadTypeGuideStatuses() async {
+    final settings = _settings;
+    if (settings == null) {
+      return;
+    }
+    for (final type in VaultItemType.values) {
+      final stored = await settings.loadItemTypeGuideStatus(type.name);
+      typeGuideStatuses[type] = ItemTypeGuideStatusX.fromStorage(stored);
+    }
+  }
+
+  void onTypeGuideInfoTap(BuildContext context, VaultItemType type) {
+    showItemTypeGuideDialog(
+      context,
+      content: ItemTypeGuideContent.forType(type),
+      isSubmitting: isCreatingTypeGuideSample,
+      onCreateSample: () => createTypeGuideSample(context, type),
+      onDontShowAgain: () =>
+          dismissTypeGuide(context, type, ItemTypeGuideStatus.dismissed),
+      onGotIt: () =>
+          dismissTypeGuide(context, type, ItemTypeGuideStatus.acknowledged),
+    );
+  }
+
+  Future<void> dismissTypeGuide(
+    BuildContext context,
+    VaultItemType type,
+    ItemTypeGuideStatus status,
+  ) async {
+    if (isCreatingTypeGuideSample.value) {
+      return;
+    }
+
+    final persisted = await _persistGuideStatus(type, status);
+    if (!persisted) {
+      if (context.mounted) {
+        _showGuidePersistError(context);
+      }
+      return;
+    }
+
+    if (context.mounted &&
+        Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
+    }
+  }
+
+  Future<void> createTypeGuideSample(
+    BuildContext context,
+    VaultItemType type,
+  ) async {
+    if (isCreatingTypeGuideSample.value) {
+      return;
+    }
+
+    isCreatingTypeGuideSample.value = true;
+    try {
+      final item = _sampleFactory.create(type);
+      final itemId = vaultItemId(item);
+      if (itemId == null || itemId.isEmpty) {
+        if (context.mounted) {
+          _showGuideCreateError(context, null);
+        }
+        return;
+      }
+
+      final result = await vault.addItem(item);
+      if (result is FailureResult<void>) {
+        if (context.mounted) {
+          _showGuideCreateError(context, result.failure.message);
+        }
+        return;
+      }
+
+      final persisted = await _persistGuideStatus(
+        type,
+        ItemTypeGuideStatus.sampleCreated,
+      );
+      if (!persisted) {
+        if (context.mounted) {
+          _showGuidePersistError(context);
+        }
+        return;
+      }
+
+      if (context.mounted &&
+          Navigator.of(context, rootNavigator: true).canPop()) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+      openVaultItemDetails(type, itemId);
+    } finally {
+      isCreatingTypeGuideSample.value = false;
+    }
+  }
+
+  Future<bool> _persistGuideStatus(
+    VaultItemType type,
+    ItemTypeGuideStatus status,
+  ) async {
+    final settings = _settings;
+    if (settings == null) {
+      typeGuideStatuses[type] = status;
+      return true;
+    }
+
+    try {
+      await settings.saveItemTypeGuideStatus(type.name, status.name);
+      typeGuideStatuses[type] = status;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _showGuideCreateError(BuildContext context, String? message) {
+    AppToast.error(
+      context,
+      title: 'ساخت نمونه ممکن نشد',
+      message: vaultUserMessage(message),
+    );
+  }
+
+  void _showGuidePersistError(BuildContext context) {
+    AppToast.error(
+      context,
+      title: 'ذخیره انجام نشد',
+      message: vaultUserMessage('Database operation failed'),
+    );
+  }
 
   void onItemTap(VaultListItem item) {
     openVaultItemDetails(item.type, item.id);
@@ -289,7 +455,8 @@ class HomeController extends GetxController {
       context,
       type: AppDialogType.warning,
       title: 'حذف آیتم',
-      description: '«${item.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
+      description:
+          '«${item.title}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.',
       buttonText: 'حذف',
       onConfirm: () {
         if (isVaultSubmitting) {

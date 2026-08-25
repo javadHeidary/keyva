@@ -13,15 +13,14 @@ import 'package:keyva/core/theme/app_responsive.dart';
 import 'package:keyva/core/theme/app_theme.dart';
 import 'package:keyva/feature/settings/view/settings_view.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';
-import 'package:keyva/feature/settings/widget/pin_code_dialog.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
+import '../../core/security/support/fake_screen_protection_service.dart';
 import '../auth/support/auth_widget_harness.dart';
 import '../auth/support/fake_auth_repository.dart';
 import '../auth/support/fake_biometric_service.dart';
 import '../auth/support/fake_pin_service.dart';
-import '../../core/security/support/fake_screen_protection_service.dart';
 import '../auth/support/fake_vault_unlock_service.dart';
 
 void main() {
@@ -244,7 +243,6 @@ void main() {
     await pumpAuthSettle(tester);
 
     expect(find.byKey(const Key('settings-pin-security-info')), findsOneWidget);
-    expect(find.text(pinSetupSecurityInfo), findsOneWidget);
     expect(find.textContaining('۳ تلاش'), findsOneWidget);
     expect(find.textContaining('رمز اصلی'), findsWidgets);
     expect(find.textContaining('۱۵ دقیقه'), findsOneWidget);

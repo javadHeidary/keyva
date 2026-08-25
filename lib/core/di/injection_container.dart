@@ -26,6 +26,9 @@ import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/auto_lock_pause_store.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
+import 'package:keyva/core/store/store_config.dart';
+import 'package:keyva/core/store/store_link_launcher.dart';
+import 'package:keyva/core/store/store_link_launcher_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
 import 'package:keyva/feature/settings/model/settings_repository.dart';
@@ -160,6 +163,8 @@ void initDependencies(HiveDatabase database) {
       vaultSession: getIt<VaultSession>(),
     ),
   );
+  getIt.registerLazySingleton<StoreConfig>(StoreConfig.fromEnvironment);
+  getIt.registerLazySingleton<StoreLinkLauncher>(StoreLinkLauncherImpl.new);
   getIt.registerLazySingleton<ShareSheetService>(ShareSheetServiceImpl.new);
   getIt.registerLazySingleton<BackupFileService>(BackupFileServiceImpl.new);
   getIt.registerLazySingleton<BackupService>(

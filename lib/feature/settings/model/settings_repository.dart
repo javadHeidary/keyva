@@ -15,6 +15,10 @@ abstract class SettingsRepository {
 
   Future<void> saveOnboardingCompleted(bool completed);
 
+  Future<String?> loadItemTypeGuideStatus(String typeName);
+
+  Future<void> saveItemTypeGuideStatus(String typeName, String status);
+
   Future<SecuritySettingsUiState> loadSecuritySettings();
 
   Future<void> saveSecuritySettings(SecuritySettingsUiState state);

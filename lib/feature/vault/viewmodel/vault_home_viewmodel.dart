@@ -76,6 +76,16 @@ class VaultHomeViewModel extends GetxController {
     return result;
   }
 
+  Future<Result<void>> addItem(Object item) async {
+    errorMessage.value = null;
+    final result = await _operations.addItem(item);
+    if (result is FailureResult<void>) {
+      return result;
+    }
+    await loadVault();
+    return result;
+  }
+
   void _applyVisibleItems(VaultData data) {
     if (_isEmpty(data)) {
       visibleItems.clear();

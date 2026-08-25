@@ -88,11 +88,14 @@ class AppListItemWidget extends StatelessWidget {
 
                 if (leadingIcon != null) ...[
                   SizedBox(width: AppSpacing.md.s),
-                  GestureDetector(
-                    onTap: onLeadingPressed,
-                    behavior: HitTestBehavior.opaque,
-                    child: leadingIcon!,
-                  ),
+                  if (onLeadingPressed != null)
+                    GestureDetector(
+                      onTap: onLeadingPressed,
+                      behavior: HitTestBehavior.opaque,
+                      child: leadingIcon!,
+                    )
+                  else
+                    leadingIcon!,
                 ],
               ],
             ),

@@ -39,6 +39,25 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
+  Future<String?> loadItemTypeGuideStatus(String typeName) async {
+    final stored = _database.appSettings.get(
+      HiveSettingsKeys.itemTypeGuide(typeName),
+    );
+    if (stored is String && stored.isNotEmpty) {
+      return stored;
+    }
+    return null;
+  }
+
+  @override
+  Future<void> saveItemTypeGuideStatus(String typeName, String status) {
+    return _database.appSettings.put(
+      HiveSettingsKeys.itemTypeGuide(typeName),
+      status,
+    );
+  }
+
+  @override
   Future<UserProfile> loadProfile() {
     throw UnimplementedError();
   }

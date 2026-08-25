@@ -13,15 +13,19 @@ import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/security/screen_protection_service.dart';
 import 'package:keyva/core/session/app_lock_controller.dart';
 import 'package:keyva/core/session/session_service.dart';
+import 'package:keyva/core/store/store_config.dart';
+import 'package:keyva/core/store/store_link_launcher.dart';
 import 'package:keyva/feature/auth/model/account_deletion_outcome.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/model/app_info.dart';
 import 'package:keyva/feature/settings/model/security_settings_ui_state.dart';
 import 'package:keyva/feature/settings/model/settings_repository.dart';
+import 'package:keyva/feature/settings/model/support_us_content.dart';
 import 'package:keyva/feature/settings/model/theme_preference.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
+import 'package:keyva/feature/vault/share/share_sheet_service.dart';
 import 'package:keyva/feature/vault/view/vault_user_message.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,6 +41,9 @@ class SettingsViewModel extends GetxController {
     SessionService? session,
     AuthRepository? auth,
     ScreenProtectionService? screenProtection,
+    StoreConfig? storeConfig,
+    StoreLinkLauncher? storeLinks,
+    ShareSheetService? shareSheet,
     SettingsUrlLauncher? launchUrlFn,
     String? telegramUrl,
     String? baleUrl,
@@ -49,6 +56,9 @@ class SettingsViewModel extends GetxController {
        _sessionOverride = session,
        _authOverride = auth,
        _screenProtectionOverride = screenProtection,
+       _storeConfigOverride = storeConfig,
+       _storeLinksOverride = storeLinks,
+       _shareSheetOverride = shareSheet,
        _launchUrl = launchUrlFn ?? _launchExternal,
        telegramUrl = telegramUrl ?? AppInfo.telegramUrl,
        baleUrl = baleUrl ?? AppInfo.baleUrl,
@@ -62,6 +72,9 @@ class SettingsViewModel extends GetxController {
   final SessionService? _sessionOverride;
   final AuthRepository? _authOverride;
   final ScreenProtectionService? _screenProtectionOverride;
+  final StoreConfig? _storeConfigOverride;
+  final StoreLinkLauncher? _storeLinksOverride;
+  final ShareSheetService? _shareSheetOverride;
   final SettingsUrlLauncher _launchUrl;
   final String telegramUrl;
   final String baleUrl;
@@ -123,6 +136,36 @@ class SettingsViewModel extends GetxController {
     }
     if (getIt.isRegistered<ScreenProtectionService>()) {
       return getIt<ScreenProtectionService>();
+    }
+    return null;
+  }
+
+  StoreConfig get _storeConfig {
+    if (_storeConfigOverride != null) {
+      return _storeConfigOverride;
+    }
+    if (getIt.isRegistered<StoreConfig>()) {
+      return getIt<StoreConfig>();
+    }
+    return StoreConfig.fromEnvironment();
+  }
+
+  StoreLinkLauncher? get _storeLinks {
+    if (_storeLinksOverride != null) {
+      return _storeLinksOverride;
+    }
+    if (getIt.isRegistered<StoreLinkLauncher>()) {
+      return getIt<StoreLinkLauncher>();
+    }
+    return null;
+  }
+
+  ShareSheetService? get _shareSheet {
+    if (_shareSheetOverride != null) {
+      return _shareSheetOverride;
+    }
+    if (getIt.isRegistered<ShareSheetService>()) {
+      return getIt<ShareSheetService>();
     }
     return null;
   }
@@ -448,28 +491,119 @@ class SettingsViewModel extends GetxController {
     }
   }
 
-  void onOpenOtherApps(BuildContext context) {
-    AppToast.info(
-      context,
-      title: 'به‌زودی',
-      message: 'لیست اپلیکیشن‌ها به‌زودی',
-    );
+  Future<void> onOpenOtherApps(BuildContext context) async {
+    final config = _storeConfig;
+    if (!config.hasOtherAppsListing) {
+      if (context.mounted) {
+        AppToast.info(
+          context,
+          title: SupportUsContent.otherAppsTitle,
+          message: SupportUsContent.otherAppsUnconfigured,
+        );
+      }
+      return;
+    }
+
+    final links = _storeLinks;
+    if (links == null) {
+      if (context.mounted) {
+        AppToast.info(
+          context,
+          title: SupportUsContent.otherAppsTitle,
+          message: SupportUsContent.otherAppsUnavailable,
+        );
+      }
+      return;
+    }
+
+    if (config.otherAppsNativeUri.trim().isNotEmpty) {
+      final opened = await links.launchNative(
+        action: StoreIntentAction.view,
+        uri: config.otherAppsNativeUri,
+        package: config.storeAppPackage,
+      );
+      if (opened) return;
+    }
+
+    if (config.otherAppsWebUrl.trim().isNotEmpty) {
+      final opened = await links.launchExternalUrl(config.otherAppsWebUrl);
+      if (opened) return;
+    }
+
+    if (context.mounted) {
+      AppToast.info(
+        context,
+        title: SupportUsContent.otherAppsTitle,
+        message: SupportUsContent.otherAppsUnavailable,
+      );
+    }
   }
 
-  void onRateApp(BuildContext context) {
-    AppToast.info(
-      context,
-      title: 'به‌زودی',
-      message: 'امتیازدهی در فاز بعد فعال می‌شود',
+  Future<void> onRateApp(BuildContext context) async {
+    final links = _storeLinks;
+    if (links == null) {
+      if (context.mounted) {
+        AppToast.info(
+          context,
+          title: SupportUsContent.rateTitle,
+          message: SupportUsContent.rateUnavailable,
+        );
+      }
+      return;
+    }
+
+    final config = _storeConfig;
+    final reviewed = await links.launchNative(
+      action: config.reviewIntentAction,
+      uri: config.reviewNativeUri,
+      package: config.storeAppPackage,
     );
+    if (reviewed) return;
+
+    final detailsOpened = await links.launchNative(
+      action: StoreIntentAction.view,
+      uri: config.detailsNativeUri,
+      package: config.storeAppPackage,
+    );
+    if (detailsOpened) return;
+
+    final webOpened = await links.launchExternalUrl(config.detailsWebUrl);
+    if (webOpened) return;
+
+    if (context.mounted) {
+      AppToast.info(
+        context,
+        title: SupportUsContent.rateTitle,
+        message: SupportUsContent.rateUnavailable,
+      );
+    }
   }
 
-  void onShareApp(BuildContext context) {
-    AppToast.info(
-      context,
-      title: 'به‌زودی',
-      message: 'اشتراک‌گذاری در فاز بعد فعال می‌شود',
+  Future<void> onShareApp(BuildContext context) async {
+    final share = _shareSheet;
+    final storeUrl = _storeConfig.keyvaStoreUrl.trim();
+    if (share == null || storeUrl.isEmpty) {
+      if (context.mounted) {
+        AppToast.error(
+          context,
+          title: SupportUsContent.shareUnavailableTitle,
+          message: SupportUsContent.shareUnavailableMessage,
+        );
+      }
+      return;
+    }
+
+    final result = await share.shareText(
+      text: SupportUsContent.shareText(storeUrl),
+      subject: SupportUsContent.shareSubject,
     );
+    if (result == ShareSheetResult.unavailable && context.mounted) {
+      AppToast.error(
+        context,
+        title: SupportUsContent.shareUnavailableTitle,
+        message: SupportUsContent.shareUnavailableMessage,
+      );
+    }
   }
 
   Future<void> setPreventScreenshot(bool value, BuildContext context) async {

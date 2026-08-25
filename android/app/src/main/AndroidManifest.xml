@@ -63,5 +63,19 @@
             <action android:name="android.intent.action.SENDTO"/>
             <data android:scheme="mailto"/>
         </intent>
+        <package android:name="com.farsitel.bazaar"/>
+        <package android:name="ir.mservices.market"/>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="bazaar"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.EDIT"/>
+            <data android:scheme="bazaar"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="myket"/>
+        </intent>
     </queries>
 </manifest>

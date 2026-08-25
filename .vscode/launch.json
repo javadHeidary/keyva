@@ -1,0 +1,19 @@
+﻿{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "keyva (bazaar)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--flavor", "bazaar", "--dart-define=STORE=bazaar"]
+    },
+    {
+      "name": "keyva (myket)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--flavor", "myket", "--dart-define=STORE=myket"]
+    }
+  ]
+}

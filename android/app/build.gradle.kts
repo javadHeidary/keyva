@@ -30,6 +30,17 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "store"
+    productFlavors {
+        create("bazaar") {
+            dimension = "store"
+            isDefault = true
+        }
+        create("myket") {
+            dimension = "store"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -41,4 +52,33 @@ android {
 
 flutter {
     source = "../.."
+}
+
+afterEvaluate {
+    // Flutter looks for app-debug.apk; store flavors emit app-bazaar-debug.apk.
+    fun copyDefaultFlavorApk(buildType: String) {
+        val buildRoot =
+            rootProject.layout.buildDirectory
+                .get()
+                .asFile
+        val flutterApkDir = buildRoot.resolve("app/outputs/flutter-apk")
+        flutterApkDir.mkdirs()
+        val source =
+            listOf(
+                flutterApkDir.resolve("app-bazaar-$buildType.apk"),
+                buildRoot.resolve(
+                    "app/outputs/apk/bazaar/$buildType/app-bazaar-$buildType.apk",
+                ),
+            ).firstOrNull { it.exists() } ?: return
+        source.copyTo(flutterApkDir.resolve("app-$buildType.apk"), overwrite = true)
+    }
+
+    listOf("Debug", "Profile", "Release").forEach { buildType ->
+        val typeLower = buildType.lowercase()
+        tasks.matching { it.name == "assemble$buildType" }.configureEach {
+            doLast {
+                copyDefaultFlavorApk(typeLower)
+            }
+        }
+    }
 }

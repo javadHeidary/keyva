@@ -241,21 +241,42 @@ class _TypeListTile extends GetView<HomeController> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.medium),
       ),
-      child: AppListItemWidget(
-        title: summary.type.label,
-        subtitle: '${summary.itemCount} مورد',
-        useFaNumSubtitle: true,
-        trailingIcon: _CircleIcon(
-          icon: Icon(
-            summary.type.icon,
-            size: AppSizes.iconMd.s,
-            color: context.colors.textSecondary,
+      child: Obx(() {
+        final showInfo = controller.isTypeGuideVisible(summary.type);
+        return AppListItemWidget(
+          title: summary.type.label,
+          subtitle: '${summary.itemCount} مورد',
+          useFaNumSubtitle: true,
+          trailingIcon: _CircleIcon(
+            icon: Icon(
+              summary.type.icon,
+              size: AppSizes.iconMd.s,
+              color: context.colors.textSecondary,
+            ),
           ),
-        ),
-        leadingIcon: Icon(AppIcon.chevronRight, size: AppSizes.iconMd.s),
-        onTap: () => Get.toNamed(AppRoutes.typeList, arguments: summary.type),
-        onLeadingPressed: () => controller.onTypeMoreActions(summary.type),
-      ),
+          leadingIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showInfo) ...[
+                GestureDetector(
+                  key: Key('item-type-guide-info-${summary.type.name}'),
+                  onTap: () =>
+                      controller.onTypeGuideInfoTap(context, summary.type),
+                  behavior: HitTestBehavior.opaque,
+                  child: Icon(AppIcon.info, size: AppSizes.iconMd.s),
+                ),
+                SizedBox(width: AppSpacing.sm.s),
+              ],
+              GestureDetector(
+                onTap: () => controller.onTypeMoreActions(summary.type),
+                behavior: HitTestBehavior.opaque,
+                child: Icon(AppIcon.chevronRight, size: AppSizes.iconMd.s),
+              ),
+            ],
+          ),
+          onTap: () => Get.toNamed(AppRoutes.typeList, arguments: summary.type),
+        );
+      }),
     );
   }
 }

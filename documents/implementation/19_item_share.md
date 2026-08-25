@@ -20,7 +20,7 @@ Related code:
 - [`test/feature/vault/share/vault_item_share_viewmodel_test.dart`](../../test/feature/vault/share/vault_item_share_viewmodel_test.dart)
 - [`test/feature/vault/share/vault_item_share_view_test.dart`](../../test/feature/vault/share/vault_item_share_view_test.dart)
 
-It does **not** change Vault encryption, `VaultSerializer`, `VaultRepository`, clipboard auto-clear, Settings “share the app”, list more-menu actions, or add Telegram/WhatsApp-specific APIs.
+It does **not** change Vault encryption, `VaultSerializer`, `VaultRepository`, clipboard auto-clear, list more-menu actions, or add Telegram/WhatsApp-specific APIs. Settings “share the app” is Task 20.
 
 ---
 

@@ -6,6 +6,8 @@ import 'package:keyva/feature/settings/model/user_profile.dart';
 class FakeSettingsRepository implements SettingsRepository {
   ThemePreference stored = ThemePreference.system;
   bool onboardingCompleted = false;
+  final Map<String, String> itemTypeGuideStatuses = {};
+  bool saveItemTypeGuideShouldFail = false;
 
   @override
   Future<ThemePreference> loadThemePreference() async => stored;
@@ -21,6 +23,19 @@ class FakeSettingsRepository implements SettingsRepository {
   @override
   Future<void> saveOnboardingCompleted(bool completed) async {
     onboardingCompleted = completed;
+  }
+
+  @override
+  Future<String?> loadItemTypeGuideStatus(String typeName) async {
+    return itemTypeGuideStatuses[typeName];
+  }
+
+  @override
+  Future<void> saveItemTypeGuideStatus(String typeName, String status) async {
+    if (saveItemTypeGuideShouldFail) {
+      throw StateError('Unable to persist item type guide');
+    }
+    itemTypeGuideStatuses[typeName] = status;
   }
 
   @override

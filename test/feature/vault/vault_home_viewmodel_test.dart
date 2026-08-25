@@ -277,6 +277,35 @@ void main() {
     });
   });
 
+  group('addItem', () {
+    test('persists the item and refreshes the vault', () async {
+      operations.vault = emptyVault();
+      await viewModel.loadVault();
+
+      final created = login(id: 'login-new', title: 'Example Gmail');
+      final result = await viewModel.addItem(created);
+
+      expect(result.isSuccess, isTrue);
+      expect(operations.lastAdded, created);
+      expect(operations.persistCount, 1);
+      expect(viewModel.status.value, VaultUiStatus.loaded);
+      expect(viewModel.visibleItems, [created]);
+    });
+
+    test('does not refresh when add fails', () async {
+      operations.vault = emptyVault();
+      await viewModel.loadVault();
+      operations.addFailure = const DatabaseFailure();
+
+      final result = await viewModel.addItem(login(id: 'login-new'));
+
+      expect(result.isFailure, isTrue);
+      expect(viewModel.status.value, VaultUiStatus.empty);
+      expect(viewModel.visibleItems, isEmpty);
+      expect(operations.vault?.logins, isEmpty);
+    });
+  });
+
   group('delete', () {
     test('sets submitting then refreshes after a successful delete', () async {
       operations.vault = populatedVault();
@@ -338,34 +367,38 @@ void main() {
   });
 
   group('pin order', () {
-    test('shows pinned items before unpinned items and keeps relative order', () async {
-      final unpinnedLogin = login();
-      final pinnedLogin = login(id: 'login-2', title: 'Pinned Mail').copyWith(
-        isPinned: true,
-      );
-      final pinnedCard = card().copyWith(isPinned: true);
-      operations.vault = VaultData(
-        version: VaultData.currentVersion,
-        logins: [unpinnedLogin, pinnedLogin],
-        bankCards: [pinnedCard],
-        secureNotes: [note()],
-        categories: [category()],
-      );
+    test(
+      'shows pinned items before unpinned items and keeps relative order',
+      () async {
+        final unpinnedLogin = login();
+        final pinnedLogin = login(
+          id: 'login-2',
+          title: 'Pinned Mail',
+        ).copyWith(isPinned: true);
+        final pinnedCard = card().copyWith(isPinned: true);
+        operations.vault = VaultData(
+          version: VaultData.currentVersion,
+          logins: [unpinnedLogin, pinnedLogin],
+          bankCards: [pinnedCard],
+          secureNotes: [note()],
+          categories: [category()],
+        );
 
-      await viewModel.loadVault();
+        await viewModel.loadVault();
 
-      expect(viewModel.visibleItems, [
-        pinnedLogin,
-        pinnedCard,
-        unpinnedLogin,
-        note(),
-        category(),
-      ]);
-      expect(
-        viewModel.visibleItems.whereType<LoginItem>().toList(),
-        [pinnedLogin, unpinnedLogin],
-      );
-    });
+        expect(viewModel.visibleItems, [
+          pinnedLogin,
+          pinnedCard,
+          unpinnedLogin,
+          note(),
+          category(),
+        ]);
+        expect(viewModel.visibleItems.whereType<LoginItem>().toList(), [
+          pinnedLogin,
+          unpinnedLogin,
+        ]);
+      },
+    );
 
     test('setItemPinned reloads pin-first order', () async {
       operations.vault = populatedVault();
@@ -385,6 +418,7 @@ void main() {
 class _FakeVaultOperationService implements VaultOperationService {
   VaultData? vault;
   AppFailure? getVaultFailure;
+  AppFailure? addFailure;
   AppFailure? deleteFailure;
   Completer<void>? getVaultGate;
   Completer<void>? deleteGate;
@@ -392,6 +426,7 @@ class _FakeVaultOperationService implements VaultOperationService {
   int getVaultCount = 0;
   int persistCount = 0;
   String? lastDeletedId;
+  Object? lastAdded;
 
   @override
   Future<Result<VaultData>> getVault() async {
@@ -417,9 +452,30 @@ class _FakeVaultOperationService implements VaultOperationService {
   }
 
   @override
-  Future<Result<void>> addItem(Object item) {
+  Future<Result<void>> addItem(Object item) async {
     persistCount++;
-    throw UnimplementedError();
+    lastAdded = item;
+    final failure = addFailure;
+    if (failure != null) {
+      return FailureResult(failure);
+    }
+    final current =
+        vault ??
+        VaultData(
+          version: VaultData.currentVersion,
+          logins: const [],
+          bankCards: const [],
+          secureNotes: const [],
+          categories: const [],
+        );
+    vault = VaultData(
+      version: current.version,
+      logins: [...current.logins, if (item is LoginItem) item],
+      bankCards: [...current.bankCards, if (item is BankCardItem) item],
+      secureNotes: [...current.secureNotes, if (item is SecureNoteItem) item],
+      categories: [...current.categories, if (item is CategoryItem) item],
+    );
+    return const Success(null);
   }
 
   @override
@@ -476,7 +532,11 @@ class _FakeVaultOperationService implements VaultOperationService {
       return const FailureResult(AuthenticationFailure());
     }
     Object? found;
-    for (final item in [...current.logins, ...current.bankCards, ...current.secureNotes]) {
+    for (final item in [
+      ...current.logins,
+      ...current.bankCards,
+      ...current.secureNotes,
+    ]) {
       if (item is LoginItem && item.id == id) found = item;
       if (item is BankCardItem && item.id == id) found = item;
       if (item is SecureNoteItem && item.id == id) found = item;
@@ -507,11 +567,17 @@ class _FakeVaultOperationService implements VaultOperationService {
       version: current.version,
       logins: [
         for (final login in current.logins)
-          if (updated is LoginItem && login.id == updated.id) updated else login,
+          if (updated is LoginItem && login.id == updated.id)
+            updated
+          else
+            login,
       ],
       bankCards: [
         for (final card in current.bankCards)
-          if (updated is BankCardItem && card.id == updated.id) updated else card,
+          if (updated is BankCardItem && card.id == updated.id)
+            updated
+          else
+            card,
       ],
       secureNotes: [
         for (final note in current.secureNotes)

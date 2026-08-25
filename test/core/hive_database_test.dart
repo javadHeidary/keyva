@@ -13,6 +13,8 @@ import 'package:keyva/core/image/cached_remote_image.dart';
 import 'package:keyva/core/security/biometric_service.dart';
 import 'package:keyva/core/security/pin_service.dart';
 import 'package:keyva/core/session/session_service.dart';
+import 'package:keyva/core/store/store_config.dart';
+import 'package:keyva/core/store/store_link_launcher.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/vault/repository/vault_repository.dart';
@@ -95,6 +97,8 @@ void main() {
       expect(getIt.isRegistered<VaultDataService>(), isTrue);
       expect(getIt.isRegistered<VaultOperationService>(), isTrue);
       expect(getIt.isRegistered<ShareSheetService>(), isTrue);
+      expect(getIt.isRegistered<StoreConfig>(), isTrue);
+      expect(getIt.isRegistered<StoreLinkLauncher>(), isTrue);
       expect(getIt.isRegistered<VaultHomeViewModel>(), isTrue);
       expect(getIt.isRegistered<VaultItemViewModel>(), isTrue);
       expect(getIt.isRegistered<CachedRemoteImage>(), isTrue);

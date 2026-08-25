@@ -11,6 +11,8 @@ abstract final class HiveSettingsKeys {
   static const lastBackgroundedAt = 'lastBackgroundedAt';
   static const onboardingCompleted = 'onboardingCompleted';
 
+  static String itemTypeGuide(String typeName) => 'itemTypeGuide:$typeName';
+
   static String pinFailedAttempts(String userId) => 'pinFailedAttempts:$userId';
 
   static String pinLockoutStartedAt(String userId) =>
