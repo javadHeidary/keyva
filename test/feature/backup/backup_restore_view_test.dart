@@ -14,6 +14,7 @@ import 'package:keyva/feature/backup/model/backup_file_result.dart';
 import 'package:keyva/feature/backup/model/backup_preview.dart';
 import 'package:keyva/feature/backup/model/restore_progress.dart';
 import 'package:keyva/feature/backup/view/backup_restore_view.dart';
+import 'package:keyva/feature/backup/view/restore_account_setup_view.dart';
 import 'package:keyva/feature/backup/viewmodel/backup_viewmodel.dart';
 import 'package:keyva/feature/backup/viewmodel/restore_viewmodel.dart';
 import 'package:keyva/feature/backup/widget/restore_new_account_success_dialog.dart';
@@ -25,6 +26,7 @@ import 'package:keyva/feature/vault/model/category_item.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 import 'package:keyva/feature/vault/model/vault_data.dart';
+import 'package:keyva/shared/widget/password_strengthbar_widget.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';
 
 import '../auth/support/auth_widget_harness.dart';
@@ -879,6 +881,47 @@ void main() {
       expect(find.byKey(const Key('shell-page')), findsOneWidget);
     },
   );
+
+  testWidgets('new-account setup shows password strength while typing', (
+    tester,
+  ) async {
+    restoreVm = RestoreViewModel(
+      backup: backup,
+      files: files,
+      session: session,
+      mode: RestoreMode.createAccount,
+    );
+    setupAuthWidgetSurface(tester);
+    Get.put(restoreVm);
+    await tester.pumpWidget(
+      GetMaterialApp(
+        theme: AppTheme.light,
+        locale: const Locale('fa', 'IR'),
+        home: const RestoreAccountSetupView(),
+        builder: (context, child) {
+          AppResponsive.init(context);
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: child!,
+          );
+        },
+      ),
+    );
+    await pumpAuthSettle(tester);
+
+    expect(find.byType(PasswordStrengthBarWidget), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const Key('backup-restore-setup-password')),
+      'Aa1!',
+    );
+    await tester.pump();
+
+    expect(find.byType(PasswordStrengthBarWidget), findsOneWidget);
+    expect(find.text('قدرت امنیتی'), findsOneWidget);
+    expect(restoreVm.hasPasswordInput.value, isTrue);
+    expect(restoreVm.passwordStrength.value, greaterThan(0));
+  });
 }
 
 Future<void> _reachConfirmDialog(WidgetTester tester) async {

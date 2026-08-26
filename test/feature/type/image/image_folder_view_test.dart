@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -22,6 +24,7 @@ import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
+import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 
 import '../../vault/support/fake_encrypted_blob_store.dart';
 import '../../vault/support/fake_vault_operation_service.dart';
@@ -264,6 +267,72 @@ void main() {
     expect(capture.lastSource, ImageCaptureSource.gallery);
     expect(find.byKey(const Key('vault-image-add-photo')), findsOneWidget);
     await tester.tap(find.byKey(const Key('vault-image-save-photo')));
+    await pumpOpenedRoute(tester);
+
+    expect(operations.lastAdded, isA<ImageItem>());
+    final added = operations.lastAdded! as ImageItem;
+    expect(find.byKey(Key('vault-image-photo-${added.id}')), findsOneWidget);
+  });
+
+  testWidgets('picking a photo shows a blocking barrier', (tester) async {
+    operations.vault = vaultWithFolder();
+    capture.pickGate = Completer<void>();
+    await pumpRoutedHome(tester);
+
+    await tester.tap(find.text('عکس‌های شناسنامه').first);
+    await pumpOpenedRoute(tester);
+
+    await tester.tap(find.byKey(const Key('vault-image-folder-fab')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('image-source-gallery')));
+    await tester.tap(find.byKey(const Key('image-source-gallery')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.barrierKey), findsOneWidget);
+    expect(find.text('در حال آماده‌سازی تصویر...'), findsOneWidget);
+
+    await tester.tap(find.byKey(AppPageLoadingOverlay.barrierKey));
+    await tester.pump();
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(Get.find<ImageFolderViewModel>().isPicking.value, isTrue);
+
+    capture.pickGate!.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('vault-image-add-photo')), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsNothing);
+  });
+
+  testWidgets('saving a photo shows a blocking barrier', (tester) async {
+    operations.vault = vaultWithFolder();
+    operations.addGate = Completer<void>();
+    await pumpRoutedHome(tester);
+
+    await tester.tap(find.text('عکس‌های شناسنامه').first);
+    await pumpOpenedRoute(tester);
+
+    await tester.tap(find.byKey(const Key('vault-image-folder-fab')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('image-source-gallery')));
+    await tester.tap(find.byKey(const Key('image-source-gallery')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('vault-image-add-photo')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('vault-image-save-photo')));
+    await tester.pump();
+
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(find.byKey(AppPageLoadingOverlay.barrierKey), findsOneWidget);
+    expect(find.text('در حال ذخیره تصویر...'), findsOneWidget);
+
+    await tester.tap(find.byKey(AppPageLoadingOverlay.barrierKey));
+    await tester.pump();
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(Get.find<ImageAddPhotoViewModel>().isSubmitting.value, isTrue);
+
+    operations.addGate!.complete();
     await pumpOpenedRoute(tester);
 
     expect(operations.lastAdded, isA<ImageItem>());

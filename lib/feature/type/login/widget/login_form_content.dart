@@ -49,7 +49,7 @@ class LoginFormContent extends StatelessWidget {
                 controller: controller.titleController,
                 labelText: 'نام اپلیکیشن',
                 labelAlwaysVisible: false,
-                hintText: 'مثلاً Netflix، GitHub',
+                hintText: 'مثلاً جیمیل، اینستاگرام',
                 textInputAction: TextInputAction.next,
                 fillColor: fieldFill,
                 prefixIcon: Icon(
@@ -93,7 +93,7 @@ class LoginFormContent extends StatelessWidget {
                                     ? 'آدرس وب ${i + 1}'
                                     : 'آدرس وب',
                                 labelAlwaysVisible: true,
-                                hintText: 'https://example.com',
+                                hintText: 'آدرس وب‌سایت را وارد کنید',
                                 keyboardType: TextInputType.url,
                                 textInputAction: TextInputAction.next,
                                 fillColor: fieldFill,

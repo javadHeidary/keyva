@@ -9,8 +9,8 @@ import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
+import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
@@ -60,7 +60,7 @@ void main() {
     expect(find.byKey(const Key('auth-login-submit')), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(find.byType(AuthBrandHeader), findsNothing);
-    expect(find.text('کی وا'), findsNothing);
+    expect(find.text('کیوا'), findsNothing);
     expect(find.text('Keyva'), findsNothing);
     expect(find.text('کیوا'), findsNothing);
     expect(find.text('تغییر حساب'), findsNothing);
@@ -78,7 +78,7 @@ void main() {
     await tester.tap(find.byKey(const Key('auth-login-submit')));
     await pumpAuthFrame(tester);
 
-    expect(find.text('رمز عبور الزامی است'), findsOneWidget);
+    expect(find.text(LoginController.emptyPasswordMessage), findsOneWidget);
     expect(unlock.unlockCount, 0);
     expect(session.isAuthenticated, isFalse);
   });
@@ -97,7 +97,7 @@ void main() {
     await tester.tap(find.byKey(const Key('auth-login-submit')));
     await pumpAuthFrame(tester);
 
-    expect(find.text('رمز عبور باید حداقل ۸ کاراکتر باشد'), findsOneWidget);
+    expect(find.text(LoginController.shortPasswordMessage), findsOneWidget);
     expect(unlock.unlockCount, 0);
   });
 
@@ -189,7 +189,7 @@ void main() {
 
     expect(session.isAuthenticated, isFalse);
     expect(find.text(LoginController.errorTitle), findsWidgets);
-    expect(find.text('باز کردن گاوصندوق ممکن نشد.'), findsOneWidget);
+    expect(find.text(LoginController.wrongPasswordMessage), findsOneWidget);
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(find.textContaining('AuthenticationFailure'), findsNothing);
     expect(find.textContaining('Hive'), findsNothing);
@@ -240,7 +240,7 @@ void main() {
     expect(unlock.pinUnlockCount, 1);
     expect(session.isAuthenticated, isFalse);
     expect(
-      find.text('کد PIN نادرست است. ۲ تلاش باقی مانده است.'),
+      find.text('کد PIN اشتباه است. ۲ تلاش باقی مانده است.'),
       findsOneWidget,
     );
     expect(find.byKey(const Key('shell-page')), findsNothing);

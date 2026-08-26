@@ -188,7 +188,7 @@ class BankCardFormContent extends StatelessWidget {
                 controller: controller.notesController,
                 labelText: 'یادداشت',
                 labelAlwaysVisible: true,
-                hintText: 'یادداشت اختیاری',
+                hintText: 'یادداشت',
                 maxLines: 4,
                 textInputAction: TextInputAction.newline,
                 fillColor: fieldFill,

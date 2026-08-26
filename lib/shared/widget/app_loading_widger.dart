@@ -93,7 +93,10 @@ class AppLoadingWidget extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSpacing.xl.s),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.pagePadding.s,
+          vertical: AppSpacing.xl.s,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -108,6 +111,7 @@ class AppLoadingWidget extends StatelessWidget {
               Text(
                 message!,
                 textAlign: TextAlign.center,
+                softWrap: true,
                 style: AppTypography.bodyMedium.copyWith(
                   color: colors.textSecondary,
                 ),

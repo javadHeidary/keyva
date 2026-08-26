@@ -17,7 +17,7 @@ class NoteVaultStore extends GetxService {
           categoryId: 'personal',
           title: 'کدهای بازیابی',
           body:
-              'یادداشت پشتیبان\nپشتیبانی: support@example.com\nhttps://example.com/recovery',
+              'کدهای بازیابی حساب را اینجا نگه دارید.\nاین یادداشت فقط یک نمونه است.',
           createdAt: DateTime(2024, 1, 20, 11, 15),
         ),
       );

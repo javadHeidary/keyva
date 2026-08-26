@@ -41,6 +41,8 @@ class RestoreViewModel extends GetxController {
   final errorMessage = ''.obs;
   final isPasswordVisible = false.obs;
   final isConfirmPasswordVisible = false.obs;
+  final passwordStrength = 0.0.obs;
+  final hasPasswordInput = false.obs;
   final dialogCountdown = 3.obs;
   final canConfirmDialog = false.obs;
   final progress = Rxn<RestoreProgress>();
@@ -69,12 +71,50 @@ class RestoreViewModel extends GetxController {
 
   bool get _sessionReady => _session.isAuthenticated || _canOperateWithoutSession;
 
+  @override
+  void onInit() {
+    super.onInit();
+    passwordController.addListener(_syncPasswordStrength);
+  }
+
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
   void toggleConfirmPasswordVisibility() {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
+  }
+
+  void _syncPasswordStrength() {
+    final password = passwordController.text;
+    hasPasswordInput.value = password.isNotEmpty;
+    passwordStrength.value = _visualPasswordStrength(password);
+  }
+
+  double _visualPasswordStrength(String password) {
+    if (password.isEmpty) {
+      return 0;
+    }
+    var score = 0.0;
+    if (password.length >= 8) {
+      score += 0.2;
+    }
+    if (password.length >= 12) {
+      score += 0.2;
+    }
+    if (RegExp('[a-z]').hasMatch(password)) {
+      score += 0.15;
+    }
+    if (RegExp('[A-Z]').hasMatch(password)) {
+      score += 0.15;
+    }
+    if (RegExp('[0-9]').hasMatch(password)) {
+      score += 0.15;
+    }
+    if (RegExp(r'[^a-zA-Z0-9]').hasMatch(password)) {
+      score += 0.15;
+    }
+    return score.clamp(0.0, 1.0);
   }
 
   void startWarningDialogCountdown() {
@@ -363,6 +403,7 @@ class RestoreViewModel extends GetxController {
 
   @override
   void onClose() {
+    passwordController.removeListener(_syncPasswordStrength);
     usernameController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();

@@ -1,10 +1,10 @@
 class SupportUsContent {
   const SupportUsContent._();
 
-  static const rateTitle = 'امتیاز به Keyva';
+  static const rateTitle = 'امتیاز به کیوا';
   static const otherAppsTitle = 'اپلیکیشن‌های دیگر ما';
-  static const shareTitle = 'اشتراک‌گذاری Keyva';
-  static const shareSubject = 'Keyva';
+  static const shareTitle = 'اشتراک‌گذاری کیوا';
+  static const shareSubject = 'کیوا';
 
   static const rateUnavailable = 'امکان باز کردن صفحه امتیازدهی وجود ندارد.';
   static const otherAppsUnconfigured =

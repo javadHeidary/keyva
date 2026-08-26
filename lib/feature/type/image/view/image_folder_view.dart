@@ -13,6 +13,7 @@ import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
+import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 
 class ImageFolderView extends GetView<ImageFolderViewModel> {
   const ImageFolderView({super.key});
@@ -21,122 +22,135 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return Scaffold(
-      key: const Key('vault-image-folder'),
-      backgroundColor: colors.pageBackground,
-      floatingActionButton: AppFabWidget(
-        key: const Key('vault-image-folder-fab'),
-        buttonSize: 50.s,
-        icon: const Icon(AppIcon.add),
-        onPressed: () => controller.addPhoto(context),
-      ),
-      body: SafeArea(
-        child: Obx(() {
-          if (Get.isRegistered<VaultHomeViewModel>()) {
-            Get.find<VaultHomeViewModel>().vault.value;
-          }
-          final folder = controller.folder;
-          final photos = controller.photos;
-          if (folder == null) {
-            return const SizedBox.shrink();
-          }
+    return Obx(() {
+      if (Get.isRegistered<VaultHomeViewModel>()) {
+        Get.find<VaultHomeViewModel>().vault.value;
+      }
+      final picking = controller.isPicking.value;
+      final folder = controller.folder;
+      final photos = controller.photos;
 
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: AppHeaderWidget(
-                  title: controller.headerTitle,
-                  titleAlign: TextAlign.center,
-                  leading: Icon(
-                    AppIcon.arrowBack,
-                    size: AppSizes.iconLg.s,
-                    color: colors.textPrimary,
-                  ),
-                  onLeadingTap: Get.back,
-                  trailingActions: [
-                    vaultPinHeaderAction(
-                      isPinned: folder.isPinned,
-                      color: folder.isPinned
-                          ? colors.primary
-                          : colors.textSecondary,
-                      onTap: () => controller.togglePin(context),
-                    ),
-                    AppHeaderTrailingAction(
-                      child: Icon(
-                        AppIcon.edit,
-                        key: const Key('vault-image-folder-edit'),
-                        size: AppSizes.iconLg.s,
-                        color: colors.textPrimary,
-                      ),
-                      onTap: controller.navigateToEdit,
-                    ),
-                    AppHeaderTrailingAction(
-                      child: Icon(
-                        AppIcon.delete,
-                        key: const Key('vault-image-folder-delete'),
-                        size: AppSizes.iconLg.s,
-                        color: colors.error,
-                      ),
-                      onTap: () => controller.confirmDelete(context),
-                    ),
-                  ],
-                ),
+      return Scaffold(
+        key: const Key('vault-image-folder'),
+        backgroundColor: colors.pageBackground,
+        floatingActionButton: picking
+            ? null
+            : AppFabWidget(
+                key: const Key('vault-image-folder-fab'),
+                buttonSize: 50.s,
+                icon: const Icon(AppIcon.add),
+                onPressed: () => controller.addPhoto(context),
               ),
-              if (photos.isEmpty)
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.lg.s,
-                    AppSpacing.lg.h,
-                    AppSpacing.lg.s,
-                    AppSpacing.hugePlus.h,
-                  ),
-                  sliver: const SliverToBoxAdapter(
-                    child: AppEmptyWidget(
-                      key: Key('vault-image-folder-empty'),
-                      icon: AppIcon.images,
-                      title: 'این پوشه خالی است',
-                      description:
-                          'با دکمه + عکس بگیرید یا از گالری انتخاب کنید.',
-                    ),
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    AppSpacing.lg.s,
-                    AppSpacing.sm.h,
-                    AppSpacing.lg.s,
-                    AppSpacing.hugePlus.h,
-                  ),
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: AppSpacing.sm.s,
-                      mainAxisSpacing: AppSpacing.sm.s,
-                    ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final photo = photos[index];
-                      return KeyedSubtree(
-                        key: Key('vault-image-photo-${photo.id}'),
-                        child: Material(
-                          color: colors.input,
-                          borderRadius: BorderRadius.circular(AppRadius.medium),
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            onTap: () => controller.openPhoto(photo.id),
-                            child: EncryptedVaultImage(
-                              blobId: photo.thumbnailBlobId,
+        body: AppPageLoadingOverlay(
+          visible: picking,
+          message: 'در حال آماده‌سازی تصویر...',
+          child: SafeArea(
+            child: folder == null
+                ? const SizedBox.shrink()
+                : CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: AppHeaderWidget(
+                          title: controller.headerTitle,
+                          titleAlign: TextAlign.center,
+                          leading: Icon(
+                            AppIcon.arrowBack,
+                            size: AppSizes.iconLg.s,
+                            color: colors.textPrimary,
+                          ),
+                          onLeadingTap: picking ? null : Get.back,
+                          trailingActions: [
+                            vaultPinHeaderAction(
+                              isPinned: folder.isPinned,
+                              color: folder.isPinned
+                                  ? colors.primary
+                                  : colors.textSecondary,
+                              onTap: () => controller.togglePin(context),
+                            ),
+                            AppHeaderTrailingAction(
+                              child: Icon(
+                                AppIcon.edit,
+                                key: const Key('vault-image-folder-edit'),
+                                size: AppSizes.iconLg.s,
+                                color: colors.textPrimary,
+                              ),
+                              onTap: controller.navigateToEdit,
+                            ),
+                            AppHeaderTrailingAction(
+                              child: Icon(
+                                AppIcon.delete,
+                                key: const Key('vault-image-folder-delete'),
+                                size: AppSizes.iconLg.s,
+                                color: colors.error,
+                              ),
+                              onTap: () => controller.confirmDelete(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (photos.isEmpty)
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(
+                            AppSpacing.lg.s,
+                            AppSpacing.lg.h,
+                            AppSpacing.lg.s,
+                            AppSpacing.hugePlus.h,
+                          ),
+                          sliver: const SliverToBoxAdapter(
+                            child: AppEmptyWidget(
+                              key: Key('vault-image-folder-empty'),
+                              icon: AppIcon.images,
+                              title: 'این پوشه خالی است',
+                              description:
+                                  'با دکمه + عکس بگیرید یا از گالری انتخاب کنید.',
                             ),
                           ),
+                        )
+                      else
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(
+                            AppSpacing.lg.s,
+                            AppSpacing.sm.h,
+                            AppSpacing.lg.s,
+                            AppSpacing.hugePlus.h,
+                          ),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: AppSpacing.sm.s,
+                                  mainAxisSpacing: AppSpacing.sm.s,
+                                ),
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final photo = photos[index];
+                              return KeyedSubtree(
+                                key: Key('vault-image-photo-${photo.id}'),
+                                child: Material(
+                                  color: colors.input,
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.medium,
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: InkWell(
+                                    onTap: () =>
+                                        controller.openPhoto(photo.id),
+                                    child: EncryptedVaultImage(
+                                      blobId: photo.thumbnailBlobId,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }, childCount: photos.length),
+                          ),
                         ),
-                      );
-                    }, childCount: photos.length),
+                    ],
                   ),
-                ),
-            ],
-          );
-        }),
-      ),
-    );
+          ),
+        ),
+      );
+    });
   }
 }

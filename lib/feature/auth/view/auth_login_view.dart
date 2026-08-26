@@ -44,7 +44,7 @@ class AuthLoginView extends GetView<LoginController> {
                 textDirection: TextDirection.rtl,
                 child: Column(
                   children: [
-                    SizedBox(height: AppSpacing.huge.h),
+                    SizedBox(height: AppSpacing.xxxl.h),
                     Obx(() => _navigationHeader(context)),
                     Expanded(
                       child: LayoutBuilder(
@@ -237,7 +237,7 @@ class AuthLoginView extends GetView<LoginController> {
             ],
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'کد PIN الزامی است';
+                return LoginController.emptyPinMessage;
               }
               if (!PinPolicy.isValid(value)) {
                 return PinPolicy.userMessage;
@@ -271,10 +271,10 @@ class AuthLoginView extends GetView<LoginController> {
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'رمز عبور الزامی است';
+                return LoginController.emptyPasswordMessage;
               }
               if (value.length < 8) {
-                return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
+                return LoginController.shortPasswordMessage;
               }
               return null;
             },

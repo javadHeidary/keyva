@@ -11,6 +11,7 @@ import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
 import 'package:keyva/shared/widget/app_textfield_widget.dart';
+import 'package:keyva/shared/widget/password_strengthbar_widget.dart';
 
 class RestoreAccountSetupView extends StatelessWidget {
   const RestoreAccountSetupView({super.key});
@@ -85,6 +86,19 @@ class RestoreAccountSetupView extends StatelessWidget {
                                     : AppIcon.visibility,
                               ),
                               onPressed: controller.togglePasswordVisibility,
+                            ),
+                          );
+                        }),
+                        Obx(() {
+                          if (!controller.hasPasswordInput.value) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: EdgeInsets.only(top: AppSpacing.sm.h),
+                            child: PasswordStrengthBarWidget(
+                              strength: controller.passwordStrength.value,
+                              showLabel: true,
+                              useSegmentedBars: true,
                             ),
                           );
                         }),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:keyva/feature/type/image/service/image_capture_service.dart';
@@ -18,11 +19,16 @@ class FakeImageCaptureService implements ImageCaptureService {
   ImageCaptureOutcome outcome;
   ImageCaptureSource? lastSource;
   int pickCount = 0;
+  Completer<void>? pickGate;
 
   @override
   Future<ImageCaptureOutcome> pick(ImageCaptureSource source) async {
     pickCount++;
     lastSource = source;
+    final gate = pickGate;
+    if (gate != null) {
+      await gate.future;
+    }
     return outcome;
   }
 }

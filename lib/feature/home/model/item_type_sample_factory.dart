@@ -7,22 +7,22 @@ import 'package:keyva/feature/vault/model/secure_note_item.dart';
 class ItemTypeSampleFactory {
   const ItemTypeSampleFactory();
 
-  static const loginTitle = 'Example Gmail';
-  static const loginUsername = 'example@gmail.com';
-  static const loginPassword = 'Example@123456';
+  static const loginTitle = 'جیمیل نمونه';
+  static const loginUsername = 'ali@gmail.com';
+  static const loginPassword = 'Keyva@123456';
   static const loginWebsite = 'https://gmail.com';
 
-  static const bankCardTitle = 'Example Bank Card';
+  static const bankCardTitle = 'کارت بانکی نمونه';
   static const bankCardNumber = '6037990012345670';
-  static const bankCardHolder = 'Example User';
+  static const bankCardHolder = 'کاربر نمونه';
   static const bankCardExpiry = '12/30';
   static const bankCardCvv = '000';
-  static const bankCardBankName = 'Example Bank';
+  static const bankCardBankName = 'بانک ملی';
 
-  static const noteTitle = 'Example Note';
+  static const noteTitle = 'یادداشت نمونه';
   static const noteContent =
-      'This is an example note created to demonstrate how Keyva works.';
-  static const imageFolderTitle = 'Example Photos';
+      'این یک یادداشت نمونه است تا نحوه کار کیوا را نشان دهد.';
+  static const imageFolderTitle = 'عکس‌های نمونه';
 
   Object create(VaultItemType type, {DateTime? now}) {
     final createdAt = now ?? DateTime.now();

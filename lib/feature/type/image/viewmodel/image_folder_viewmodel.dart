@@ -111,6 +111,7 @@ class ImageFolderViewModel extends GetxController {
             message: vaultUserMessage(message),
           );
         case ImageCaptureSuccess(:final data):
+          isPicking.value = false;
           await Get.toNamed(
             AppRoutes.imageAddPhoto,
             arguments: ImageAddPhotoArgs(

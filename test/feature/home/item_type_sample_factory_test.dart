@@ -54,4 +54,17 @@ void main() {
     expect(item.title, ItemTypeSampleFactory.imageFolderTitle);
     expect(item.categoryId, isNull);
   });
+
+  test('uses Persian copy for user-visible sample fields', () {
+    final persian = RegExp('[\u0600-\u06FF]');
+    expect(ItemTypeSampleFactory.loginTitle, matches(persian));
+    expect(ItemTypeSampleFactory.bankCardTitle, matches(persian));
+    expect(ItemTypeSampleFactory.bankCardHolder, matches(persian));
+    expect(ItemTypeSampleFactory.bankCardBankName, matches(persian));
+    expect(ItemTypeSampleFactory.noteTitle, matches(persian));
+    expect(ItemTypeSampleFactory.noteContent, matches(persian));
+    expect(ItemTypeSampleFactory.imageFolderTitle, matches(persian));
+    expect(ItemTypeSampleFactory.loginTitle.contains('Example'), isFalse);
+    expect(ItemTypeSampleFactory.noteContent.contains('example'), isFalse);
+  });
 }

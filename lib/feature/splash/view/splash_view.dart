@@ -69,7 +69,7 @@ class _SplashViewState extends State<SplashView> {
                   logo.image(width: 150.w, height: 150.h, fit: BoxFit.contain),
                   SizedBox(height: 24.h),
                   Text(
-                    'کی وا',
+                    'کیوا',
                     style: AppTypography.displayMedium.copyWith(
                       color: context.colors.textPrimary,
                     ),

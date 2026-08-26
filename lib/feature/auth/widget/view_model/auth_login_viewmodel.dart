@@ -32,6 +32,10 @@ class LoginController extends GetxController {
   static const errorTitle = 'ورود';
   static const successTitle = 'ورود به حساب';
   static const successBody = 'ورود با موفقیت انجام شد';
+  static const wrongPasswordMessage = 'رمز اشتباه است';
+  static const emptyPasswordMessage = 'رمز اصلی الزامی است';
+  static const shortPasswordMessage = 'رمز اصلی باید حداقل ۸ کاراکتر باشد';
+  static const emptyPinMessage = 'کد PIN الزامی است';
 
   final VaultUnlockService _unlock;
   final AuthRepository _auth;
@@ -181,7 +185,9 @@ class LoginController extends GetxController {
         masterPassword: passwordController.text,
       );
       if (unlocked is FailureResult<void>) {
-        errorMessage.value = vaultUserMessage(unlocked.failure.message);
+        errorMessage.value = unlocked.failure is AuthenticationFailure
+            ? wrongPasswordMessage
+            : vaultUserMessage(unlocked.failure.message);
         return;
       }
       succeeded = true;
@@ -326,7 +332,7 @@ class LoginController extends GetxController {
   }
 
   String _pinRemainingMessage(int remaining) {
-    return 'کد PIN نادرست است. ${_persianCount(remaining)} تلاش باقی مانده است.';
+    return 'کد PIN اشتباه است. ${_persianCount(remaining)} تلاش باقی مانده است.';
   }
 
   String _biometricRemainingMessage(int remaining) {

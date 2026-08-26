@@ -58,11 +58,16 @@ class _AppPageLoadingOverlayState extends State<AppPageLoadingOverlay> {
               dismissible: false,
               color: context.colors.overlay,
             ),
-            IgnorePointer(
-              child: AppLoadingWidget(
-                key: AppPageLoadingOverlay.overlayKey,
-                layout: AppLoadingLayout.page,
-                message: widget.message,
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: AppLoadingWidget(
+                    key: AppPageLoadingOverlay.overlayKey,
+                    layout: AppLoadingLayout.page,
+                    message: widget.message,
+                  ),
+                ),
               ),
             ),
           ],

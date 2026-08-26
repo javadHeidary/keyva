@@ -21,14 +21,10 @@ class AuthBrandHeader extends StatelessWidget {
 
     return Column(
       children: [
-        logo.image(
-          width: logoSize,
-          height: logoSize,
-          fit: BoxFit.contain,
-        ),
+        logo.image(width: logoSize, height: logoSize, fit: BoxFit.contain),
         SizedBox(height: AppSpacing.sm.h),
         Text(
-          'کی وا',
+          'کیوا',
           style: AppTypography.headlineMedium.copyWith(
             color: colors.textPrimary,
           ),

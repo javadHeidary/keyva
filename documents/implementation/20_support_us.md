@@ -31,9 +31,9 @@ Settings includes a Support Us section with three actions. Both Cafe Bazaar and 
 
 Rows (order in UI):
 
-1. امتیاز به Keyva
+1. امتیاز به کیوا
 2. اپلیکیشن‌های دیگر ما
-3. اشتراک‌گذاری Keyva
+3. اشتراک‌گذاری کیوا  
 
 Copy and error strings live in [`SupportUsContent`](../../lib/feature/settings/model/support_us_content.dart). Icons are `AppIcon.star`, `AppIcon.apps`, and `AppIcon.share`.
 
@@ -76,14 +76,14 @@ flutter build apk --flavor myket --dart-define=STORE=myket
 
 [`StoreConfig`](../../lib/core/store/store_config.dart) is the only place that knows Bazaar vs Myket URLs.
 
-| Field | Bazaar | Myket |
-|---|---|---|
-| `keyvaStoreUrl` / `detailsWebUrl` | `https://cafebazaar.ir/app/{id}` | `https://myket.ir/app/{id}` |
-| `reviewNativeUri` | `bazaar://details?id={id}` | `myket://comment?id={id}` |
-| `reviewIntentAction` | `ACTION_EDIT` | `ACTION_VIEW` |
-| `detailsNativeUri` | `bazaar://details?id={id}` | `myket://details?id={id}` |
-| `storeAppPackage` | `com.farsitel.bazaar` | `ir.mservices.market` |
-| Other apps | `bazaarOtherAppsNativeUri` / `WebUrl` | `myketOtherAppsNativeUri` / `WebUrl` |
+| Field                             | Bazaar                                | Myket                                |
+| --------------------------------- | ------------------------------------- | ------------------------------------ |
+| `keyvaStoreUrl` / `detailsWebUrl` | `https://cafebazaar.ir/app/{id}`      | `https://myket.ir/app/{id}`          |
+| `reviewNativeUri`                 | `bazaar://details?id={id}`            | `myket://comment?id={id}`            |
+| `reviewIntentAction`              | `ACTION_EDIT`                         | `ACTION_VIEW`                        |
+| `detailsNativeUri`                | `bazaar://details?id={id}`            | `myket://details?id={id}`            |
+| `storeAppPackage`                 | `com.farsitel.bazaar`                 | `ir.mservices.market`                |
+| Other apps                        | `bazaarOtherAppsNativeUri` / `WebUrl` | `myketOtherAppsNativeUri` / `WebUrl` |
 
 Package id is `StoreConfig.defaultPackageId` (`com.example.keyva` until store release).
 
@@ -147,13 +147,13 @@ Share body is Persian, with the current store’s Keyva URL injected. Subject: `
 
 ## Error handling
 
-| Case | User sees |
-|---|---|
-| Review intent and both fallbacks fail | info toast, rate copy |
-| Other-apps URLs not configured | info toast, no launch |
-| Other-apps URLs set but cannot open | info toast |
-| Share service missing / store URL empty / `unavailable` | error toast, share copy |
-| Native / URL launcher throws | treated as failure, never logged with payload |
+| Case                                                    | User sees                                     |
+| ------------------------------------------------------- | --------------------------------------------- |
+| Review intent and both fallbacks fail                   | info toast, rate copy                         |
+| Other-apps URLs not configured                          | info toast, no launch                         |
+| Other-apps URLs set but cannot open                     | info toast                                    |
+| Share service missing / store URL empty / `unavailable` | error toast, share copy                       |
+| Native / URL launcher throws                            | treated as failure, never logged with payload |
 
 ---
 
