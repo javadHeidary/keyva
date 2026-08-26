@@ -321,7 +321,7 @@ void main() {
     expect(find.byType(AppFabWidget), findsOneWidget);
     expect(find.byKey(const Key('vault-home-empty-cta')), findsNothing);
 
-    await tester.tap(find.byIcon(AppIcon.add));
+    await tester.tap(find.byIcon(AppIcon.add).hitTestable());
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
 

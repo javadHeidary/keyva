@@ -7,6 +7,7 @@ import 'package:keyva/core/theme/app_sizes.dart';
 import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 
 /// Bottom-left FAB placement using page padding and a caller-provided bottom inset.
 class AppFabScaffoldLocation extends FloatingActionButtonLocation {
@@ -64,6 +65,25 @@ class AppFabWidget extends StatelessWidget {
   final double iconSize;
 
   bool get isExpandable => children.isNotEmpty;
+
+  /// Fan radius that keeps child buttons from overlapping each other or the main FAB.
+  double _resolvedFanDistance() {
+    final childSize = AppSizes.fabChildButtonSize.s;
+    final minFromMain = (buttonSize.s + childSize) / 2 + AppSpacing.sm.s;
+    if (children.length <= 1) {
+      return minFromMain;
+    }
+
+    final stepRadians = (fanAngle / (children.length - 1)) * (math.pi / 180);
+    final halfStep = stepRadians / 2;
+    if (halfStep <= 0) {
+      return minFromMain;
+    }
+
+    final minChord = childSize + AppSpacing.md.s;
+    final radius = minChord / (2 * math.sin(halfStep));
+    return math.max(radius, minFromMain);
+  }
 
   /// Use with [AppFabWidget] — pass [expandable] when [children] is non-empty.
   static FloatingActionButtonLocation scaffoldLocation({
@@ -126,7 +146,7 @@ class AppFabWidget extends StatelessWidget {
       type: ExpandableFabType.fan,
       pos: ExpandableFabPos.left,
       fanAngle: fanAngle,
-      distance: distance ?? 64.s,
+      distance: distance ?? _resolvedFanDistance(),
       duration: const Duration(milliseconds: 220),
       childrenAnimation: ExpandableFabAnimation.rotate,
       margin: EdgeInsets.only(
@@ -173,14 +193,48 @@ class AppFabChildButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final background = backgroundColor ?? colors.card;
+    final foreground = foregroundColor ?? colors.primary;
 
     return _AppFabButton(
-      icon: icon,
+      icon: _FabChildAddIcon(icon: icon),
       onTap: onPressed,
       size: buttonSize,
       iconSize: iconSize,
-      backgroundColor: backgroundColor ?? colors.card,
-      foregroundColor: foregroundColor ?? colors.primary,
+      backgroundColor: background,
+      foregroundColor: foreground,
+    );
+  }
+}
+
+class _FabChildAddIcon extends StatelessWidget {
+  const _FabChildAddIcon({required this.icon});
+
+  final Widget icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        icon,
+        PositionedDirectional(
+          end: 0,
+          bottom: 0,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.primary,
+              shape: BoxShape.circle,
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.xxs.s),
+              child: Icon(AppIcon.add, size: 6.s, color: colors.onPrimary),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

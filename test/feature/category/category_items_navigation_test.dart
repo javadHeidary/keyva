@@ -468,7 +468,7 @@ void main() {
     await pumpCategories(tester);
     await openCategory(tester);
 
-    await tester.tap(find.byIcon(AppIcon.add));
+    await tester.tap(find.byIcon(AppIcon.add).hitTestable());
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     await tester.tap(find.byKey(const Key('category-items-fab-login')));

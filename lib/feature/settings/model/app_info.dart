@@ -5,8 +5,8 @@ class AppInfo {
   static const buildNumber = '1';
   static const displayVersion = '$version+$buildNumber';
   static const feedbackEmail = 'javadheidary.dev@gmail.com';
-  static const supportEmailSubject = 'موضوع: ارتباط با پشتیبانی Keyva';
-  static const feedbackEmailSubject = 'نقد و پیشنهاد برای Keyva';
+  static const supportEmailSubject = 'موضوع: ارتباط با پشتیبانی کیوا';
+  static const feedbackEmailSubject = 'نقد و پیشنهاد برای کیوا';
 
   /// Official Telegram destination.
   static const telegramUrl = 'https://t.me/dEVHeidary';
