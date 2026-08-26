@@ -1,6 +1,5 @@
 import 'package:keyva/feature/home/model/vault_models.dart';
 import 'package:keyva/feature/vault/model/bank_card_item.dart';
-import 'package:keyva/feature/vault/model/image_folder.dart';
 import 'package:keyva/feature/vault/model/login_item.dart';
 import 'package:keyva/feature/vault/model/secure_note_item.dart';
 
@@ -22,7 +21,8 @@ class ItemTypeSampleFactory {
   static const noteTitle = 'یادداشت نمونه';
   static const noteContent =
       'این یک یادداشت نمونه است تا نحوه کار کیوا را نشان دهد.';
-  static const imageFolderTitle = 'عکس‌های نمونه';
+
+  static bool supports(VaultItemType type) => type != VaultItemType.image;
 
   Object create(VaultItemType type, {DateTime? now}) {
     final createdAt = now ?? DateTime.now();
@@ -61,12 +61,8 @@ class ItemTypeSampleFactory {
         createdAt: createdAt,
         updatedAt: createdAt,
       ),
-      VaultItemType.image => ImageFolder(
-        id: id,
-        title: imageFolderTitle,
-        categoryId: null,
-        createdAt: createdAt,
-        updatedAt: createdAt,
+      VaultItemType.image => throw UnsupportedError(
+        'Image folders do not support sample creation',
       ),
     };
   }

@@ -37,4 +37,11 @@ void main() {
     expect(content.description, contains('پوشه'));
     expect(content.examples, contains('عکس‌های شناسنامه'));
   });
+
+  test('only login, bank card, and note offer a sample item', () {
+    expect(ItemTypeGuideContent.login.canCreateSample, isTrue);
+    expect(ItemTypeGuideContent.bankCard.canCreateSample, isTrue);
+    expect(ItemTypeGuideContent.secureNote.canCreateSample, isTrue);
+    expect(ItemTypeGuideContent.image.canCreateSample, isFalse);
+  });
 }

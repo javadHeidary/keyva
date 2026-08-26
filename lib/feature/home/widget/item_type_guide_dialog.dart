@@ -107,14 +107,24 @@ class ItemTypeGuideDialog extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppSpacing.xl.s),
-                AppButtonWidget(
-                  key: const Key('item-type-guide-create-sample'),
-                  title: 'ساخت نمونه',
-                  isLoading: submitting,
-                  enabled: !submitting,
-                  onPressed: submitting ? null : onCreateSample,
-                ),
-                SizedBox(height: AppSpacing.sm.s),
+                if (content.canCreateSample) ...[
+                  AppButtonWidget(
+                    key: const Key('item-type-guide-create-sample'),
+                    title: 'ساخت نمونه',
+                    isLoading: submitting,
+                    enabled: !submitting,
+                    onPressed: submitting ? null : onCreateSample,
+                  ),
+                  SizedBox(height: AppSpacing.sm.s),
+                ] else ...[
+                  AppButtonWidget(
+                    key: const Key('item-type-guide-got-it'),
+                    title: 'متوجه شدم',
+                    enabled: !submitting,
+                    onPressed: submitting ? null : onGotIt,
+                  ),
+                  SizedBox(height: AppSpacing.sm.s),
+                ],
                 TextButton(
                   key: const Key('item-type-guide-dont-show-again'),
                   onPressed: submitting ? null : onDontShowAgain,
@@ -127,18 +137,19 @@ class ItemTypeGuideDialog extends StatelessWidget {
                     ),
                   ),
                 ),
-                TextButton(
-                  key: const Key('item-type-guide-got-it'),
-                  onPressed: submitting ? null : onGotIt,
-                  child: Text(
-                    'متوجه شدم',
-                    style: AppTypography.button.copyWith(
-                      color: submitting
-                          ? colors.textTertiary
-                          : colors.textSecondary,
+                if (content.canCreateSample)
+                  TextButton(
+                    key: const Key('item-type-guide-got-it'),
+                    onPressed: submitting ? null : onGotIt,
+                    child: Text(
+                      'متوجه شدم',
+                      style: AppTypography.button.copyWith(
+                        color: submitting
+                            ? colors.textTertiary
+                            : colors.textSecondary,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           );

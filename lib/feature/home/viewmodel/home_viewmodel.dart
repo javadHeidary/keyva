@@ -341,6 +341,9 @@ class HomeController extends GetxController {
     if (isCreatingTypeGuideSample.value) {
       return;
     }
+    if (!ItemTypeSampleFactory.supports(type)) {
+      return;
+    }
 
     isCreatingTypeGuideSample.value = true;
     try {
@@ -376,7 +379,7 @@ class HomeController extends GetxController {
           Navigator.of(context, rootNavigator: true).canPop()) {
         Navigator.of(context, rootNavigator: true).pop();
       }
-      openVaultItemDetails(type, itemId);
+      openVaultTypeList(type);
     } finally {
       isCreatingTypeGuideSample.value = false;
     }

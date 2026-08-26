@@ -50,6 +50,13 @@ void main() {
             page: () => const Scaffold(body: Text('guide-host')),
           ),
           GetPage(
+            name: AppRoutes.typeList,
+            page: () => const Scaffold(
+              key: Key('type-list'),
+              body: Text('type-list'),
+            ),
+          ),
+          GetPage(
             name: AppRoutes.loginDetails,
             page: () => const Scaffold(
               key: Key('login-details'),
@@ -126,7 +133,7 @@ void main() {
     );
   });
 
-  testWidgets('create sample saves, hides the icon, and opens details', (
+  testWidgets('create sample saves, hides the icon, and opens the type list', (
     tester,
   ) async {
     final context = await pumpHost(tester);
@@ -138,8 +145,42 @@ void main() {
     expect(operations.lastAdded, isA<LoginItem>());
     expect(settings.itemTypeGuideStatuses['login'], 'sampleCreated');
     expect(home.isTypeGuideVisible(VaultItemType.login), isFalse);
-    expect(Get.currentRoute, AppRoutes.loginDetails);
-    expect(find.byKey(const Key('login-details')), findsOneWidget);
+    expect(Get.currentRoute, AppRoutes.typeList);
+    expect(Get.arguments, VaultItemType.login);
+    expect(find.byKey(const Key('type-list')), findsOneWidget);
+    expect(find.byKey(const Key('login-details')), findsNothing);
+  });
+
+  for (final type in const [
+    VaultItemType.bankCard,
+    VaultItemType.secureNote,
+  ]) {
+    testWidgets(
+      'create ${type.name} sample opens that type list without details',
+      (tester) async {
+        final context = await pumpHost(tester);
+        await home.createTypeGuideSample(context, type);
+        await pumpVaultFrame(tester);
+
+        expect(operations.addCount, 1);
+        expect(settings.itemTypeGuideStatuses[type.name], 'sampleCreated');
+        expect(Get.currentRoute, AppRoutes.typeList);
+        expect(Get.arguments, type);
+        expect(find.byKey(const Key('login-details')), findsNothing);
+      },
+    );
+  }
+
+  testWidgets('image type does not create a sample or navigate', (tester) async {
+    final context = await pumpHost(tester);
+
+    await home.createTypeGuideSample(context, VaultItemType.image);
+    await pumpVaultFrame(tester);
+
+    expect(operations.addCount, 0);
+    expect(home.isTypeGuideVisible(VaultItemType.image), isTrue);
+    expect(settings.itemTypeGuideStatuses.containsKey('image'), isFalse);
+    expect(Get.currentRoute, AppRoutes.home);
   });
 
   testWidgets('failed sample creation keeps the info icon visible', (
@@ -172,6 +213,7 @@ void main() {
     expect(home.isTypeGuideVisible(VaultItemType.login), isTrue);
     expect(Get.currentRoute, AppRoutes.home);
     expect(find.byKey(const Key('login-details')), findsNothing);
+    expect(find.byKey(const Key('type-list')), findsNothing);
   });
 
   testWidgets('persist failure on dismiss keeps the info icon', (tester) async {

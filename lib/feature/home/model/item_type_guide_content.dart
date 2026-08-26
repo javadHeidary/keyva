@@ -5,11 +5,13 @@ class ItemTypeGuideContent {
     required this.title,
     required this.description,
     required this.examples,
+    this.canCreateSample = true,
   });
 
   final String title;
   final String description;
   final List<String> examples;
+  final bool canCreateSample;
 
   static ItemTypeGuideContent forType(VaultItemType type) {
     switch (type) {
@@ -67,5 +69,6 @@ class ItemTypeGuideContent {
       'مدارک شناسایی',
       'اسناد مهم',
     ],
+    canCreateSample: false,
   );
 }

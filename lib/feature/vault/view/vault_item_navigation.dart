@@ -29,6 +29,10 @@ void openVaultItemDetails(VaultItemType type, String id) {
   Get.toNamed(vaultItemDetailsRoute(type), arguments: id);
 }
 
+void openVaultTypeList(VaultItemType type) {
+  Get.toNamed(AppRoutes.typeList, arguments: type);
+}
+
 void openCreatedVaultItem({
   required VaultItemType type,
   required String id,
