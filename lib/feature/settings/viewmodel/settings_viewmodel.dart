@@ -765,6 +765,9 @@ class SettingsViewModel extends GetxController {
     if (failure is AuthenticationFailure) {
       return 'رمز اصلی فعلی صحیح نیست.';
     }
+    if (failure is MasterPasswordLockedOutFailure) {
+      return vaultUserMessage(failure.message);
+    }
     return 'تغییر رمز اصلی انجام نشد. لطفاً دوباره تلاش کنید.';
   }
 
@@ -917,6 +920,8 @@ class SettingsViewModel extends GetxController {
           title: 'حذف حساب',
           message: failure is AuthenticationFailure
               ? 'رمز اصلی صحیح نیست'
+              : failure is MasterPasswordLockedOutFailure
+              ? vaultUserMessage(failure.message)
               : 'حذف حساب کامل نشد. لطفاً دوباره تلاش کنید.',
         );
         return;

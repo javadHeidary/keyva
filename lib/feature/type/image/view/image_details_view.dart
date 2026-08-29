@@ -13,6 +13,7 @@ import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
+import 'package:keyva/shared/widget/app_loading_widger.dart';
 import 'package:keyva/shared/widget/login_section_card_widget.dart';
 
 class ImageDetailsView extends GetView<ImageDetailsViewModel> {
@@ -30,6 +31,8 @@ class ImageDetailsView extends GetView<ImageDetailsViewModel> {
           if (Get.isRegistered<VaultHomeViewModel>()) {
             Get.find<VaultHomeViewModel>().vault.value;
           }
+          final exporting = controller.isExporting.value;
+          final canExport = controller.canExport.value;
           final photo = controller.item;
           if (photo == null) {
             return const SizedBox.shrink();
@@ -48,6 +51,35 @@ class ImageDetailsView extends GetView<ImageDetailsViewModel> {
                     color: colors.textPrimary,
                   ),
                   onLeadingTap: Get.back,
+                  trailingActions: [
+                    AppHeaderTrailingAction(
+                      onTap: canExport && !exporting
+                          ? () => controller.saveToGallery(context)
+                          : null,
+                      child: Tooltip(
+                        message: 'ذخیره در گالری',
+                        child: Semantics(
+                          button: true,
+                          label: 'ذخیره در گالری',
+                          child: exporting
+                              ? AppLoadingWidget.indicator(
+                                  context: context,
+                                  layout: AppLoadingLayout.inline,
+                                  color: colors.textPrimary,
+                                  size: AppSizes.iconMd.s,
+                                )
+                              : Icon(
+                                  AppIcon.download,
+                                  key: const Key('vault-image-save-gallery'),
+                                  size: AppSizes.iconLg.s,
+                                  color: canExport
+                                      ? colors.textPrimary
+                                      : colors.textTertiary,
+                                ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SliverPadding(
@@ -68,6 +100,7 @@ class ImageDetailsView extends GetView<ImageDetailsViewModel> {
                           child: EncryptedVaultImage(
                             blobId: photo.blobId,
                             fit: BoxFit.contain,
+                            onDecoded: controller.onImageDecoded,
                           ),
                         ),
                       ),
@@ -108,9 +141,9 @@ class ImageDetailsView extends GetView<ImageDetailsViewModel> {
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
-                  AppSpacing.pagePadding.s,
+                  AppSpacing.hugePlus.s,
                   AppSpacing.hugePlus.h,
-                  AppSpacing.pagePadding.s,
+                  AppSpacing.hugePlus.s,
                   AppSpacing.xxl.h,
                 ),
                 sliver: SliverToBoxAdapter(

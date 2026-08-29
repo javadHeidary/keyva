@@ -10,10 +10,10 @@ import 'package:keyva/core/theme/app_spacing.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
+import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
 import 'package:keyva/feature/auth/widget/auth_method_tile.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
@@ -197,7 +197,7 @@ class AuthLoginView extends GetView<LoginController> {
           key: const Key('auth-unlock-method-master'),
           icon: AppIcon.lock,
           title: 'رمز اصلی',
-          enabled: !loading,
+          enabled: !loading && !controller.masterPasswordLockedOut.value,
           onTap: controller.chooseMasterPassword,
         ),
       ],
@@ -249,35 +249,54 @@ class AuthLoginView extends GetView<LoginController> {
       case UnlockMethod.biometric:
         return const SizedBox.shrink();
       case UnlockMethod.masterPassword:
+        final locked = controller.masterPasswordLockedOut.value;
         return Form(
           key: controller.loginFormKey,
-          child: AppTextFieldWidget(
-            key: const Key('auth-login-password'),
-            controller: controller.passwordController,
-            enabled: !loading,
-            obscureText: !controller.isPasswordVisible.value,
-            textInputAction: TextInputAction.done,
-            onFieldSubmitted: (_) => controller.login(),
-            labelText: 'رمز اصلی',
-            hintText: 'رمز اصلی را وارد کنید',
-            prefixIcon: const Icon(AppIcon.lock),
-            suffixIcon: IconButton(
-              onPressed: controller.togglePasswordVisibility,
-              icon: Icon(
-                controller.isPasswordVisible.value
-                    ? AppIcon.visibilityOff
-                    : AppIcon.visibility,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppTextFieldWidget(
+                key: const Key('auth-login-password'),
+                controller: controller.passwordController,
+                enabled: !loading && !locked,
+                obscureText: !controller.isPasswordVisible.value,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => controller.login(),
+                labelText: 'رمز اصلی',
+                hintText: 'رمز اصلی را وارد کنید',
+                prefixIcon: const Icon(AppIcon.lock),
+                suffixIcon: IconButton(
+                  onPressed: controller.togglePasswordVisibility,
+                  icon: Icon(
+                    controller.isPasswordVisible.value
+                        ? AppIcon.visibilityOff
+                        : AppIcon.visibility,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return LoginController.emptyPasswordMessage;
+                  }
+                  if (value.length < 8) {
+                    return LoginController.shortPasswordMessage;
+                  }
+                  return null;
+                },
               ),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return LoginController.emptyPasswordMessage;
-              }
-              if (value.length < 8) {
-                return LoginController.shortPasswordMessage;
-              }
-              return null;
-            },
+              if (locked) ...[
+                SizedBox(height: AppSpacing.md.h),
+                Text(
+                  controller.formatMasterPasswordLockoutRemaining(),
+                  key: const Key('auth-login-lockout-remaining'),
+                  textAlign: TextAlign.center,
+                  style: AppTypography.withFaNum(
+                    AppTypography.bodyMedium.copyWith(
+                      color: context.colors.warning,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         );
     }
@@ -301,6 +320,7 @@ class AuthLoginView extends GetView<LoginController> {
         return AppButtonWidget(
           key: const Key('auth-login-submit'),
           title: 'ورود',
+          enabled: !controller.masterPasswordLockedOut.value,
           onPressed: controller.login,
         );
     }

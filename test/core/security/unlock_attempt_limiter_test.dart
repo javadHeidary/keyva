@@ -127,6 +127,87 @@ void main() {
     );
   });
 
+  test('sixth Master Password failure locks independently of PIN', () async {
+    for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts - 1; i++) {
+      expect(
+        await limiter.recordFailure(UnlockAttemptMethod.masterPassword, userA),
+        isFalse,
+      );
+    }
+    expect(
+      await limiter.recordFailure(UnlockAttemptMethod.masterPassword, userA),
+      isTrue,
+    );
+    expect(
+      await limiter.isLockedOut(UnlockAttemptMethod.masterPassword, userA),
+      isTrue,
+    );
+    expect(
+      await limiter.remainingAttempts(UnlockAttemptMethod.masterPassword, userA),
+      0,
+    );
+    expect(
+      await limiter.remainingLockout(UnlockAttemptMethod.masterPassword, userA),
+      SecurityConstants.masterPasswordLockout,
+    );
+    expect(await limiter.isLockedOut(UnlockAttemptMethod.pin, userA), isFalse);
+    expect(
+      database!.appSettings.get(
+        HiveSettingsKeys.masterPasswordFailedAttempts(userA),
+      ),
+      SecurityConstants.masterPasswordMaxFailedAttempts,
+    );
+  });
+
+  test('Master Password lockout expires after 2 minutes', () async {
+    for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts; i++) {
+      await limiter.recordFailure(UnlockAttemptMethod.masterPassword, userA);
+    }
+    expect(
+      await limiter.isLockedOut(UnlockAttemptMethod.masterPassword, userA),
+      isTrue,
+    );
+
+    now = now.add(const Duration(minutes: 1, seconds: 59));
+    expect(
+      await limiter.remainingLockout(UnlockAttemptMethod.masterPassword, userA),
+      const Duration(seconds: 1),
+    );
+    expect(
+      await limiter.isLockedOut(UnlockAttemptMethod.masterPassword, userA),
+      isTrue,
+    );
+
+    now = now.add(const Duration(seconds: 1));
+    expect(
+      await limiter.isLockedOut(UnlockAttemptMethod.masterPassword, userA),
+      isFalse,
+    );
+    expect(
+      await limiter.remainingAttempts(UnlockAttemptMethod.masterPassword, userA),
+      SecurityConstants.masterPasswordMaxFailedAttempts,
+    );
+    expect(
+      await limiter.remainingLockout(UnlockAttemptMethod.masterPassword, userA),
+      Duration.zero,
+    );
+  });
+
+  test('Master Password lockout is persisted across limiter instances', () async {
+    for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts; i++) {
+      await limiter.recordFailure(UnlockAttemptMethod.masterPassword, userA);
+    }
+
+    final restored = UnlockAttemptLimiter(
+      database: database!,
+      clock: () => now,
+    );
+    expect(
+      await restored.isLockedOut(UnlockAttemptMethod.masterPassword, userA),
+      isTrue,
+    );
+  });
+
   test('biometric failures lock independently of PIN', () async {
     await limiter.recordFailure(UnlockAttemptMethod.biometric, userA);
     await limiter.recordFailure(UnlockAttemptMethod.biometric, userA);

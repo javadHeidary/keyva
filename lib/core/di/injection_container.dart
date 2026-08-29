@@ -35,6 +35,9 @@ import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/settings/repository/settings_repository_impl.dart';
 import 'package:keyva/feature/type/image/service/image_capture_service.dart';
 import 'package:keyva/feature/type/image/service/image_capture_service_impl.dart';
+import 'package:keyva/feature/type/image/service/image_gallery_export_service.dart';
+import 'package:keyva/feature/type/image/service/image_gallery_gateway.dart';
+import 'package:keyva/feature/type/image/service/image_gallery_gateway_impl.dart';
 import 'package:keyva/feature/type/image/service/image_photo_service.dart';
 import 'package:keyva/feature/type/image/service/image_prepare_service.dart';
 import 'package:keyva/feature/vault/blob/encrypted_blob_store.dart';
@@ -188,6 +191,15 @@ void initDependencies(HiveDatabase database) {
     () => ImagePhotoService(
       operations: getIt<VaultOperationService>(),
       blobs: getIt<EncryptedBlobStore>(),
+    ),
+  );
+  getIt.registerLazySingleton<ImageGalleryGateway>(
+    ImageGalleryGatewayImpl.new,
+  );
+  getIt.registerLazySingleton<ImageGalleryExportService>(
+    () => ImageGalleryExportService(
+      blobs: getIt<EncryptedBlobStore>(),
+      gallery: getIt<ImageGalleryGateway>(),
     ),
   );
   getIt.registerLazySingleton<StoreConfig>(StoreConfig.fromEnvironment);

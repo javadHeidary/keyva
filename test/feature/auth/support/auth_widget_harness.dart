@@ -10,9 +10,9 @@ import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view/account_selection_view.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
 import 'package:keyva/feature/auth/view/auth_register_view.dart';
-import 'package:keyva/feature/auth/widget/view_model/account_selection_viewmodel.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
 
 Widget authTestApp({
   required String initialRoute,

@@ -23,7 +23,7 @@ The product goal is a simple, private vault rather than a synced cloud password 
 - **Login records** (title, username, password, website, notes)
 - **Bank cards** with Iranian bank detection
 - **Secure notes**
-- **Image folders** with camera/gallery capture; photo bytes stored as encrypted sidecar files
+- **Image folders** with camera/gallery capture; photo bytes stored as encrypted sidecar files; optional user-initiated save to the device gallery
 - **Categories**, **search**, and **pinned items** (up to 5)
 - **Password generator** with strength scoring and a 7-day local copy history
 - Share login, card, or note text through the system share sheet (after confirmation)
@@ -62,7 +62,7 @@ Keyva separates **who can unlock the app** from **how vault data is encrypted**.
 | `local_auth`              | Device biometrics                   |
 | `Result<T>`               | Explicit success / failure handling |
 
-Other packages used in the implementation include `file_picker`, `image_picker`, `path_provider`, `share_plus`, `permission_handler`, `shared_preferences`, `iranian_banks`, `shamsi_date`, and `cached_network_image_plus`.
+Other packages used in the implementation include `file_picker`, `image_picker`, `gal`, `path_provider`, `share_plus`, `permission_handler`, `shared_preferences`, `iranian_banks`, `shamsi_date`, and `cached_network_image_plus`.
 
 ## Architecture
 
@@ -125,7 +125,7 @@ lib/
 - Dart SDK **≥ 3.8.1** (see `pubspec.yaml`)
 - An Android device or emulator (primary target)
 
-The repository also contains a standard iOS Flutter runner (camera and Face ID usage strings are present). Android product flavors and screenshot protection are Android-specific.
+The repository also contains a standard iOS Flutter runner (camera, photo library pick/add, and Face ID usage strings are present). Android product flavors and screenshot protection are Android-specific.
 
 ### Installation
 

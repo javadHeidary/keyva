@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/crypto_service_impl.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
@@ -54,6 +55,7 @@ void main() {
       session: session,
       database: database!,
       vaults: HiveVaultDataSource(database!),
+      attempts: UnlockAttemptLimiter(database: database!),
     );
   });
 
@@ -119,6 +121,40 @@ void main() {
     final vaultAfter = _expectSuccess(await vaults.findByUserId(user.id))!;
     expect(vaultAfter.ciphertext, vaultBefore.ciphertext);
   }, timeout: kdfTimeout);
+
+  test(
+    'sixth wrong current password locks later Master Password authentication',
+    () async {
+      final user = await unlockAccount();
+      for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts - 1; i++) {
+        final result = await auth.changeMasterPassword(
+          currentPassword: 'wrong-master-password',
+          newPassword: nextPassword,
+        );
+        expect((result as FailureResult<void>).failure, isA<AuthenticationFailure>());
+      }
+      final locked = await auth.changeMasterPassword(
+        currentPassword: 'wrong-master-password',
+        newPassword: nextPassword,
+      );
+      expect(
+        (locked as FailureResult<void>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+      expect(session.isAuthenticated, isTrue);
+
+      _expectSuccess(await auth.logout());
+      final login = await auth.authenticate(
+        userId: user.id,
+        masterPassword: currentPassword,
+      );
+      expect(
+        (login as FailureResult<UserRecord>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+    },
+    timeout: kdfTimeout,
+  );
 
   test('re-wraps the same Vault Key and leaves vault ciphertext unchanged', () async {
     final user = await unlockAccount();

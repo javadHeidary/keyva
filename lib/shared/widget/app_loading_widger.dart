@@ -112,8 +112,10 @@ class AppLoadingWidget extends StatelessWidget {
                 message!,
                 textAlign: TextAlign.center,
                 softWrap: true,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: colors.textSecondary,
+                style: AppTypography.withFaNum(
+                  AppTypography.bodyMedium.copyWith(
+                    color: colors.textSecondary,
+                  ),
                 ),
               ),
             ],

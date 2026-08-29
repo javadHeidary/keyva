@@ -125,6 +125,42 @@ void main() {
     expect(_expectSuccess(await vaults.findByUserId(user.id)), isNotNull);
   }, timeout: kdfTimeout);
 
+  test(
+    'sixth wrong delete password locks later Master Password authentication',
+    () async {
+      final user = await createUnlocked(
+        username: 'علی',
+        masterPassword: password,
+      );
+      for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts - 1; i++) {
+        final result = await auth.deleteAccount(
+          masterPassword: 'wrong-password-1',
+        );
+        expect(
+          (result as FailureResult<AccountDeletionOutcome>).failure,
+          isA<AuthenticationFailure>(),
+        );
+      }
+      final locked = await auth.deleteAccount(masterPassword: 'wrong-password-1');
+      expect(
+        (locked as FailureResult<AccountDeletionOutcome>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+      expect(session.isAuthenticated, isTrue);
+
+      _expectSuccess(await auth.logout());
+      final login = await auth.authenticate(
+        userId: user.id,
+        masterPassword: password,
+      );
+      expect(
+        (login as FailureResult<UserRecord>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+    },
+    timeout: kdfTimeout,
+  );
+
   test('deleting the last account wipes records, credentials, and session',
       () async {
     final user = await createUnlocked(username: 'علی', masterPassword: password);
@@ -148,6 +184,14 @@ void main() {
     );
     await database!.appSettings.put(
       HiveSettingsKeys.biometricLockoutStartedAt(user.id),
+      1,
+    );
+    await database!.appSettings.put(
+      HiveSettingsKeys.masterPasswordFailedAttempts(user.id),
+      4,
+    );
+    await database!.appSettings.put(
+      HiveSettingsKeys.masterPasswordLockoutStartedAt(user.id),
       1,
     );
 
@@ -181,6 +225,18 @@ void main() {
     expect(
       database!.appSettings.get(
         HiveSettingsKeys.biometricLockoutStartedAt(user.id),
+      ),
+      isNull,
+    );
+    expect(
+      database!.appSettings.get(
+        HiveSettingsKeys.masterPasswordFailedAttempts(user.id),
+      ),
+      isNull,
+    );
+    expect(
+      database!.appSettings.get(
+        HiveSettingsKeys.masterPasswordLockoutStartedAt(user.id),
       ),
       isNull,
     );

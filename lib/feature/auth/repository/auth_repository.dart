@@ -17,6 +17,12 @@ abstract interface class AuthRepository {
     required String masterPassword,
   });
 
+  Future<Result<bool>> isMasterPasswordLockedOut(String userId);
+
+  Future<Result<int>> remainingMasterPasswordAttempts(String userId);
+
+  Future<Result<Duration>> remainingMasterPasswordLockout(String userId);
+
   Future<Result<UserRecord>> openSession({
     required String userId,
     required Uint8List vaultKey,

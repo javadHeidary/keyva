@@ -17,10 +17,13 @@ import 'package:keyva/core/database/models/wrapped_vault_key.dart';
 import 'package:keyva/core/database/user_data_source.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
+import 'package:keyva/core/security/unlock_attempt_limiter.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/repository/auth_repository_impl.dart';
+
+import '../../core/security/support/fast_key_management_service.dart';
 
 void main() {
   late Directory tempDir;
@@ -28,6 +31,7 @@ void main() {
   late UserDataSource users;
   late CryptoService crypto;
   late SessionService session;
+  late UnlockAttemptLimiter attempts;
   late AuthRepository auth;
 
   const kdfTimeout = Timeout(Duration(minutes: 2));
@@ -38,6 +42,7 @@ void main() {
     users = HiveUserDataSource(database!);
     crypto = CryptoServiceImpl();
     session = SessionServiceImpl();
+    attempts = UnlockAttemptLimiter(database: database!);
     auth = AuthRepositoryImpl(
       users: users,
       crypto: crypto,
@@ -45,6 +50,7 @@ void main() {
       session: session,
       database: database!,
       vaults: HiveVaultDataSource(database!),
+      attempts: attempts,
     );
   });
 
@@ -498,6 +504,203 @@ void main() {
       await auth.updateProfile(username: 'رضا'),
     );
   });
+
+  test(
+    'sixth consecutive wrong Master Password locks authentication',
+    () async {
+      final fast = _fastAuth(
+        users: users,
+        crypto: crypto,
+        session: session,
+        database: database!,
+        attempts: attempts,
+      );
+      final created = _expectSuccess(
+        await fast.createAccount(
+          username: 'علی',
+          masterPassword: 'correct-master-password',
+        ),
+      );
+
+      for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts - 1; i++) {
+        _expectAuthenticationFailure(
+          await fast.authenticate(
+            userId: created.id,
+            masterPassword: 'wrong-master-password',
+          ),
+        );
+        expect(session.isAuthenticated, isFalse);
+      }
+
+      final locked = await fast.authenticate(
+        userId: created.id,
+        masterPassword: 'wrong-master-password',
+      );
+      expect(locked, isA<FailureResult<UserRecord>>());
+      expect(
+        (locked as FailureResult<UserRecord>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+      expect(_expectSuccess(await fast.isMasterPasswordLockedOut(created.id)), isTrue);
+      expect(
+        _expectSuccess(await fast.remainingMasterPasswordAttempts(created.id)),
+        0,
+      );
+
+      final blocked = await fast.authenticate(
+        userId: created.id,
+        masterPassword: 'correct-master-password',
+      );
+      expect(blocked, isA<FailureResult<UserRecord>>());
+      expect(
+        (blocked as FailureResult<UserRecord>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+      expect(session.isAuthenticated, isFalse);
+    },
+    timeout: kdfTimeout,
+  );
+
+  test(
+    'successful Master Password login resets the attempt counter',
+    () async {
+      final fast = _fastAuth(
+        users: users,
+        crypto: crypto,
+        session: session,
+        database: database!,
+        attempts: attempts,
+      );
+      final created = _expectSuccess(
+        await fast.createAccount(
+          username: 'علی',
+          masterPassword: 'correct-master-password',
+        ),
+      );
+      _expectAuthenticationFailure(
+        await fast.authenticate(
+          userId: created.id,
+          masterPassword: 'wrong-master-password',
+        ),
+      );
+      expect(
+        _expectSuccess(await fast.remainingMasterPasswordAttempts(created.id)),
+        SecurityConstants.masterPasswordMaxFailedAttempts - 1,
+      );
+
+      _expectSuccess(
+        await fast.authenticate(
+          userId: created.id,
+          masterPassword: 'correct-master-password',
+        ),
+      );
+      expect(
+        _expectSuccess(await fast.isMasterPasswordLockedOut(created.id)),
+        isFalse,
+      );
+      expect(
+        _expectSuccess(await fast.remainingMasterPasswordAttempts(created.id)),
+        SecurityConstants.masterPasswordMaxFailedAttempts,
+      );
+    },
+    timeout: kdfTimeout,
+  );
+
+  test(
+    'Master Password lockout survives a new AuthRepository on the same database',
+    () async {
+      final fast = _fastAuth(
+        users: users,
+        crypto: crypto,
+        session: session,
+        database: database!,
+        attempts: attempts,
+      );
+      final created = _expectSuccess(
+        await fast.createAccount(
+          username: 'علی',
+          masterPassword: 'correct-master-password',
+        ),
+      );
+      for (var i = 0; i < SecurityConstants.masterPasswordMaxFailedAttempts; i++) {
+        await fast.authenticate(
+          userId: created.id,
+          masterPassword: 'wrong-master-password',
+        );
+      }
+      expect(_expectSuccess(await fast.isMasterPasswordLockedOut(created.id)), isTrue);
+
+      final restored = _fastAuth(
+        users: HiveUserDataSource(database!),
+        crypto: crypto,
+        session: SessionServiceImpl(),
+        database: database!,
+        attempts: UnlockAttemptLimiter(database: database!),
+      );
+      expect(
+        _expectSuccess(await restored.isMasterPasswordLockedOut(created.id)),
+        isTrue,
+      );
+      final result = await restored.authenticate(
+        userId: created.id,
+        masterPassword: 'correct-master-password',
+      );
+      expect(
+        (result as FailureResult<UserRecord>).failure,
+        isA<MasterPasswordLockedOutFailure>(),
+      );
+    },
+    timeout: kdfTimeout,
+  );
+
+  test(
+    'unknown user id fails closed without incrementing another account',
+    () async {
+      final fast = _fastAuth(
+        users: users,
+        crypto: crypto,
+        session: session,
+        database: database!,
+        attempts: attempts,
+      );
+      final created = _expectSuccess(
+        await fast.createAccount(
+          username: 'علی',
+          masterPassword: 'correct-master-password',
+        ),
+      );
+      _expectAuthenticationFailure(
+        await fast.authenticate(
+          userId: '00000000-0000-4000-8000-000000000000',
+          masterPassword: 'any-password',
+        ),
+      );
+      expect(
+        _expectSuccess(await fast.remainingMasterPasswordAttempts(created.id)),
+        SecurityConstants.masterPasswordMaxFailedAttempts,
+      );
+      expect(session.isAuthenticated, isFalse);
+    },
+    timeout: kdfTimeout,
+  );
+}
+
+AuthRepositoryImpl _fastAuth({
+  required UserDataSource users,
+  required CryptoService crypto,
+  required SessionService session,
+  required HiveDatabase database,
+  required UnlockAttemptLimiter attempts,
+}) {
+  return AuthRepositoryImpl(
+    users: users,
+    crypto: crypto,
+    keys: FastKeyManagementService(KeyManagementServiceImpl(crypto)),
+    session: session,
+    database: database,
+    vaults: HiveVaultDataSource(database),
+    attempts: attempts,
+  );
 }
 
 class _UpdateFailingUsers implements UserDataSource {

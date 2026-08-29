@@ -126,6 +126,13 @@ class SearchViewModel extends GetxController {
 
   Object? sourceFor(String id) => _homeController.sourceFor(id);
 
+  int photoCountFor(VaultListItem item) =>
+      _homeController.photoCountFor(item);
+
+  Future<void> exportFolderImages(BuildContext context, VaultListItem item) {
+    return _homeController.exportFolderImages(context, item);
+  }
+
   @override
   void onClose() {
     _debounceTimer?.cancel();

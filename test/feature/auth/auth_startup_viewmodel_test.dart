@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_startup_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_startup_viewmodel.dart';
 
 import '../../core/session/support/memory_auto_lock_pause_store.dart';
 import '../settings/support/fake_settings_repository.dart';

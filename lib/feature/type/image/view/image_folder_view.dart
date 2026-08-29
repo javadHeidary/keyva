@@ -13,6 +13,7 @@ import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_empty_widget.dart';
 import 'package:keyva/shared/widget/app_fab_widget.dart';
 import 'package:keyva/shared/widget/app_header_widget.dart';
+import 'package:keyva/shared/widget/app_loading_widger.dart';
 import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
 
 class ImageFolderView extends GetView<ImageFolderViewModel> {
@@ -26,14 +27,15 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
       if (Get.isRegistered<VaultHomeViewModel>()) {
         Get.find<VaultHomeViewModel>().vault.value;
       }
-      final picking = controller.isPicking.value;
+      final busy = controller.isBusy;
+      final exporting = controller.isExporting.value;
       final folder = controller.folder;
       final photos = controller.photos;
 
       return Scaffold(
         key: const Key('vault-image-folder'),
         backgroundColor: colors.pageBackground,
-        floatingActionButton: picking
+        floatingActionButton: busy
             ? null
             : AppFabWidget(
                 key: const Key('vault-image-folder-fab'),
@@ -42,8 +44,8 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
                 onPressed: () => controller.addPhoto(context),
               ),
         body: AppPageLoadingOverlay(
-          visible: picking,
-          message: 'در حال آماده‌سازی تصویر...',
+          visible: busy,
+          message: controller.overlayMessage,
           child: SafeArea(
             child: folder == null
                 ? const SizedBox.shrink()
@@ -58,15 +60,47 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
                             size: AppSizes.iconLg.s,
                             color: colors.textPrimary,
                           ),
-                          onLeadingTap: picking ? null : Get.back,
+                          onLeadingTap: busy ? null : Get.back,
                           trailingActions: [
                             vaultPinHeaderAction(
                               isPinned: folder.isPinned,
                               color: folder.isPinned
                                   ? colors.primary
                                   : colors.textSecondary,
-                              onTap: () => controller.togglePin(context),
+                              onTap: busy
+                                  ? () {}
+                                  : () => controller.togglePin(context),
                             ),
+                            if (photos.isNotEmpty)
+                              AppHeaderTrailingAction(
+                                onTap: busy
+                                    ? null
+                                    : () => controller.saveAllToGallery(
+                                        context,
+                                      ),
+                                child: Tooltip(
+                                  message: 'ذخیره همه تصاویر در گالری',
+                                  child: Semantics(
+                                    button: true,
+                                    label: 'ذخیره همه تصاویر در گالری',
+                                    child: exporting
+                                        ? AppLoadingWidget.indicator(
+                                            context: context,
+                                            layout: AppLoadingLayout.inline,
+                                            color: colors.textPrimary,
+                                            size: AppSizes.iconMd.s,
+                                          )
+                                        : Icon(
+                                            AppIcon.download,
+                                            key: const Key(
+                                              'vault-image-folder-save-gallery',
+                                            ),
+                                            size: AppSizes.iconLg.s,
+                                            color: colors.textPrimary,
+                                          ),
+                                  ),
+                                ),
+                              ),
                             AppHeaderTrailingAction(
                               child: Icon(
                                 AppIcon.edit,
@@ -74,7 +108,7 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
                                 size: AppSizes.iconLg.s,
                                 color: colors.textPrimary,
                               ),
-                              onTap: controller.navigateToEdit,
+                              onTap: busy ? null : controller.navigateToEdit,
                             ),
                             AppHeaderTrailingAction(
                               child: Icon(
@@ -83,7 +117,9 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
                                 size: AppSizes.iconLg.s,
                                 color: colors.error,
                               ),
-                              onTap: () => controller.confirmDelete(context),
+                              onTap: busy
+                                  ? null
+                                  : () => controller.confirmDelete(context),
                             ),
                           ],
                         ),
@@ -135,8 +171,9 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
                                   ),
                                   clipBehavior: Clip.antiAlias,
                                   child: InkWell(
-                                    onTap: () =>
-                                        controller.openPhoto(photo.id),
+                                    onTap: busy
+                                        ? null
+                                        : () => controller.openPhoto(photo.id),
                                     child: EncryptedVaultImage(
                                       blobId: photo.thumbnailBlobId,
                                     ),

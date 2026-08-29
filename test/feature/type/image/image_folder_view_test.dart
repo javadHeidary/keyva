@@ -10,6 +10,7 @@ import 'package:keyva/feature/home/view/type_list_item_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/type/image/model/image_add_photo_args.dart';
 import 'package:keyva/feature/type/image/service/image_capture_service.dart';
+import 'package:keyva/feature/type/image/service/image_gallery_export_service.dart';
 import 'package:keyva/feature/type/image/service/image_photo_service.dart';
 import 'package:keyva/feature/type/image/view/image_add_photo_view.dart';
 import 'package:keyva/feature/type/image/view/image_folder_create_view.dart';
@@ -25,11 +26,13 @@ import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
 import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
+import 'package:keyva/shared/widget/toast_widget.dart';
 
 import '../../vault/support/fake_encrypted_blob_store.dart';
 import '../../vault/support/fake_vault_operation_service.dart';
 import '../../vault/support/vault_widget_harness.dart';
 import 'support/fake_image_capture_service.dart';
+import 'support/fake_image_gallery_gateway.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +40,8 @@ void main() {
   late FakeVaultOperationService operations;
   late FakeEncryptedBlobStore blobs;
   late FakeImageCaptureService capture;
+  late FakeImageGalleryGateway gallery;
+  late ImageGalleryExportService export;
   late VaultHomeViewModel vault;
   late VaultItemViewModel items;
   late HomeController home;
@@ -127,6 +132,7 @@ void main() {
             ImageFolderViewModel(
               folderId: vaultRouteItemId(),
               capture: capture,
+              export: export,
             ),
           );
         }),
@@ -188,6 +194,8 @@ void main() {
     operations = FakeVaultOperationService();
     blobs = FakeEncryptedBlobStore();
     capture = FakeImageCaptureService();
+    gallery = FakeImageGalleryGateway();
+    export = ImageGalleryExportService(blobs: blobs, gallery: gallery);
     photos = ImagePhotoService(operations: operations, blobs: blobs);
     vault = VaultHomeViewModel(operations: operations);
     items = VaultItemViewModel(operations: operations);
@@ -223,6 +231,10 @@ void main() {
     expect(find.byKey(const Key('vault-image-folder')), findsOneWidget);
     expect(find.byKey(const Key('vault-image-folder-empty')), findsOneWidget);
     expect(find.text('این پوشه خالی است'), findsOneWidget);
+    expect(
+      find.byKey(const Key('vault-image-folder-save-gallery')),
+      findsNothing,
+    );
   });
 
   testWidgets('create folder then empty contents', (tester) async {
@@ -338,5 +350,52 @@ void main() {
     expect(operations.lastAdded, isA<ImageItem>());
     final added = operations.lastAdded! as ImageItem;
     expect(find.byKey(Key('vault-image-photo-${added.id}')), findsOneWidget);
+  });
+
+  testWidgets('folder with photos shows save-all gallery action', (
+    tester,
+  ) async {
+    operations.vault = vaultWithFolder(withPhoto: true);
+    blobs.files[photo().thumbnailBlobId] = oneByOnePng;
+    blobs.files[photo().blobId] = oneByOnePng;
+    await pumpRoutedHome(tester);
+
+    await tester.tap(find.text('عکس‌های شناسنامه').first);
+    await pumpOpenedRoute(tester);
+
+    expect(
+      find.byKey(const Key('vault-image-folder-save-gallery')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('save-all export shows progress and a summary', (tester) async {
+    operations.vault = vaultWithFolder(withPhoto: true);
+    blobs.files[photo().thumbnailBlobId] = oneByOnePng;
+    blobs.files[photo().blobId] = oneByOnePng;
+    await pumpRoutedHome(tester);
+
+    await tester.tap(find.text('عکس‌های شناسنامه').first);
+    await pumpOpenedRoute(tester);
+
+    gallery.putGate = Completer<void>();
+    await tester.tap(find.byKey(const Key('vault-image-folder-save-gallery')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(AppPageLoadingOverlay.overlayKey), findsOneWidget);
+    expect(find.textContaining('در حال ذخیره تصاویر...'), findsOneWidget);
+    expect(Get.find<ImageFolderViewModel>().isExporting.value, isTrue);
+
+    final vm = Get.find<ImageFolderViewModel>();
+    await vm.saveAllToGallery(tester.element(find.byKey(const Key('vault-image-folder'))));
+    expect(gallery.putCount, 1);
+
+    gallery.putGate!.complete();
+    await tester.pumpAndSettle();
+    AppToast.dismiss();
+
+    expect(Get.find<ImageFolderViewModel>().isExporting.value, isFalse);
+    expect(gallery.putCount, 1);
   });
 }

@@ -14,7 +14,7 @@ import 'package:keyva/feature/auth/model/account_summary.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/view/account_selection_view.dart';
 import 'package:keyva/feature/auth/view/auth_login_view.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/toast_widget.dart';

@@ -30,10 +30,12 @@ void main() {
     );
   });
 
-  test('maps biometric lockout', () {
+  test('maps master password lockout', () {
     expect(
-      vaultUserMessage('Biometric unlock is locked. Use your master password.'),
-      'محدودیت تلاش ورود با اثرانگشت تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.',
+      vaultUserMessage(
+        'Master password unlock is locked. Try again after the lockout ends.',
+      ),
+      'محدودیت تلاش رمز اصلی تمام شده است. لطفاً بعداً دوباره تلاش کنید.',
     );
   });
 
@@ -55,6 +57,20 @@ void main() {
     expect(
       vaultUserMessage('A maximum of 5 items can be pinned.'),
       'حداکثر ۵ مورد را می‌توانید سنجاق کنید.',
+    );
+  });
+
+  test('maps gallery permission denied', () {
+    expect(
+      vaultUserMessage('Gallery permission is required'),
+      'برای ذخیره تصویر در گالری، دسترسی لازم است.',
+    );
+  });
+
+  test('maps gallery save failure', () {
+    expect(
+      vaultUserMessage('Unable to save image to gallery'),
+      'ذخیره تصویر در گالری انجام نشد.',
     );
   });
 }

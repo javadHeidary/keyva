@@ -15,11 +15,13 @@ class EncryptedVaultImage extends StatefulWidget {
     required this.blobId,
     this.fit = BoxFit.cover,
     this.store,
+    this.onDecoded,
   });
 
   final String blobId;
   final BoxFit fit;
   final EncryptedBlobStore? store;
+  final ValueChanged<bool>? onDecoded;
 
   @override
   State<EncryptedVaultImage> createState() => _EncryptedVaultImageState();
@@ -50,13 +52,22 @@ class _EncryptedVaultImageState extends State<EncryptedVaultImage> {
             ? getIt<EncryptedBlobStore>()
             : null);
     if (store == null) {
+      _notifyDecoded(false);
       return null;
     }
     final result = await store.read(widget.blobId);
     if (result is Success<Uint8List>) {
-      return result.data;
+      final bytes = result.data;
+      _notifyDecoded(bytes.isNotEmpty);
+      return bytes;
     }
+    _notifyDecoded(false);
     return null;
+  }
+
+  void _notifyDecoded(bool success) {
+    if (!mounted) return;
+    widget.onDecoded?.call(success);
   }
 
   @override

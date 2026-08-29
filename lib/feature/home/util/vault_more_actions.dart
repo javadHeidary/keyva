@@ -11,6 +11,7 @@ List<AppMoreAction> vaultMoreActionsForItem(
   Object? source,
   VoidCallback? onTogglePin,
   VoidCallback? onDelete,
+  VoidCallback? onExportFolderImages,
 }) {
   final actions = <AppMoreAction>[];
 
@@ -64,17 +65,27 @@ List<AppMoreAction> vaultMoreActionsForItem(
       break;
   }
 
-  if (onTogglePin != null) {
-    actions.add(
-      AppMoreAction(
-        label: item.isPinned ? 'برداشتن سنجاق' : 'سنجاق کردن',
-        icon: item.isPinned ? AppIcon.itemUnpin : AppIcon.itemPin,
-        onPressed: onTogglePin,
-      ),
-    );
-  }
+    if (onTogglePin != null) {
+      actions.add(
+        AppMoreAction(
+          label: item.isPinned ? 'برداشتن سنجاق' : 'سنجاق کردن',
+          icon: item.isPinned ? AppIcon.itemUnpin : AppIcon.itemPin,
+          onPressed: onTogglePin,
+        ),
+      );
+    }
 
-  if (onDelete != null) {
+    if (onExportFolderImages != null) {
+      actions.add(
+        AppMoreAction(
+          label: 'ذخیره همه تصاویر در گالری',
+          icon: AppIcon.download,
+          onPressed: onExportFolderImages,
+        ),
+      );
+    }
+
+    if (onDelete != null) {
     actions.add(
       AppMoreAction(
         label: 'حذف',

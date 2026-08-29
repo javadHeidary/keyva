@@ -55,6 +55,8 @@
 	<string>کیوا برای گرفتن عکس و ذخیره در پوشه تصاویر به دوربین نیاز دارد.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>کیوا برای انتخاب عکس از گالری و ذخیره در پوشه تصاویر به این دسترسی نیاز دارد.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>کیوا برای ذخیره تصویر در گالری دستگاه به این دسترسی نیاز دارد.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

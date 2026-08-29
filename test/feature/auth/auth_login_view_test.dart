@@ -10,7 +10,7 @@ import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
 import 'package:keyva/feature/auth/widget/auth_brand_header.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_page_loading_overlay.dart';
@@ -174,6 +174,7 @@ void main() {
     tester,
   ) async {
     unlock.unlockFailure = const AuthenticationFailure();
+    auth.remainingMasterPasswordAttemptCount = 5;
     setupAuthWidgetSurface(tester);
     await tester.pumpWidget(
       authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
@@ -189,7 +190,10 @@ void main() {
 
     expect(session.isAuthenticated, isFalse);
     expect(find.text(LoginController.errorTitle), findsWidgets);
-    expect(find.text(LoginController.wrongPasswordMessage), findsOneWidget);
+    expect(
+      find.text('رمز اشتباه است. ۵ تلاش باقی مانده است.'),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('shell-page')), findsNothing);
     expect(find.textContaining('AuthenticationFailure'), findsNothing);
     expect(find.textContaining('Hive'), findsNothing);
@@ -535,4 +539,79 @@ void main() {
     expect(unlock.pinUnlockCount, 0);
     expect(find.text('پین کد باید ۶ رقم باشد.'), findsWidgets);
   });
+
+  testWidgets('wrong Master Password shows remaining attempts', (tester) async {
+    unlock.unlockFailure = const AuthenticationFailure();
+    auth.remainingMasterPasswordAttemptCount = 5;
+    setupAuthWidgetSurface(tester);
+    await tester.pumpWidget(
+      authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+    );
+    await pumpAuthFrame(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('auth-login-password')),
+      'wrong-password',
+    );
+    await tester.tap(find.byKey(const Key('auth-login-submit')));
+    await pumpAuthSettle(tester);
+
+    expect(unlock.unlockCount, 1);
+    expect(
+      find.text('رمز اشتباه است. ۵ تلاش باقی مانده است.'),
+      findsOneWidget,
+    );
+    AppToast.dismiss();
+  });
+
+  testWidgets(
+    'sixth Master Password failure shows lockout dialog and remaining time',
+    (tester) async {
+      unlock.unlockFailure = const AuthenticationFailure();
+      setupAuthWidgetSurface(tester);
+      await tester.pumpWidget(
+        authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+      );
+      await pumpAuthFrame(tester);
+
+      auth.masterPasswordLockedOut = true;
+      auth.remainingMasterPasswordAttemptCount = 0;
+      auth.remainingMasterPasswordLockoutDuration = const Duration(minutes: 2);
+      await tester.enterText(
+        find.byKey(const Key('auth-login-password')),
+        'wrong-password',
+      );
+      await tester.tap(find.byKey(const Key('auth-login-submit')));
+      await pumpAuthSettle(tester);
+
+      expect(find.text(LoginController.masterPasswordLockoutTitle), findsOneWidget);
+      expect(find.text(LoginController.masterPasswordLockoutMessage), findsOneWidget);
+      expect(find.byKey(const Key('auth-login-lockout-remaining')), findsOneWidget);
+      expect(find.text('ورود تا 02:00 مسدود است'), findsOneWidget);
+      expect(login.masterPasswordLockedOut.value, isTrue);
+    },
+  );
+
+  testWidgets(
+    'locked Master Password disables submit and shows remaining time',
+    (tester) async {
+      auth.masterPasswordLockedOut = true;
+      auth.remainingMasterPasswordLockoutDuration = const Duration(
+        minutes: 14,
+        seconds: 30,
+      );
+      setupAuthWidgetSurface(tester);
+      await tester.pumpWidget(
+        authTestApp(initialRoute: AppRoutes.authUnlock, login: login),
+      );
+      await pumpAuthSettle(tester);
+
+      expect(find.byKey(const Key('auth-login-lockout-remaining')), findsOneWidget);
+      expect(find.text('ورود تا 14:30 مسدود است'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('auth-login-submit')));
+      await pumpAuthFrame(tester);
+      expect(unlock.unlockCount, 0);
+    },
+  );
 }

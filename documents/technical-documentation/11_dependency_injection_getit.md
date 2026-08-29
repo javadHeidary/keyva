@@ -55,7 +55,7 @@ Bindings resolve getIt<T>() and Get.put / Get.lazyPut ViewModels
 Registration styles in `initDependencies`:
 
 - `registerSingleton<HiveDatabase>(database)` — the already-opened database.
-- `registerLazySingleton<T>(...)` — most services, data sources, repositories (`CryptoService`, `KeyManagementService`, `SessionService`, `AuthRepository`, `VaultRepository`, `VaultUnlockService`, `PinService`, `BiometricService`, `BackupService`, …).
+- `registerLazySingleton<T>(...)` — most services, data sources, repositories (`CryptoService`, `KeyManagementService`, `SessionService`, `AuthRepository`, `VaultRepository`, `VaultUnlockService`, `PinService`, `BiometricService`, `BackupService`, `ImagePhotoService`, `ImageGalleryExportService`, …).
 - `registerFactory<VaultHomeViewModel>` / `VaultItemViewModel` / `BackupViewModel` / `RestoreViewModel` — new instance per `getIt` resolve.
 
 `AppLockController` is **not** registered in GetIt. `main()` puts it into GetX with `permanent: true`.

@@ -181,6 +181,11 @@ class _CategoryItemsVaultItemTile extends GetView<HomeController> {
               onTogglePin: controller.isVaultSubmitting
                   ? null
                   : () => controller.toggleItemPin(context, item),
+              onExportFolderImages:
+                  controller.isVaultSubmitting ||
+                      controller.photoCountFor(item) == 0
+                  ? null
+                  : () => controller.exportFolderImages(context, item),
               onDelete: controller.isVaultSubmitting
                   ? null
                   : () => controller.confirmDelete(context, item),

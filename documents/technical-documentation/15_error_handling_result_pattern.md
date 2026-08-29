@@ -73,6 +73,7 @@ Authentication failures are normalized. `AuthRepositoryImpl._authenticationFaile
 - Backup: `InvalidBackupFormatFailure`, `UnsupportedBackupVersionFailure`, `WrongBackupPasswordFailure`, `BackupIntegrityFailure`, `BackupPayloadValidationFailure`, `BackupExportFailure`, `BackupRestorePersistenceFailure`
 - `ScreenProtectionFailure`
 - `PinLimitFailure`
+- Gallery export: `GalleryPermissionDeniedFailure` (`permanentlyDenied`), `GallerySaveFailure`
 
 Callers typically pattern-match with `is FailureResult<T>` / `is Success<T>` rather than using helper methods beyond `isSuccess` / `isFailure`.
 

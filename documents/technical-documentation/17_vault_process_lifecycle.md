@@ -16,7 +16,7 @@ There is no Domain / UseCase layer.
 | --- | --- |
 | Presentation | Home, type forms, details, search |
 | ViewModel | `HomeController`, `VaultHomeViewModel`, `VaultItemViewModel`, type-specific form VMs |
-| Services | `VaultUnlockService`, `VaultOperationService`, `VaultDataService`, `ImagePhotoService` |
+| Services | `VaultUnlockService`, `VaultOperationService`, `VaultDataService`, `ImagePhotoService`, `ImageGalleryExportService` |
 | Repository | `VaultRepository` (encrypt/decrypt + Hive vault row); `AuthRepository` (key wrap / session) |
 | Serialization | `VaultSerializerImpl` (JSON) |
 | Session | `SessionService` (Vault Key); `VaultSession` (`VaultData`) |
@@ -72,6 +72,7 @@ lock / auto-lock / logout → clear cache, drop VaultData, zero Vault Key
 | `VaultOperationServiceImpl` | Typed `addItem`/`updateItem`/`deleteItem`/`setItemPinned`/`getVault` | Blob deletes on image/folder delete |
 | `EncryptedBlobStoreImpl` | AES-GCM image files + memory cache | Path `vault_blobs/<userId>/<blobId>` |
 | `ImagePhotoService` | Write blobs then `addItem(ImageItem)` | Rollback blobs if item add fails |
+| `ImageGalleryExportService` | Decrypt blob then save bytes via `gal` | User-initiated; does not mutate vault files |
 | `UserRecord` / `VaultRecord` | Hive metadata vs ciphertext | Different boxes |
 | `AuthRepositoryImpl.createAccount` / `authenticate` / `openSession` / `logout` | Key wrap and session | |
 
@@ -97,6 +98,7 @@ Leftover `LoginVaultStore` / `BankCardVaultStore` / `NoteVaultStore` are registe
 - Mutations require `VaultSession.isUnlocked`; encrypt requires session key.
 - Whole-document encrypt on every change (no plaintext item rows in Hive).
 - Image bytes encrypted with the same Vault Key; metadata (blob ids) lives in JSON.
+- Gallery export decrypts in memory and writes to the OS gallery only after an explicit header action; encrypted sidecar files are not modified.
 - Fail-closed unlock: decrypt/deserialize failure locks and logs out.
 - Pin limit: 5 pinned items (`PinLimitFailure`).
 
@@ -130,6 +132,8 @@ Leftover `LoginVaultStore` / `BankCardVaultStore` / `NoteVaultStore` are registe
 - `test/feature/vault/vault_models_test.dart`
 - `test/feature/auth/auth_session_lifecycle_test.dart`
 - `test/feature/type/image/image_photo_service_test.dart`
+- `test/feature/type/image/image_gallery_export_service_test.dart`
+- `test/feature/type/image/image_details_viewmodel_test.dart`
 
 ## 11. Technical Decisions
 
@@ -278,7 +282,7 @@ UI
 
 If there is no row, unlock skipped decrypt and used `VaultData.initial()`. Later `getVault` reads memory, not Hive, until a mutation persists.
 
-**Images:** `ImageItem.blobId` / `thumbnailBlobId` in JSON. Bytes: `EncryptedBlobStore.read` → cache or decrypt file with Vault Key.
+**Images:** `ImageItem.blobId` / `thumbnailBlobId` in JSON. Bytes: `EncryptedBlobStore.read` → cache or decrypt file with Vault Key. Display uses that read. Save-to-gallery (`ImageGalleryExportService`) uses the same read, then `gal.putImageBytes`; the encrypted sidecar is not rewritten.
 
 ---
 

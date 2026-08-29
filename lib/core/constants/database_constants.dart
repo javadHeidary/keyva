@@ -23,6 +23,12 @@ abstract final class HiveSettingsKeys {
 
   static String biometricLockoutStartedAt(String userId) =>
       'biometricLockoutStartedAt:$userId';
+
+  static String masterPasswordFailedAttempts(String userId) =>
+      'masterPasswordFailedAttempts:$userId';
+
+  static String masterPasswordLockoutStartedAt(String userId) =>
+      'masterPasswordLockoutStartedAt:$userId';
 }
 
 abstract final class DatabaseConfig {

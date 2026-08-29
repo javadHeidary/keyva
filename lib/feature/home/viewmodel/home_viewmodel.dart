@@ -17,6 +17,8 @@ import 'package:keyva/feature/settings/model/settings_repository.dart';
 import 'package:keyva/feature/settings/model/user_profile.dart';
 import 'package:keyva/feature/shell/util/main_shell_navigation.dart';
 import 'package:keyva/feature/shell/viewmodel/main_shell_viewmodel.dart';
+import 'package:keyva/feature/type/image/service/image_gallery_export_service.dart';
+import 'package:keyva/feature/type/image/util/image_gallery_export_ui.dart';
 import 'package:keyva/feature/vault/service/vault_unlock_service.dart';
 import 'package:keyva/feature/vault/session/vault_session.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
@@ -34,12 +36,14 @@ class HomeController extends GetxController {
     AuthRepository? auth,
     VaultSession? session,
     SettingsRepository? settings,
+    ImageGalleryExportService? galleryExport,
     ItemTypeSampleFactory sampleFactory = const ItemTypeSampleFactory(),
   }) : _vaultOverride = vault,
        _unlockOverride = unlock,
        _authOverride = auth,
        _sessionOverride = session,
        _settingsOverride = settings,
+       _galleryExportOverride = galleryExport,
        _sampleFactory = sampleFactory;
 
   final VaultHomeViewModel? _vaultOverride;
@@ -47,6 +51,7 @@ class HomeController extends GetxController {
   final AuthRepository? _authOverride;
   final VaultSession? _sessionOverride;
   final SettingsRepository? _settingsOverride;
+  final ImageGalleryExportService? _galleryExportOverride;
   final ItemTypeSampleFactory _sampleFactory;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final createFabKey = GlobalKey<ExpandableFabState>();
@@ -93,6 +98,16 @@ class HomeController extends GetxController {
     }
     if (getIt.isRegistered<SettingsRepository>()) {
       return getIt<SettingsRepository>();
+    }
+    return null;
+  }
+
+  ImageGalleryExportService? get _galleryExport {
+    if (_galleryExportOverride != null) {
+      return _galleryExportOverride;
+    }
+    if (getIt.isRegistered<ImageGalleryExportService>()) {
+      return getIt<ImageGalleryExportService>();
     }
     return null;
   }
@@ -427,6 +442,60 @@ class HomeController extends GetxController {
   void onItemMoreAction(VaultListItem item, String action) {}
 
   void onTrashTap() {}
+
+  int photoCountFor(VaultListItem item) {
+    if (item.type != VaultItemType.image) {
+      return 0;
+    }
+    return vault.vault.value?.photoCountForFolder(item.id) ?? 0;
+  }
+
+  Future<void> exportFolderImages(
+    BuildContext context,
+    VaultListItem item,
+  ) async {
+    final export = _galleryExport;
+    if (export == null || item.type != VaultItemType.image) {
+      return;
+    }
+    final data = vault.vault.value;
+    if (data == null) {
+      return;
+    }
+    final photos = [
+      for (final image in data.images)
+        if (image.folderId == item.id) image,
+    ];
+    if (photos.isEmpty) {
+      return;
+    }
+
+    final handle = showGalleryExportProgressDialog(
+      context: context,
+      message: galleryExportProgressMessage(0, photos.length),
+    );
+    try {
+      final result = await export.exportFolder(
+        images: photos,
+        onProgress: (current, total) {
+          handle.update(galleryExportProgressMessage(current, total));
+        },
+      );
+      if (!context.mounted) {
+        return;
+      }
+      if (result is FailureResult<ImageGalleryFolderExportResult>) {
+        await presentGalleryExportFailure(context, result.failure);
+        return;
+      }
+      presentFolderExportSummary(
+        context,
+        (result as Success<ImageGalleryFolderExportResult>).data,
+      );
+    } finally {
+      handle.dismiss();
+    }
+  }
 
   Future<void> toggleItemPin(BuildContext context, VaultListItem item) async {
     if (isVaultSubmitting) {

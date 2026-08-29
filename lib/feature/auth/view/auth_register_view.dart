@@ -12,7 +12,7 @@ import 'package:keyva/feature/auth/widget/auth_countdown_warning_dialog.dart';
 import 'package:keyva/feature/auth/widget/auth_error_toast_binder.dart';
 import 'package:keyva/feature/auth/widget/auth_footer_link.dart';
 import 'package:keyva/feature/auth/widget/auth_privacy_consent_link.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_register_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_register_viewmodel.dart';
 import 'package:keyva/feature/settings/model/privacy_policy_content.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';

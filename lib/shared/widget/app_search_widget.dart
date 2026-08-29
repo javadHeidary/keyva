@@ -115,6 +115,9 @@ class _SearchResultTile extends GetView<SearchViewModel> {
               item,
               source: controller.sourceFor(item.id),
               onTogglePin: () => controller.togglePin(context, item),
+              onExportFolderImages: controller.photoCountFor(item) == 0
+                  ? null
+                  : () => controller.exportFolderImages(context, item),
               onDelete: () => controller.confirmDelete(context, item),
             ),
           ),

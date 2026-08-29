@@ -2,7 +2,7 @@ import 'package:keyva/core/constants/database_constants.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/database/hive_database.dart';
 
-enum UnlockAttemptMethod { pin, biometric }
+enum UnlockAttemptMethod { pin, biometric, masterPassword }
 
 class UnlockAttemptLimiter {
   UnlockAttemptLimiter({
@@ -23,7 +23,7 @@ class UnlockAttemptLimiter {
     if (startedAt == null) {
       return true;
     }
-    if (_clock().difference(startedAt) >= SecurityConstants.unlockAttemptLockout) {
+    if (_clock().difference(startedAt) >= _lockoutDuration(method)) {
       await reset(method, userId);
       return false;
     }
@@ -55,6 +55,25 @@ class UnlockAttemptLimiter {
       return true;
     }
     return false;
+  }
+
+  Future<Duration> remainingLockout(
+    UnlockAttemptMethod method,
+    String userId,
+  ) async {
+    if (!await isLockedOut(method, userId)) {
+      return Duration.zero;
+    }
+    final startedAt = _lockoutStartedAt(method, userId);
+    if (startedAt == null) {
+      return _lockoutDuration(method);
+    }
+    final remaining =
+        _lockoutDuration(method) - _clock().difference(startedAt);
+    if (remaining.isNegative) {
+      return Duration.zero;
+    }
+    return remaining;
   }
 
   Future<void> reset(UnlockAttemptMethod method, String userId) async {
@@ -92,12 +111,24 @@ class UnlockAttemptLimiter {
     } catch (_) {}
   }
 
+  static Duration _lockoutDuration(UnlockAttemptMethod method) {
+    switch (method) {
+      case UnlockAttemptMethod.pin:
+      case UnlockAttemptMethod.biometric:
+        return SecurityConstants.unlockAttemptLockout;
+      case UnlockAttemptMethod.masterPassword:
+        return SecurityConstants.masterPasswordLockout;
+    }
+  }
+
   static int _maxAttempts(UnlockAttemptMethod method) {
     switch (method) {
       case UnlockAttemptMethod.pin:
         return SecurityConstants.pinMaxFailedAttempts;
       case UnlockAttemptMethod.biometric:
         return SecurityConstants.biometricMaxFailedAttempts;
+      case UnlockAttemptMethod.masterPassword:
+        return SecurityConstants.masterPasswordMaxFailedAttempts;
     }
   }
 
@@ -107,6 +138,8 @@ class UnlockAttemptLimiter {
         return HiveSettingsKeys.pinFailedAttempts(userId);
       case UnlockAttemptMethod.biometric:
         return HiveSettingsKeys.biometricFailedAttempts(userId);
+      case UnlockAttemptMethod.masterPassword:
+        return HiveSettingsKeys.masterPasswordFailedAttempts(userId);
     }
   }
 
@@ -116,6 +149,8 @@ class UnlockAttemptLimiter {
         return HiveSettingsKeys.pinLockoutStartedAt(userId);
       case UnlockAttemptMethod.biometric:
         return HiveSettingsKeys.biometricLockoutStartedAt(userId);
+      case UnlockAttemptMethod.masterPassword:
+        return HiveSettingsKeys.masterPasswordLockoutStartedAt(userId);
     }
   }
 }

@@ -28,6 +28,13 @@ final class AuthenticationFailure extends AppFailure {
   });
 }
 
+final class MasterPasswordLockedOutFailure extends AppFailure {
+  const MasterPasswordLockedOutFailure({
+    super.message =
+        'Master password unlock is locked. Try again after the lockout ends.',
+  });
+}
+
 final class BiometricCancelledFailure extends AppFailure {
   const BiometricCancelledFailure({
     super.message = 'Biometric authentication cancelled',
@@ -121,5 +128,26 @@ final class ScreenProtectionFailure extends AppFailure {
 final class PinLimitFailure extends AppFailure {
   const PinLimitFailure({
     super.message = 'A maximum of 5 items can be pinned.',
+  });
+}
+
+final class GalleryPermissionDeniedFailure extends AppFailure {
+  const GalleryPermissionDeniedFailure({
+    this.permanentlyDenied = false,
+    super.message = 'Gallery permission is required',
+  });
+
+  final bool permanentlyDenied;
+}
+
+final class GallerySaveFailure extends AppFailure {
+  const GallerySaveFailure({
+    super.message = 'Unable to save image to gallery',
+  });
+}
+
+final class GalleryExportBusyFailure extends AppFailure {
+  const GalleryExportBusyFailure({
+    super.message = 'Gallery export is already in progress',
   });
 }

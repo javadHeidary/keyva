@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
@@ -28,6 +30,9 @@ class LoginController extends GetxController {
       'محدودیت تلاش PIN تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
   static const biometricLockoutMessage =
       'محدودیت تلاش ورود با اثرانگشت تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
+  static const masterPasswordLockoutMessage =
+      'محدودیت تلاش رمز اصلی تمام شده است. لطفاً بعد از ۲ دقیقه دوباره تلاش کنید.';
+  static const masterPasswordLockoutTitle = 'ورود با رمز اصلی مسدود شد';
   static const loadingMessage = 'در حال ورود...';
   static const errorTitle = 'ورود';
   static const successTitle = 'ورود به حساب';
@@ -57,9 +62,12 @@ class LoginController extends GetxController {
   final biometricEnabled = false.obs;
   final biometricAvailable = false.obs;
   final biometricLockedOut = false.obs;
+  final masterPasswordLockedOut = false.obs;
+  final masterPasswordLockoutRemaining = Duration.zero.obs;
   final selectedUserId = ''.obs;
   final selectedUsername = ''.obs;
   final canSwitchAccount = false.obs;
+  Timer? _masterPasswordLockoutTimer;
 
   bool get pinAvailable => pinEnabled.value && !pinLockedOut.value;
 
@@ -113,6 +121,7 @@ class LoginController extends GetxController {
       final locked = await _biometric.isLockedOut(userId);
       biometricLockedOut.value = locked is Success<bool> && locked.data;
     }
+    await _refreshMasterPasswordLockout(userId);
     _showPickerOrMasterPassword();
   }
 
@@ -168,12 +177,19 @@ class LoginController extends GetxController {
       return;
     }
     errorMessage.value = '';
-    if (!(loginFormKey.currentState?.validate() ?? false)) {
-      return;
-    }
     final userId = selectedUserId.value;
     if (userId.isEmpty) {
       Get.offNamed(AppRoutes.authAccounts);
+      return;
+    }
+    if (masterPasswordLockedOut.value) {
+      _showLockoutDialog(
+        title: masterPasswordLockoutTitle,
+        description: masterPasswordLockoutMessage,
+      );
+      return;
+    }
+    if (!(loginFormKey.currentState?.validate() ?? false)) {
       return;
     }
 
@@ -185,9 +201,7 @@ class LoginController extends GetxController {
         masterPassword: passwordController.text,
       );
       if (unlocked is FailureResult<void>) {
-        errorMessage.value = unlocked.failure is AuthenticationFailure
-            ? wrongPasswordMessage
-            : vaultUserMessage(unlocked.failure.message);
+        await _handleMasterPasswordFailure(userId, unlocked.failure);
         return;
       }
       succeeded = true;
@@ -266,6 +280,75 @@ class LoginController extends GetxController {
     }
   }
 
+  Future<void> _handleMasterPasswordFailure(
+    String userId,
+    AppFailure failure,
+  ) async {
+    final wasLocked = masterPasswordLockedOut.value;
+    await _refreshMasterPasswordLockout(userId);
+    if (masterPasswordLockedOut.value) {
+      if (!wasLocked) {
+        _showLockoutDialog(
+          title: masterPasswordLockoutTitle,
+          description: masterPasswordLockoutMessage,
+        );
+      }
+      return;
+    }
+    final remaining = await _auth.remainingMasterPasswordAttempts(userId);
+    if (remaining is Success<int> && remaining.data > 0) {
+      errorMessage.value = _masterPasswordRemainingMessage(remaining.data);
+      return;
+    }
+    errorMessage.value = failure is AuthenticationFailure
+        ? wrongPasswordMessage
+        : vaultUserMessage(failure.message);
+  }
+
+  Future<void> _refreshMasterPasswordLockout(String userId) async {
+    final locked = await _auth.isMasterPasswordLockedOut(userId);
+    masterPasswordLockedOut.value = locked is Success<bool> && locked.data;
+    if (!masterPasswordLockedOut.value) {
+      masterPasswordLockoutRemaining.value = Duration.zero;
+      _stopMasterPasswordLockoutTimer();
+      return;
+    }
+    await _tickMasterPasswordLockout(userId);
+    _startMasterPasswordLockoutTimer();
+  }
+
+  void _startMasterPasswordLockoutTimer() {
+    _masterPasswordLockoutTimer?.cancel();
+    _masterPasswordLockoutTimer = Timer.periodic(const Duration(seconds: 1), (
+      _,
+    ) {
+      final userId = selectedUserId.value;
+      if (userId.isEmpty) {
+        return;
+      }
+      unawaited(_tickMasterPasswordLockout(userId));
+    });
+  }
+
+  void _stopMasterPasswordLockoutTimer() {
+    _masterPasswordLockoutTimer?.cancel();
+    _masterPasswordLockoutTimer = null;
+  }
+
+  Future<void> _tickMasterPasswordLockout(String userId) async {
+    final remaining = await _auth.remainingMasterPasswordLockout(userId);
+    if (remaining is Success<Duration>) {
+      masterPasswordLockoutRemaining.value = remaining.data;
+      if (remaining.data <= Duration.zero) {
+        final locked = await _auth.isMasterPasswordLockedOut(userId);
+        masterPasswordLockedOut.value = locked is Success<bool> && locked.data;
+        if (!masterPasswordLockedOut.value) {
+          _stopMasterPasswordLockoutTimer();
+        }
+      }
+    }
+  }
+
   Future<void> _handlePinFailure(String userId, AppFailure failure) async {
     final wasLocked = pinLockedOut.value;
     final locked = await _pin?.isLockedOut(userId);
@@ -331,6 +414,10 @@ class LoginController extends GetxController {
     );
   }
 
+  String _masterPasswordRemainingMessage(int remaining) {
+    return 'رمز اشتباه است. ${_persianCount(remaining)} تلاش باقی مانده است.';
+  }
+
   String _pinRemainingMessage(int remaining) {
     return 'کد PIN اشتباه است. ${_persianCount(remaining)} تلاش باقی مانده است.';
   }
@@ -363,8 +450,17 @@ class LoginController extends GetxController {
     }
   }
 
+  String formatMasterPasswordLockoutRemaining() {
+    final remaining = masterPasswordLockoutRemaining.value;
+    final totalSeconds = remaining.inSeconds < 0 ? 0 : remaining.inSeconds;
+    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
+    return 'ورود تا $minutes:$seconds مسدود است';
+  }
+
   @override
   void onClose() {
+    _stopMasterPasswordLockoutTimer();
     passwordController.dispose();
     pinController.dispose();
     super.onClose();

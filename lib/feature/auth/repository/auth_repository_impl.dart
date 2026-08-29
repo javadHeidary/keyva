@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:keyva/core/constants/database_constants.dart';
+import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/crypto/crypto_service.dart';
 import 'package:keyva/core/crypto/key_management_service.dart';
 import 'package:keyva/core/database/hive_database.dart';
@@ -112,6 +113,10 @@ class AuthRepositoryImpl implements AuthRepository {
     required String userId,
     required String masterPassword,
   }) async {
+    if (await _isMasterPasswordLockedOut(userId)) {
+      return _masterPasswordLockedOut();
+    }
+
     final loaded = await _users.findById(userId);
     if (loaded is FailureResult<UserRecord?>) {
       return _authenticationFailed();
@@ -127,7 +132,7 @@ class AuthRepositoryImpl implements AuthRepository {
       parameters: user.kdfParameters,
     );
     if (derived is FailureResult<Uint8List>) {
-      return _authenticationFailed();
+      return _authenticationFailedAfterAttempt(user.id);
     }
     final derivedKey = (derived as Success<Uint8List>).data;
 
@@ -137,12 +142,46 @@ class AuthRepositoryImpl implements AuthRepository {
     );
     derivedKey.fillRange(0, derivedKey.length, 0);
     if (unwrapped is FailureResult<Uint8List>) {
-      return _authenticationFailed();
+      return _authenticationFailedAfterAttempt(user.id);
     }
 
+    await _resetMasterPasswordAttempts(user.id);
     return openSession(
       userId: user.id,
       vaultKey: (unwrapped as Success<Uint8List>).data,
+    );
+  }
+
+  @override
+  Future<Result<bool>> isMasterPasswordLockedOut(String userId) async {
+    return Success(await _isMasterPasswordLockedOut(userId));
+  }
+
+  @override
+  Future<Result<int>> remainingMasterPasswordAttempts(String userId) async {
+    final attempts = _attempts;
+    if (attempts == null) {
+      return Success(SecurityConstants.masterPasswordMaxFailedAttempts);
+    }
+    return Success(
+      await attempts.remainingAttempts(
+        UnlockAttemptMethod.masterPassword,
+        userId,
+      ),
+    );
+  }
+
+  @override
+  Future<Result<Duration>> remainingMasterPasswordLockout(String userId) async {
+    final attempts = _attempts;
+    if (attempts == null) {
+      return const Success(Duration.zero);
+    }
+    return Success(
+      await attempts.remainingLockout(
+        UnlockAttemptMethod.masterPassword,
+        userId,
+      ),
     );
   }
 
@@ -166,29 +205,13 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     final user = (loaded as Success<UserRecord>).data;
 
-    final oldDerived = await _crypto.deriveKey(
+    final verified = await _verifyMasterPassword(
+      user: user,
       masterPassword: currentPassword,
-      salt: user.kdfSalt,
-      parameters: user.kdfParameters,
+      sessionVaultKey: sessionVaultKey,
     );
-    if (oldDerived is FailureResult<Uint8List>) {
-      return const FailureResult(AuthenticationFailure());
-    }
-    final oldDerivedKey = (oldDerived as Success<Uint8List>).data;
-
-    final unwrapped = await _keys.unwrapVaultKey(
-      wrappedVaultKey: user.wrappedVaultKey,
-      derivedKey: oldDerivedKey,
-    );
-    oldDerivedKey.fillRange(0, oldDerivedKey.length, 0);
-    if (unwrapped is FailureResult<Uint8List>) {
-      return const FailureResult(AuthenticationFailure());
-    }
-    final recoveredKey = (unwrapped as Success<Uint8List>).data;
-    final matchesCurrent = _sameKey(recoveredKey, sessionVaultKey);
-    recoveredKey.fillRange(0, recoveredKey.length, 0);
-    if (!matchesCurrent) {
-      return const FailureResult(AuthenticationFailure());
+    if (verified is FailureResult<void>) {
+      return FailureResult(verified.failure);
     }
 
     final newSalt = _keys.generateSalt();
@@ -213,15 +236,15 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     final newWrap = (wrapped as Success<WrappedVaultKey>).data;
 
-    final verified = await _keys.unwrapVaultKey(
+    final unwrappedNew = await _keys.unwrapVaultKey(
       wrappedVaultKey: newWrap,
       derivedKey: newDerivedKey,
     );
     newDerivedKey.fillRange(0, newDerivedKey.length, 0);
-    if (verified is FailureResult<Uint8List>) {
+    if (unwrappedNew is FailureResult<Uint8List>) {
       return const FailureResult(CryptoFailure());
     }
-    final verifiedKey = (verified as Success<Uint8List>).data;
+    final verifiedKey = (unwrappedNew as Success<Uint8List>).data;
     final verifiedMatches = _sameKey(verifiedKey, sessionVaultKey);
     verifiedKey.fillRange(0, verifiedKey.length, 0);
     if (!verifiedMatches) {
@@ -510,6 +533,45 @@ class AuthRepositoryImpl implements AuthRepository {
     return const FailureResult(AuthenticationFailure());
   }
 
+  Result<UserRecord> _masterPasswordLockedOut() {
+    _session.clear();
+    return const FailureResult(MasterPasswordLockedOutFailure());
+  }
+
+  Future<Result<UserRecord>> _authenticationFailedAfterAttempt(
+    String userId,
+  ) async {
+    _session.clear();
+    if (await _recordMasterPasswordFailure(userId)) {
+      return const FailureResult(MasterPasswordLockedOutFailure());
+    }
+    return const FailureResult(AuthenticationFailure());
+  }
+
+  Future<bool> _isMasterPasswordLockedOut(String userId) async {
+    final attempts = _attempts;
+    if (attempts == null) {
+      return false;
+    }
+    return attempts.isLockedOut(UnlockAttemptMethod.masterPassword, userId);
+  }
+
+  Future<bool> _recordMasterPasswordFailure(String userId) async {
+    final attempts = _attempts;
+    if (attempts == null) {
+      return false;
+    }
+    return attempts.recordFailure(UnlockAttemptMethod.masterPassword, userId);
+  }
+
+  Future<void> _resetMasterPasswordAttempts(String userId) async {
+    final attempts = _attempts;
+    if (attempts == null) {
+      return;
+    }
+    await attempts.reset(UnlockAttemptMethod.masterPassword, userId);
+  }
+
   Future<Result<UserRecord>> _loadCurrentUser() async {
     final userId = _session.current?.userId;
     if (!_session.isAuthenticated || userId == null) {
@@ -531,13 +593,17 @@ class AuthRepositoryImpl implements AuthRepository {
     required String masterPassword,
     required Uint8List sessionVaultKey,
   }) async {
+    if (await _isMasterPasswordLockedOut(user.id)) {
+      return const FailureResult(MasterPasswordLockedOutFailure());
+    }
+
     final derived = await _crypto.deriveKey(
       masterPassword: masterPassword,
       salt: user.kdfSalt,
       parameters: user.kdfParameters,
     );
     if (derived is FailureResult<Uint8List>) {
-      return const FailureResult(AuthenticationFailure());
+      return _verificationFailedAfterAttempt(user.id);
     }
     final derivedKey = (derived as Success<Uint8List>).data;
 
@@ -547,15 +613,23 @@ class AuthRepositoryImpl implements AuthRepository {
     );
     derivedKey.fillRange(0, derivedKey.length, 0);
     if (unwrapped is FailureResult<Uint8List>) {
-      return const FailureResult(AuthenticationFailure());
+      return _verificationFailedAfterAttempt(user.id);
     }
     final recoveredKey = (unwrapped as Success<Uint8List>).data;
     final matches = _sameKey(recoveredKey, sessionVaultKey);
     recoveredKey.fillRange(0, recoveredKey.length, 0);
     if (!matches) {
-      return const FailureResult(AuthenticationFailure());
+      return _verificationFailedAfterAttempt(user.id);
     }
+    await _resetMasterPasswordAttempts(user.id);
     return const Success<void>(null);
+  }
+
+  Future<Result<void>> _verificationFailedAfterAttempt(String userId) async {
+    if (await _recordMasterPasswordFailure(userId)) {
+      return const FailureResult(MasterPasswordLockedOutFailure());
+    }
+    return const FailureResult(AuthenticationFailure());
   }
 
   Future<Result<int>> _remainingAccountCount({
@@ -585,6 +659,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (attempts != null) {
       await attempts.reset(UnlockAttemptMethod.pin, userId);
       await attempts.reset(UnlockAttemptMethod.biometric, userId);
+      await attempts.reset(UnlockAttemptMethod.masterPassword, userId);
     }
   }
 

@@ -14,6 +14,8 @@ String vaultUserMessage(String? errorMessage) {
       return 'ورود با اثرانگشت برای این حساب تنظیم نشده است.';
     case 'Biometric unlock is locked. Use your master password.':
       return 'محدودیت تلاش ورود با اثرانگشت تمام شده است. اکنون فقط با رمز اصلی می‌توانید وارد شوید.';
+    case 'Master password unlock is locked. Try again after the lockout ends.':
+      return 'محدودیت تلاش رمز اصلی تمام شده است. لطفاً بعداً دوباره تلاش کنید.';
     case 'Vault data is invalid':
       return 'اطلاعات وارد شده معتبر نیست.';
     case 'Cryptographic operation failed':
@@ -40,6 +42,12 @@ String vaultUserMessage(String? errorMessage) {
       return 'به‌روزرسانی محافظت صفحه انجام نشد.';
     case 'A maximum of 5 items can be pinned.':
       return 'حداکثر ۵ مورد را می‌توانید سنجاق کنید.';
+    case 'Gallery permission is required':
+      return 'برای ذخیره تصویر در گالری، دسترسی لازم است.';
+    case 'Unable to save image to gallery':
+      return 'ذخیره تصویر در گالری انجام نشد.';
+    case 'Gallery export is already in progress':
+      return 'ذخیره تصاویر در گالری در حال انجام است.';
   }
 
   if (errorMessage.contains('Exception') ||

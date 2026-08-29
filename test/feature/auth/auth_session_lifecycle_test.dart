@@ -9,7 +9,7 @@ import 'package:keyva/core/routes/session_guard.dart';
 import 'package:keyva/core/session/session_service.dart';
 import 'package:keyva/core/session/session_service_impl.dart';
 import 'package:keyva/feature/auth/repository/auth_repository.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_login_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_login_viewmodel.dart';
 import 'package:keyva/feature/home/view/home_view.dart';
 import 'package:keyva/feature/home/viewmodel/home_viewmodel.dart';
 import 'package:keyva/feature/settings/viewmodel/settings_viewmodel.dart';

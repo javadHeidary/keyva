@@ -42,6 +42,9 @@ class FakeAuthRepository implements AuthRepository {
   AppFailure? deleteAccountFailure;
   bool deleteHasRemainingAccounts = false;
   Completer<void>? deleteAccountGate;
+  bool masterPasswordLockedOut = false;
+  int remainingMasterPasswordAttemptCount = 6;
+  Duration remainingMasterPasswordLockoutDuration = Duration.zero;
   List<AccountSummary> accounts = const [
     AccountSummary(id: 'user-1', username: 'علی'),
   ];
@@ -67,6 +70,21 @@ class FakeAuthRepository implements AuthRepository {
     required String masterPassword,
   }) async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<Result<bool>> isMasterPasswordLockedOut(String userId) async {
+    return Success(masterPasswordLockedOut);
+  }
+
+  @override
+  Future<Result<int>> remainingMasterPasswordAttempts(String userId) async {
+    return Success(remainingMasterPasswordAttemptCount);
+  }
+
+  @override
+  Future<Result<Duration>> remainingMasterPasswordLockout(String userId) async {
+    return Success(remainingMasterPasswordLockoutDuration);
   }
 
   @override

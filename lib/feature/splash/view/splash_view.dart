@@ -4,7 +4,7 @@ import 'package:keyva/core/gen/assets.gen.dart';
 import 'package:keyva/core/theme/app_typography.dart';
 import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
-import 'package:keyva/feature/auth/widget/view_model/auth_startup_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/auth_startup_viewmodel.dart';
 import 'package:keyva/feature/onboarding/util/onboarding_precache.dart';
 import 'package:keyva/shared/widget/app_loading_widger.dart';
 

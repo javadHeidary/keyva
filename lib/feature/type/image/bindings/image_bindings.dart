@@ -5,6 +5,7 @@ import 'package:keyva/core/di/injection_container.dart';
 import 'package:keyva/feature/category/bindings/category_bindings.dart';
 import 'package:keyva/feature/type/image/model/image_add_photo_args.dart';
 import 'package:keyva/feature/type/image/service/image_capture_service.dart';
+import 'package:keyva/feature/type/image/service/image_gallery_export_service.dart';
 import 'package:keyva/feature/type/image/service/image_photo_service.dart';
 import 'package:keyva/feature/type/image/viewmodel/image_add_photo_viewmodel.dart';
 import 'package:keyva/feature/type/image/viewmodel/image_details_viewmodel.dart';
@@ -63,6 +64,7 @@ class ImageFolderBindings extends Bindings {
       () => ImageFolderViewModel(
         folderId: vaultRouteItemId(),
         capture: getIt<ImageCaptureService>(),
+        export: getIt<ImageGalleryExportService>(),
       ),
     );
   }
@@ -88,7 +90,10 @@ class ImageDetailsBindings extends Bindings {
   void dependencies() {
     ImageBindings._ensureStore();
     Get.lazyPut(
-      () => ImageDetailsViewModel(photoId: vaultRouteItemId()),
+      () => ImageDetailsViewModel(
+        photoId: vaultRouteItemId(),
+        export: getIt<ImageGalleryExportService>(),
+      ),
     );
   }
 }

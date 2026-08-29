@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:keyva/core/exceptions/app_failure.dart';
 import 'package:keyva/core/exceptions/result.dart';
 import 'package:keyva/feature/auth/model/account_summary.dart';
-import 'package:keyva/feature/auth/widget/view_model/account_selection_viewmodel.dart';
+import 'package:keyva/feature/auth/view_model/account_selection_viewmodel.dart';
 
 import 'support/fake_auth_repository.dart';
 

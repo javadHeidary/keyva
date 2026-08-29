@@ -138,6 +138,7 @@ ViewModel and widget tests include (non-exhaustive):
 - `test/feature/home/item_type_guide_viewmodel_test.dart`
 - `test/feature/settings/settings_viewmodel_theme_test.dart`
 - `test/feature/onboarding/onboarding_viewmodel_test.dart`
+- `test/feature/type/image/image_details_viewmodel_test.dart`
 - Corresponding `*_view_test.dart` files under `test/feature/`
 
 ## 11. Technical Decisions

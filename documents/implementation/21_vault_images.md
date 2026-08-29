@@ -11,13 +11,14 @@ Related code:
 - [`lib/feature/vault/blob/encrypted_blob_store.dart`](../../lib/feature/vault/blob/encrypted_blob_store.dart)
 - [`lib/feature/vault/blob/encrypted_blob_store_impl.dart`](../../lib/feature/vault/blob/encrypted_blob_store_impl.dart)
 - [`lib/feature/type/image/`](../../lib/feature/type/image/)
+- [`lib/feature/type/image/service/image_gallery_export_service.dart`](../../lib/feature/type/image/service/image_gallery_export_service.dart)
 - [`lib/feature/backup/serialization/backup_payload_codec.dart`](../../lib/feature/backup/serialization/backup_payload_codec.dart)
 - [`lib/feature/backup/service/backup_service_impl.dart`](../../lib/feature/backup/service/backup_service_impl.dart)
 - [`test/feature/type/image/`](../../test/feature/type/image/)
 - [`test/feature/vault/encrypted_blob_store_test.dart`](../../test/feature/vault/encrypted_blob_store_test.dart)
 - [`test/feature/backup/backup_images_test.dart`](../../test/feature/backup/backup_images_test.dart)
 
-It does **not** change Master Password handling, Vault Key wrapping, Argon2id / AES-256-GCM primitives, cloud sync, nested folders, or OS photo sharing.
+It does **not** change Master Password handling, Vault Key wrapping, Argon2id / AES-256-GCM primitives, cloud sync, nested folders, or the OS share sheet. Saving a photo to the device gallery is an explicit user action on photo details (not automatic).
 
 ---
 
@@ -46,7 +47,7 @@ A photo cannot exist without a `folderId`. One folder level only. Image folders 
 
 ## Capture and limits
 
-`ImageCaptureService` uses `image_picker`. Camera asks for `CAMERA` only. Gallery uses the system photo picker (no `READ_MEDIA_IMAGES`). Cancelled picker is not an error. Permanent denial opens Settings via `AppDialogWidget`.
+`ImageCaptureService` uses `image_picker`. Camera asks for `CAMERA` only. Gallery **pick** uses the system photo picker (no `READ_MEDIA_IMAGES`). Cancelled picker is not an error. Permanent denial opens Settings via `AppDialogWidget`.
 
 Longest side is limited to ~1920px in the picker. After prepare, files larger than ~8MB are rejected with a Persian validation message.
 
@@ -77,13 +78,32 @@ See [`14_backup_restore.md`](14_backup_restore.md) for the envelope.
 
 ---
 
+## Save to gallery
+
+Export is **manual only**. Opening a photo does not write anything to the device gallery.
+
+Flow:
+
+1. Photo details header action «ذخیره در گالری» (`AppIcon.download`) is enabled only after `EncryptedVaultImage` decrypts successfully (`onDecoded`).
+2. `ImageDetailsViewModel.saveToGallery` ignores duplicate taps while `isExporting`.
+3. `ImageGalleryExportService` reads plaintext via `EncryptedBlobStore.read` (same Vault Key session as display).
+4. `ImageGalleryGateway` (`gal`) checks/requests **save** access, then `putImageBytes`. No Dart temp file; vault sidecar files stay encrypted and unchanged.
+5. Success toast: `تصویر با موفقیت در گالری ذخیره شد.` Failures use `vaultUserMessage` / `AppToast`. A second permission denial is treated as permanent and opens Settings (`forSave: true` on `showImagePermissionDeniedDialog`).
+
+**Folder bulk export:** header «ذخیره همه تصاویر در گالری» (only if the folder has photos) and the same action on Home / type-list / search / category more menus. `exportFolder` asks for save permission once, then decrypts and saves **one photo at a time**. One failed photo does not stop the rest. Progress overlay: `در حال ذخیره تصاویر... N از M`. Final toast is all / partial / none. Filenames are `keyva_{stamp}_{index}_{jpg|png}` — no folder title or note.
+
+Gallery logic is not in the widget. GetIt registers `ImageGalleryGateway` and `ImageGalleryExportService`. Plugin errors are not logged (no bytes or paths).
+
+---
+
 ## UI
 
 - Folder create / edit
 - Folder contents grid + FAB (camera / gallery source sheet)
+- Folder header save-all-to-gallery when the folder is not empty
 - Add-photo preview with retake
-- Photo detail (decrypted image, optional note, delete)
-- No OS share of photos in this slice
+- Photo detail (decrypted image, optional note, header save-to-gallery, delete)
+- No OS share sheet for photos
 
 Persian strings are hardcoded, same as the rest of the app.
 
@@ -91,11 +111,13 @@ Persian strings are hardcoded, same as the rest of the app.
 
 ## Permissions
 
-- Android: `CAMERA` only. Merged gallery storage permissions from plugins are removed with `tools:node="remove"`.
-- iOS: `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` in Persian. No save-to-library usage.
+Requested only when the matching user action runs (capture or save), never at startup or merely opening a photo.
+
+- Android: `CAMERA` for capture. `WRITE_EXTERNAL_STORAGE` with `maxSdkVersion="28"` for save-to-gallery on Android 9 and below (Android 10+ uses MediaStore without a storage permission). `READ_MEDIA_*` and unbounded `READ_EXTERNAL_STORAGE` stay removed (`tools:node="remove"`). Save access goes through `gal`, not `Permission.photos`.
+- iOS: `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` (pick), `NSPhotoLibraryAddUsageDescription` (save) in Persian.
 
 ---
 
 ## Tests
 
-Serializer round-trip, legacy JSON without image keys, photo with missing folder, folder CRUD and cascade blobs, `EncryptedBlobStore` temp directory, backup create + `restoreVault` + `restoreIntoNewAccount` with images, v1 compatibility, missing blob at create time, widget tests with a fake capture service (no real camera).
+Serializer round-trip, legacy JSON without image keys, photo with missing folder, folder CRUD and cascade blobs, `EncryptedBlobStore` temp directory, backup create + `restoreVault` + `restoreIntoNewAccount` with images, v1 compatibility, missing blob at create time, widget tests with a fake capture service (no real camera), gallery export service + details ViewModel tests with a fake `ImageGalleryGateway` (no device gallery), folder bulk export and more-menu action tests.

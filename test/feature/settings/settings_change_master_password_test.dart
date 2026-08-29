@@ -234,6 +234,30 @@ void main() {
     AppToast.dismiss();
   });
 
+  testWidgets('Master Password lockout stays on the dialog', (tester) async {
+    auth.changeMasterPasswordFailure = const MasterPasswordLockedOutFailure();
+    await pumpSettings(tester);
+    await openChangeDialog(tester);
+    await fillChangeForm(
+      tester,
+      current: 'wrong-password',
+      next: 'new-password',
+      confirm: 'new-password',
+    );
+    await submitChange(tester);
+
+    expect(auth.changeMasterPasswordCount, 1);
+    expect(session.isAuthenticated, isTrue);
+    expect(
+      find.textContaining(
+        'محدودیت تلاش رمز اصلی تمام شده است. لطفاً بعداً دوباره تلاش کنید.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('settings-change-mp-current')), findsOneWidget);
+    AppToast.dismiss();
+  });
+
   testWidgets('persist failure stays on the dialog', (tester) async {
     auth.changeMasterPasswordFailure = const DatabaseFailure();
     await pumpSettings(tester);

@@ -234,6 +234,36 @@ void main() {
     AppToast.dismiss();
   });
 
+  testWidgets('Master Password lockout stays on the delete dialog', (
+    tester,
+  ) async {
+    auth.deleteAccountFailure = const MasterPasswordLockedOutFailure();
+    await pumpSettings(tester);
+    await openDeleteDialog(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('settings-delete-account-password')),
+      'wrong-password-1',
+    );
+    await tester.tap(find.byKey(const Key('settings-delete-account-confirm')));
+    await pumpAuthSettle(tester);
+
+    expect(auth.deleteAccountCount, 1);
+    expect(unlock.lockCount, 0);
+    expect(session.isAuthenticated, isTrue);
+    expect(
+      find.textContaining(
+        'محدودیت تلاش رمز اصلی تمام شده است. لطفاً بعداً دوباره تلاش کنید.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('settings-delete-account-password')),
+      findsOneWidget,
+    );
+    AppToast.dismiss();
+  });
+
   testWidgets('deleting the last account navigates to account selection', (
     tester,
   ) async {
