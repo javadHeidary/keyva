@@ -10,6 +10,20 @@ It does not use a backend, cloud account, or online login. Vault data stays on t
 
 The product goal is a simple, private vault rather than a synced cloud password manager.
 
+## Screenshots
+
+| Home | Categories |
+| --- | --- |
+| ![Home](assets/images/main.jpg) | ![Categories](assets/images/category.jpg) |
+
+| Password generator | Settings |
+| --- | --- |
+| ![Password generator](assets/images/gen_password.jpg) | ![Settings](assets/images/settings.jpg) |
+
+| Dark theme | Backup & restore |
+| --- | --- |
+| ![Dark theme](assets/images/theme.jpg) | ![Backup & restore](assets/images/backup.jpg) |
+
 ## Features
 
 - **Encrypted vault** for logins, bank cards, secure notes, and image folders
