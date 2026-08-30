@@ -168,6 +168,27 @@ void main() {
     expect(tester.widget<AppButtonWidget>(confirm).enabled, isTrue);
   });
 
+  testWidgets('warning dialog cancel closes without creating an account', (
+    tester,
+  ) async {
+    await pumpRegister(tester);
+    await fillValidForm(tester);
+    await tester.ensureVisible(find.byKey(const Key('auth-register-submit')));
+    await tester.tap(find.byKey(const Key('auth-register-submit')));
+    await pumpAuthFrame(tester);
+
+    expect(find.text('هشدار مهم امنیتی'), findsOneWidget);
+    expect(find.byKey(const Key('auth-register-warning-cancel')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('auth-register-warning-cancel')));
+    await pumpAuthSettle(tester);
+
+    expect(find.text('هشدار مهم امنیتی'), findsNothing);
+    expect(find.text('ایجاد حساب جدید'), findsOneWidget);
+    expect(auth.createCount, 0);
+    expect(session.isAuthenticated, isFalse);
+  });
+
   testWidgets('loading prevents duplicate create and then opens shell', (
     tester,
   ) async {

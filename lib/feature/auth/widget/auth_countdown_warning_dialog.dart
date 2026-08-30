@@ -13,6 +13,7 @@ Future<void> showAuthCountdownWarningDialog({
   required RxInt countdown,
   required RxBool canConfirm,
   required VoidCallback onConfirm,
+  VoidCallback? onCancel,
 }) {
   return Get.dialog(
     barrierDismissible: false,
@@ -81,10 +82,24 @@ Future<void> showAuthCountdownWarningDialog({
                       enabled: canSubmit,
                       onPressed: canSubmit
                           ? () {
-                              Get.back();
+                              Navigator.of(context).pop();
                               onConfirm();
                             }
                           : null,
+                    ),
+                    SizedBox(height: AppSpacing.sm.h),
+                    TextButton(
+                      key: const Key('auth-register-warning-cancel'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        onCancel?.call();
+                      },
+                      child: Text(
+                        'انصراف',
+                        style: AppTypography.button.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
                     ),
                   ],
                 ),

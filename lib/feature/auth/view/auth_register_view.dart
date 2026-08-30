@@ -211,6 +211,7 @@ class AuthRegisterView extends GetView<RegisterController> {
       countdown: controller.dialogCountdown,
       canConfirm: controller.canConfirmDialog,
       onConfirm: controller.createAccount,
+      onCancel: controller.cancelWarningDialog,
     );
   }
 }

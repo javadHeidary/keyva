@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:keyva/core/database/models/user_record.dart';
@@ -38,6 +40,7 @@ class RegisterController extends GetxController {
 
   final dialogCountdown = 3.obs;
   final canConfirmDialog = false.obs;
+  Timer? _countdownTimer;
 
   @override
   void onInit() {
@@ -97,18 +100,29 @@ class RegisterController extends GetxController {
   }
 
   void startWarningDialogCountdown() {
+    _countdownTimer?.cancel();
     dialogCountdown.value = 3;
     canConfirmDialog.value = false;
-    _runCountdown();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (isClosed) {
+        timer.cancel();
+        return;
+      }
+      if (dialogCountdown.value <= 1) {
+        timer.cancel();
+        dialogCountdown.value = 0;
+        canConfirmDialog.value = true;
+        return;
+      }
+      dialogCountdown.value--;
+    });
   }
 
-  Future<void> _runCountdown() async {
-    while (dialogCountdown.value > 0) {
-      await Future.delayed(const Duration(seconds: 1));
-      if (isClosed) return;
-      dialogCountdown.value--;
-    }
-    canConfirmDialog.value = true;
+  void cancelWarningDialog() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    canConfirmDialog.value = false;
+    dialogCountdown.value = 3;
   }
 
   Future<void> createAccount() async {
@@ -158,6 +172,7 @@ class RegisterController extends GetxController {
 
   @override
   void onClose() {
+    _countdownTimer?.cancel();
     passwordController.removeListener(_syncPasswordStrength);
     usernameController.dispose();
     passwordController.dispose();
