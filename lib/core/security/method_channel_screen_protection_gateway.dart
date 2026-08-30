@@ -10,7 +10,7 @@ class MethodChannelScreenProtectionGateway implements ScreenProtectionGateway {
           channel ??
           const MethodChannel(MethodChannelScreenProtectionGateway.channelName);
 
-  static const channelName = 'com.example.keyva/screen_protection';
+  static const channelName = 'com.keyva.app/screen_protection';
   static const methodSetSecure = 'setSecure';
 
   final MethodChannel _channel;

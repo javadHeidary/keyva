@@ -131,6 +131,7 @@ void main() {
           Get.put(
             ImageFolderViewModel(
               folderId: vaultRouteItemId(),
+              openedAfterCreate: vaultRouteOpenedAfterCreate(),
               capture: capture,
               export: export,
             ),
@@ -229,6 +230,7 @@ void main() {
     await pumpOpenedRoute(tester);
 
     expect(find.byKey(const Key('vault-image-folder')), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-details-back')), findsOneWidget);
     expect(find.byKey(const Key('vault-image-folder-empty')), findsOneWidget);
     expect(find.text('این پوشه خالی است'), findsOneWidget);
     expect(
@@ -258,6 +260,7 @@ void main() {
 
     expect(Get.currentRoute, AppRoutes.imageFolder);
     expect(find.byKey(const Key('vault-image-folder')), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-details-confirm')), findsOneWidget);
     expect(find.text('مدارک'), findsWidgets);
     expect(find.text('این پوشه خالی است'), findsOneWidget);
   });

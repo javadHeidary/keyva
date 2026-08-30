@@ -7,6 +7,7 @@ import 'package:keyva/core/theme/extensions/responsive_extentions.dart';
 import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/image/viewmodel/image_folder_viewmodel.dart';
 import 'package:keyva/feature/type/image/widget/encrypted_vault_image.dart';
+import 'package:keyva/feature/vault/view/vault_item_details_leading.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
@@ -55,10 +56,8 @@ class ImageFolderView extends GetView<ImageFolderViewModel> {
                         child: AppHeaderWidget(
                           title: controller.headerTitle,
                           titleAlign: TextAlign.center,
-                          leading: Icon(
-                            AppIcon.arrowBack,
-                            size: AppSizes.iconLg.s,
-                            color: colors.textPrimary,
+                          leading: VaultItemDetailsLeading(
+                            openedAfterCreate: controller.openedAfterCreate,
                           ),
                           onLeadingTap: busy ? null : Get.back,
                           trailingActions: [

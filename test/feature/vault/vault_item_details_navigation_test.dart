@@ -17,6 +17,7 @@ import 'package:keyva/feature/vault/model/vault_data.dart';
 import 'package:keyva/feature/vault/view/vault_item_navigation.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_home_viewmodel.dart';
 import 'package:keyva/feature/vault/viewmodel/vault_item_viewmodel.dart';
+import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_search_widget.dart';
 
 import 'support/fake_share_sheet_service.dart';
@@ -122,6 +123,7 @@ void main() {
           Get.put(
             LoginDetailsViewModel(
               loginId: vaultRouteItemId(),
+              openedAfterCreate: vaultRouteOpenedAfterCreate(),
               shareSheet: FakeShareSheetService(),
             ),
           );
@@ -203,6 +205,7 @@ void main() {
     await pumpOpenedRoute(tester);
 
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-details-back')), findsOneWidget);
     expect(find.text('ویرایش اکانت'), findsNothing);
     expect(find.text('keep-this-user'), findsWidgets);
   });
@@ -267,6 +270,9 @@ void main() {
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
 
     expect(Get.currentRoute, AppRoutes.loginDetails);
+    expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-details-back')), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-details-confirm')), findsNothing);
 
     await popOpenedRoute(tester);
 
@@ -321,8 +327,12 @@ void main() {
     expect(find.byKey(const Key('vault-login-details')), findsOneWidget);
     expect(find.text('Work Mail'), findsWidgets);
     expect(find.text('ایجاد اکانت'), findsNothing);
+    expect(find.byKey(const Key('vault-item-details-confirm')), findsOneWidget);
+    expect(find.byIcon(AppIcon.check), findsOneWidget);
+    expect(find.byKey(const Key('vault-item-details-back')), findsNothing);
 
-    await popOpenedRoute(tester);
+    await tester.tap(find.byKey(const Key('vault-item-details-confirm')));
+    await pumpOpenedRoute(tester);
 
     expect(Get.currentRoute, AppRoutes.typeList);
     expect(find.byKey(const Key('vault-type-list')), findsOneWidget);

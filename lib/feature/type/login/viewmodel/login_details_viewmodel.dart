@@ -21,9 +21,11 @@ class LoginDetailsViewModel extends GetxController {
     required this.shareSheet,
     this.formatter = const VaultItemShareFormatter(),
     this.confirmShare,
+    this.openedAfterCreate = false,
   });
 
   final String loginId;
+  final bool openedAfterCreate;
   final ShareSheetService shareSheet;
   final VaultItemShareFormatter formatter;
   final Future<bool> Function(BuildContext context)? confirmShare;

@@ -21,7 +21,7 @@ class StoreConfig {
     required this.storeAppPackage,
   });
 
-  static const defaultPackageId = 'com.example.keyva';
+  static const defaultPackageId = 'com.keyva.app';
 
   /// Cafe Bazaar developer listing. Fill before store release.
   static const bazaarOtherAppsNativeUri = '';

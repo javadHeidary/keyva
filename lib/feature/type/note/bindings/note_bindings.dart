@@ -54,9 +54,11 @@ class NoteDetailsBindings extends Bindings {
   void dependencies() {
     NoteBindings._ensureStore();
     final noteId = vaultRouteItemId();
+    final openedAfterCreate = vaultRouteOpenedAfterCreate();
     Get.lazyPut(
       () => NoteDetailsViewModel(
         noteId: noteId,
+        openedAfterCreate: openedAfterCreate,
         shareSheet: getIt<ShareSheetService>(),
       ),
     );

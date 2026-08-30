@@ -54,9 +54,11 @@ class BankCardDetailsBindings extends Bindings {
   void dependencies() {
     BankCardBindings._ensureStore();
     final cardId = vaultRouteItemId();
+    final openedAfterCreate = vaultRouteOpenedAfterCreate();
     Get.lazyPut(
       () => BankCardDetailsViewModel(
         cardId: cardId,
+        openedAfterCreate: openedAfterCreate,
         shareSheet: getIt<ShareSheetService>(),
       ),
     );

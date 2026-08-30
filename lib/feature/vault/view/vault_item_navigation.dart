@@ -3,6 +3,16 @@ import 'package:get/get.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/feature/home/model/vault_models.dart';
 
+class VaultItemRouteArgs {
+  const VaultItemRouteArgs({
+    required this.id,
+    this.openedAfterCreate = false,
+  });
+
+  final String id;
+  final bool openedAfterCreate;
+}
+
 String vaultItemDetailsRoute(VaultItemType type) {
   return switch (type) {
     VaultItemType.login => AppRoutes.loginDetails,
@@ -14,7 +24,15 @@ String vaultItemDetailsRoute(VaultItemType type) {
 
 String vaultRouteItemId() {
   final args = Get.arguments;
+  if (args is VaultItemRouteArgs) {
+    return args.id;
+  }
   return args is String ? args : '';
+}
+
+bool vaultRouteOpenedAfterCreate() {
+  final args = Get.arguments;
+  return args is VaultItemRouteArgs && args.openedAfterCreate;
 }
 
 String? vaultRouteCategoryId() {
@@ -45,6 +63,9 @@ void openCreatedVaultItem({
     arguments: type,
   );
   SchedulerBinding.instance.addPostFrameCallback((_) {
-    Get.toNamed(vaultItemDetailsRoute(type), arguments: id);
+    Get.toNamed(
+      vaultItemDetailsRoute(type),
+      arguments: VaultItemRouteArgs(id: id, openedAfterCreate: true),
+    );
   });
 }

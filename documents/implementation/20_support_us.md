@@ -85,7 +85,7 @@ flutter build apk --flavor myket --dart-define=STORE=myket
 | `storeAppPackage`                 | `com.farsitel.bazaar`                 | `ir.mservices.market`                |
 | Other apps                        | `bazaarOtherAppsNativeUri` / `WebUrl` | `myketOtherAppsNativeUri` / `WebUrl` |
 
-Package id is `StoreConfig.defaultPackageId` (`com.example.keyva` until store release).
+Package id is `StoreConfig.defaultPackageId` (`com.keyva.app`).
 
 Do **not** use Google Play `in_app_review`. Bazaar’s official rate path is `ACTION_EDIT` on `bazaar://details`. Myket’s official path is `myket://comment?id=...`. WebView is never the primary review mechanism.
 

@@ -60,9 +60,12 @@ class ImageFolderBindings extends Bindings {
   @override
   void dependencies() {
     ImageBindings._ensureStore();
+    final folderId = vaultRouteItemId();
+    final openedAfterCreate = vaultRouteOpenedAfterCreate();
     Get.lazyPut(
       () => ImageFolderViewModel(
-        folderId: vaultRouteItemId(),
+        folderId: folderId,
+        openedAfterCreate: openedAfterCreate,
         capture: getIt<ImageCaptureService>(),
         export: getIt<ImageGalleryExportService>(),
       ),

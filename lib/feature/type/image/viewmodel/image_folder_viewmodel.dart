@@ -21,10 +21,12 @@ class ImageFolderViewModel extends GetxController {
     required this.folderId,
     required ImageCaptureService capture,
     required ImageGalleryExportService export,
+    this.openedAfterCreate = false,
   }) : _capture = capture,
        _export = export;
 
   final String folderId;
+  final bool openedAfterCreate;
   final ImageCaptureService _capture;
   final ImageGalleryExportService _export;
   final isPicking = false.obs;

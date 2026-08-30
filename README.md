@@ -183,7 +183,7 @@ flutter test
 
 The current codebase is a **functional** local vault: account lifecycle, encryption, vault item types, backup/restore, and security settings are implemented and covered by tests.
 
-This repository is intended as a **portfolio / open-source** Flutter project. The Android application ID is still `com.example.keyva`, and release signing is not configured for store distribution. It should not be treated as a production-hardened, audited product.
+This repository is intended as a **portfolio / open-source** Flutter project. The Android application ID is `com.keyva.app`. It should not be treated as a production-hardened, audited product.
 
 ## License
 

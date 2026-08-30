@@ -54,9 +54,11 @@ class LoginDetailsBindings extends Bindings {
   void dependencies() {
     LoginBindings._ensureStore();
     final loginId = vaultRouteItemId();
+    final openedAfterCreate = vaultRouteOpenedAfterCreate();
     Get.lazyPut(
       () => LoginDetailsViewModel(
         loginId: loginId,
+        openedAfterCreate: openedAfterCreate,
         shareSheet: getIt<ShareSheetService>(),
       ),
     );

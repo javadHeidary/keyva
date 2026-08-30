@@ -1,4 +1,4 @@
-package com.example.keyva
+package com.keyva.app
 
 import android.os.Bundle
 import android.view.WindowManager
@@ -8,7 +8,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterFragmentActivity() {
     companion object {
-        private const val CHANNEL = "com.example.keyva/screen_protection"
+        private const val CHANNEL = "com.keyva.app/screen_protection"
         private const val METHOD_SET_SECURE = "setSecure"
     }
 

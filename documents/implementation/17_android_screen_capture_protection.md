@@ -48,7 +48,7 @@ window.addFlags(FLAG_SECURE)
 
 That fail-closed default covers the Android launch theme and Flutter engine start, before Hive can be read.
 
-`configureFlutterEngine` registers MethodChannel `com.example.keyva/screen_protection`:
+`configureFlutterEngine` registers MethodChannel `com.keyva.app/screen_protection`:
 
 ```text
 setSecure(enabled: Boolean)

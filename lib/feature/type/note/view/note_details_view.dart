@@ -9,6 +9,7 @@ import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dar
 import 'package:keyva/feature/type/note/viewmodel/note_details_viewmodel.dart';
 import 'package:keyva/feature/type/note/widget/note_body_text_widget.dart';
 import 'package:keyva/feature/vault/share/vault_item_share_ui.dart';
+import 'package:keyva/feature/vault/view/vault_item_details_leading.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
@@ -48,10 +49,8 @@ class NoteDetailsView extends GetView<NoteDetailsViewModel> {
                 child: AppHeaderWidget(
                   title: controller.headerTitle,
                   titleAlign: TextAlign.center,
-                  leading: Icon(
-                    AppIcon.arrowBack,
-                    size: AppSizes.iconLg.s,
-                    color: colors.textPrimary,
+                  leading: VaultItemDetailsLeading(
+                    openedAfterCreate: controller.openedAfterCreate,
                   ),
                   onLeadingTap: Get.back,
                   trailingActions: [

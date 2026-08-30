@@ -7,6 +7,7 @@ import 'package:keyva/core/theme/extensions/theme_extentions.dart';
 import 'package:keyva/feature/type/bank_card/viewmodel/bank_card_details_viewmodel.dart';
 import 'package:keyva/feature/type/login/widget/login_detail_credential_card.dart';
 import 'package:keyva/feature/vault/share/vault_item_share_ui.dart';
+import 'package:keyva/feature/vault/view/vault_item_details_leading.dart';
 import 'package:keyva/feature/vault/view/vault_item_pin_ui.dart';
 import 'package:keyva/shared/icons/app_icons.dart';
 import 'package:keyva/shared/widget/app_buttom_widget.dart';
@@ -48,10 +49,8 @@ class BankCardDetailsView extends GetView<BankCardDetailsViewModel> {
                 child: AppHeaderWidget(
                   title: controller.headerTitle,
                   titleAlign: TextAlign.center,
-                  leading: Icon(
-                    AppIcon.arrowBack,
-                    size: AppSizes.iconLg.s,
-                    color: colors.textPrimary,
+                  leading: VaultItemDetailsLeading(
+                    openedAfterCreate: controller.openedAfterCreate,
                   ),
                   onLeadingTap: Get.back,
                   trailingActions: [

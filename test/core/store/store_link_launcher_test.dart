@@ -37,7 +37,7 @@ void main() {
     expect(
       await launcher.launchNative(
         action: 'android.intent.action.EDIT',
-        uri: 'bazaar://details?id=com.example.keyva',
+        uri: 'bazaar://details?id=com.keyva.app',
       ),
       isFalse,
     );
@@ -54,10 +54,10 @@ void main() {
 
     expect(
       await launcher.launchExternalUrl(
-        'https://cafebazaar.ir/app/com.example.keyva',
+        'https://cafebazaar.ir/app/com.keyva.app',
       ),
       isTrue,
     );
-    expect(launched, Uri.parse('https://cafebazaar.ir/app/com.example.keyva'));
+    expect(launched, Uri.parse('https://cafebazaar.ir/app/com.keyva.app'));
   });
 }
