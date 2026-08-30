@@ -50,3 +50,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+.env
+.env.*
+*.p12
+*.pem
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+**/*.jks
+**/*.keystore
+linux/flutter/ephemeral/
