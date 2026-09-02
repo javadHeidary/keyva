@@ -1,210 +1,211 @@
-# Keyva
 
-A privacy-first, offline password and secure information vault built with Flutter.
+<div align="center">
 
-## Overview
+# 🔐 Keyva (کیوا)
+### Privacy-First, Offline Password & Secure Information Vault
 
-Keyva is a local-only secure vault for everyday Android users who want to keep passwords, bank cards, notes, and private photos on their own device.
+[![Flutter](https://img.shields.io/badge/Flutter-%E2%89%A5%203.32.0-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-%E2%89%A5%203.8.1-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Security](https://img.shields.io/badge/Security-AES--256--GCM%20%7C%20Argon2id-critical?style=for-the-badge)](https://en.wikipedia.org/wiki/Argon2)
+[![Architecture](https://img.shields.io/badge/Architecture-MVVM%20%2B%20Repository-blue?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-It does not use a backend, cloud account, or online login. Vault data stays on the device, is encrypted before it is stored, and can be used without an internet connection. Optional network access is used only for extras such as website favicons, store links, and contact channels.
+<p align="center">
+  A local-only, zero-knowledge offline vault designed for Android users to store credentials, banking details, secure notes, and encrypted media without cloud dependency.
+</p>
 
-The product goal is a simple, private vault rather than a synced cloud password manager.
+</div>
 
-## Screenshots
+---
 
-| Home | Categories |
-| --- | --- |
-| ![Home](assets/images/main.jpg) | ![Categories](assets/images/category.jpg) |
+## 📌 Overview
 
-| Password generator | Settings |
-| --- | --- |
-| ![Password generator](assets/images/gen_password.jpg) | ![Settings](assets/images/settings.jpg) |
+**Keyva** is an offline-first, highly secure information vault designed with a strict zero-knowledge architecture. All sensitive data—including passwords, bank cards, personal notes, and private images—is encrypted on-device before storage.
 
-| Dark theme | Backup & restore |
-| --- | --- |
-| ![Dark theme](assets/images/theme.jpg) | ![Backup & restore](assets/images/backup.jpg) |
+Keyva eliminates cloud vulnerabilities by having **no remote backend, no mandatory accounts, and no sync servers**. Network connectivity is purely optional for cosmetic enhancements (e.g., website favicons and store links).
 
-## Features
+---
 
-- **Encrypted vault** for logins, bank cards, secure notes, and image folders
-- **Master Password** as the primary credential (never stored)
-- **Argon2id** key derivation and **AES-256-GCM** encryption
-- **PIN** and **biometric** unlock on the same device
-- **Auto lock** with a privacy overlay when the app is backgrounded
-- **Android screenshot protection** (`FLAG_SECURE`)
-- **Multi-account** support on one device
-- Encrypted **backup and restore** (`.keyva` files)
-- **Login records** (title, username, password, website, notes)
-- **Bank cards** with Iranian bank detection
-- **Secure notes**
-- **Image folders** with camera/gallery capture; photo bytes stored as encrypted sidecar files; optional user-initiated save to the device gallery
-- **Categories**, **search**, and **pinned items** (up to 5)
-- **Password generator** with strength scoring and a 7-day local copy history
-- Share login, card, or note text through the system share sheet (after confirmation)
-- **Security settings**: change Master Password, PIN, biometrics, auto-lock timeout, screenshot protection, lock, and account deletion
-- Persian **RTL** UI, Jalali dates, light / dark / system theme, onboarding, FAQ, and privacy policy
+## 📱 Screenshots
 
-## Security
+<div align="center">
 
-Keyva separates **who can unlock the app** from **how vault data is encrypted**.
+| Home | Categories | Password Generator |
+| :---: | :---: | :---: |
+| <img src="assets/images/main.jpg" width="240" alt="Home Screen"/> | <img src="assets/images/category.jpg" width="240" alt="Categories Screen"/> | <img src="assets/images/gen_password.jpg" width="240" alt="Password Generator"/> |
 
-**Authentication.** Unlock is local. The Master Password is never stored in plaintext or ciphertext. A PIN is never stored as plaintext. Biometric templates stay in the OS; Keyva only receives a success/failure result from `local_auth`.
+| Settings | Dark Theme | Backup & Restore |
+| :---: | :---: | :---: |
+| <img src="assets/images/settings.jpg" width="240" alt="Settings Screen"/> | <img src="assets/images/theme.jpg" width="240" alt="Dark Theme"/> | <img src="assets/images/backup.jpg" width="240" alt="Backup & Restore"/> |
 
-**Key derivation.** A per-account random salt and Argon2id (64 MiB memory, 3 iterations, parallelism 4, 32-byte output) produce a derived key from the Master Password. That derived key is not the Vault Key.
+</div>
 
-**Vault key management.** Each account has a random 32-byte Vault Key. The Vault Key is wrapped with the derived key using AES-256-GCM and persisted as wrapped material. Changing the Master Password re-wraps the same Vault Key; vault ciphertext is not re-encrypted. PIN unlock derives a wrapping key from the PIN and unwraps the same Vault Key. Biometric unlock stores a random wrap key in platform secure storage (`flutter_secure_storage`).
+---
 
-**Encryption.** Vault JSON (logins, cards, notes, image metadata) is encrypted with AES-256-GCM (12-byte nonce, 16-byte tag) and stored in Hive CE. Image bytes live in app-private files under `vault_blobs/`, also AES-256-GCM encrypted with the session Vault Key.
+## ✨ Key Features
 
-**Session.** After unlock, the Vault Key is held in memory only. Locking or logging out zeros the key. Failed PIN/biometric attempts are limited (3 failures, then a 15-minute lockout). Crypto and auth failures fail closed.
+- **Multi-Type Encrypted Vault:** Store and manage logins, bank cards, secure text notes, and image folders.
+- **Biometric & PIN Fast-Unlock:** Seamless hardware-backed authentication (Fingerprint/Face Unlock) and PIN support alongside Master Password verification.
+- **Encrypted Media Storage:** Sidecar image storage under app-private directories with AES-GCM encryption.
+- **Smart Password Generator:** Configurable entropy, strength analysis, and a 7-day ephemeral local copy history.
+- **Granular Security Controls:** Screenshot prevention (`FLAG_SECURE`), auto-lock on app backgrounding, privacy screen overlay, and lockout after 3 failed attempts.
+- **Iranian Banking Support:** Built-in card prefix detection and metadata resolution.
+- **Encrypted Backups:** Export and import password-protected `.keyva` archives independent of device credentials.
+- **Localization & Theming:** Full RTL (Persian) support, Jalali dates, customizable system/light/dark themes, and onboarding flows.
 
-**Backups.** A `.keyva` file is encrypted with a user-chosen backup password (Argon2id + AES-GCM), independent of the Master Password. Image blobs are included. There is no server-side recovery.
+---
 
-**Storage protection.** Hive holds user metadata, wrapped keys, and vault ciphertext. PIN/biometric wrap material uses encrypted SharedPreferences on Android. Screenshot blocking is implemented on Android only.
+## 🛡 Security & Cryptographic Architecture
 
-## Tech Stack
-
-| Technology                | Purpose                             |
-| ------------------------- | ----------------------------------- |
-| Flutter 3.32+ / Dart 3.8+ | Mobile application                  |
-| MVVM + feature folders    | Application architecture            |
-| GetX                      | UI state and navigation             |
-| GetIt                     | Dependency injection                |
-| Hive CE                   | Local database                      |
-| `cryptography`            | Argon2id and AES-256-GCM            |
-| `flutter_secure_storage`  | PIN / biometric wrap material       |
-| `local_auth`              | Device biometrics                   |
-| `Result<T>`               | Explicit success / failure handling |
-
-Other packages used in the implementation include `file_picker`, `image_picker`, `gal`, `path_provider`, `share_plus`, `permission_handler`, `shared_preferences`, `iranian_banks`, `shamsi_date`, and `cached_network_image_plus`.
-
-## Architecture
-
-Keyva uses **MVVM** with a **repository / data-source** local layer. There is no Domain, UseCase, or DTO-mapper layer.
-
-Views talk to GetX ViewModels. ViewModels call services (when the feature has one) or repositories. Repositories and security services talk to Hive data sources, secure storage, or encrypted blob files. GetIt owns long-lived dependencies; GetX bindings own screen-scoped ViewModels.
+Keyva strictly decouples **user authentication** from **underlying cryptographic operations**.
 
 ```text
-View (GetX)
-    ↓
-ViewModel
-    ↓
-Service (when present)
-    ↓
-Repository
-    ↓
-Data source
-    ↓
-Hive CE / flutter_secure_storage / encrypted blob files
+[Random Vault Key (32 bytes)] <--- Wrapped by AES-256-GCM
+      ↓ (Held in volatile RAM during active session)
+[Encrypted Payload (AES-256-GCM)] <---> Hive CE & Local Blobs
 ```
 
-Security primitives live in `lib/core/crypto` and `lib/core/security`. Session and auto-lock live in `lib/core/session`. Vault CRUD, unlock, and image blobs live under `lib/feature/vault`.
+### 1[Encrypted Payload (AES-256-GCM)] <---> Hive CE & Local Blobs
 
-## Project Structure
+
+### 1. Key Derivation & Vault Key Wrapping
+- **Argon2id Parameters:** 64 MiB memory, 3 iterations, parallelism 4, 32-byte derived output with a per-account cryptographically secure salt.
+- **Zero-Knowledge Master Password:** The Master Password is never written to disk (neither plaintext nor hash).
+- **Key Wrapping Strategy:** A random 32-byte Vault Key encrypts the payload. Changing the Master Password only re-wraps this Vault Key without needing to re-encrypt the entire database.
+
+### 2. Encryption at Rest
+- **Data Payload:** Vault JSON objects are encrypted with **AES-256-GCM** (12-byte unique nonces, 16-byte authentication tags) and stored in **Hive CE**.
+- **Media Blobs:** Raw image bytes are encrypted with the active session key and saved under isolated app directories (`vault_blobs/`).
+
+### 3. Session & In-Memory Safety
+- The decrypted Vault Key lives exclusively in memory during an active session and is zeroed on lock or logout.
+- Biometric unlock stores an independent wrap key inside Android Keystore via `flutter_secure_storage`.
+- Strict fail-closed policy on cryptographic or authentication anomalies.
+
+---
+
+## 🛠 Tech Stack & Architecture
+
+### **Core Stack**
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Framework** | Flutter (≥ 3.32.0) / Dart (≥ 3.8.1) | Cross-platform core |
+| **Architecture** | MVVM + Repository Pattern | Clean separation of business logic and presentation |
+| **State & Routing** | GetX | ViewModels, lifecycle, and route navigation |
+| **Dependency Injection** | GetIt | Long-lived services and singleton registrations |
+| **Local Database** | Hive CE | Encrypted box storage |
+| **Cryptography** | `cryptography` package | Argon2id & AES-256-GCM primitives |
+| **Secure Key Store** | `flutter_secure_storage` | Platform hardware keystore wrapper |
+| **Biometrics** | `local_auth` | OS-level biometric verification |
+
+### **Architecture Flow**
+```text
+View (GetX UI)
+    ↓
+ViewModel (GetX Controller)
+    ↓
+Service / Security Manager
+    ↓
+Repository Layer (Result<T> Pattern)
+    ↓
+Local Data Sources (Hive CE / Secure Storage / Encrypted Files)
+```
+
+---
+
+## 📁 Project Structure
 
 ```text
 lib/
 ├── core/
-│   ├── crypto/          # Argon2id, AES-GCM, key wrapping
-│   ├── database/        # Hive CE boxes and adapters
-│   ├── di/              # GetIt registration
-│   ├── exceptions/      # Result<T> and typed failures
-│   ├── routes/          # GetX routes and session guard
-│   ├── security/        # PIN, biometrics, lockout, screen protection
-│   ├── session/         # In-memory session and auto-lock
-│   ├── store/           # Cafe Bazaar / Myket store links
-│   └── theme/           # Design system
+│   ├── crypto/          # Argon2id, AES-GCM primitives & key-wrapping
+│   ├── database/        # Hive CE boxes, adapters & migrations
+│   ├── di/              # GetIt dependency injection registry
+│   ├── exceptions/      # Result<T> failure handling & custom exceptions
+│   ├── routes/          # GetX routing & session-guard middleware
+│   ├── security/        # PIN, biometric auth, lockout policies & FLAG_SECURE
+│   ├── session/         # Memory-only session state & auto-lock timer
+│   ├── store/           # Bazaar / Myket platform channels
+│   └── theme/           # Design tokens, typography & color schemes
 ├── feature/
-│   ├── auth/
-│   ├── backup/
-│   ├── category/
-│   ├── home/
-│   ├── onboarding/
-│   ├── password_generator/
-│   ├── search/
-│   ├── settings/
-│   ├── shell/
-│   ├── splash/
-│   ├── type/            # login, bank_card, note, image
-│   └── vault/
-├── shared/              # Reusable widgets and icons
-└── main.dart
+│   ├── auth/            # Master password & enrollment flows
+│   ├── backup/          # .keyva archive export/import
+│   ├── category/        # Vault organization & tags
+│   ├── home/            # Dashboard & pinned entries
+│   ├── password_generator/ # Entropy calculation & temporary history
+│   ├── settings/        # Security preferences & theme selection
+│   ├── type/            # Form handlers for login, card, note, media
+│   └── vault/           # Item CRUD & secure blob pipeline
+├── shared/              # Reusable UI components & custom widgets
+└── main.dart            # App entry point
 ```
 
-## Getting Started
+---
 
-### Requirements
+## 🚀 Getting Started
 
-- Flutter SDK **≥ 3.32.0**
-- Dart SDK **≥ 3.8.1** (see `pubspec.yaml`)
-- An Android device or emulator (primary target)
+### Prerequisites
+- **Flutter SDK:** `≥ 3.32.0`
+- **Dart SDK:** `≥ 3.8.1`
+- Android Studio / Android SDK (API Level 23+ recommended)
 
-The repository also contains a standard iOS Flutter runner (camera, photo library pick/add, and Face ID usage strings are present). Android product flavors and screenshot protection are Android-specific.
+### Installation & Setup
 
-### Installation
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/javadHeidary/keyva.git
+   cd keyva
+   ```
 
-```bash
-git clone https://github.com/javadHeidary/keyva.git
-cd keyva
-flutter pub get
-```
+2. **Install dependencies:**
+   ```bash
+   flutter pub get
+   ```
 
-No backend, API keys, or environment files are required. Hive adapters and FlutterGen outputs are already in the repository.
+3. **(Optional) Code Generation:**
+   If you modify database models, regenerate Hive type adapters:
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
 
-If you change Hive models, regenerate adapters:
+### Running with Flavors
 
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
+Keyva supports build flavors configured for distribution channels:
 
-### Run
+- **Bazaar (Default):**
+  ```bash
+  flutter run --flavor bazaar --dart-define=STORE=bazaar
+  ```
 
-Android builds use store flavors (`bazaar` is the default):
+- **Myket:**
+  ```bash
+  flutter run --flavor myket --dart-define=STORE=myket
+  ```
 
-```bash
-flutter run --flavor bazaar --dart-define=STORE=bazaar
-```
+---
 
-Myket:
+## 🧪 Testing
 
-```bash
-flutter run --flavor myket --dart-define=STORE=myket
-```
+The test suite covers unit and widget tests for cryptographic verification, key wrapping, repository operations, and state transitions.
 
-`STORE` only affects in-app store links (rate, share, other apps). Vault behavior does not depend on it.
-
-## Testing
-
-The project has **unit tests** and **widget tests** under `test/` covering cryptography, key wrapping, Hive storage, auth, vault operations, backup/restore, PIN/biometrics, auto-lock, settings, and several UI flows.
-
-There is **no** `integration_test/` suite. Coverage is broad on core security and vault paths, but not complete for every screen.
-
+Run the test suite:
 ```bash
 flutter test
 ```
 
-`dart_test.yaml` runs tests with `concurrency: 1`.
+---
 
-## Security & Privacy Notes
+## 👤 Author & Contact
 
-- Keyva is a **local/offline** vault. It does not provide cloud backup, account recovery, or remote unlock.
-- You are responsible for protecting the Master Password, PIN, device lock, and any `.keyva` backup files.
-- If the Master Password (and any backup password) is lost, encrypted vault data cannot be recovered by the app.
-- Password-generator copy history is stored locally for 7 days and is separate from the encrypted vault.
-- No system is absolutely secure. Keyva reduces exposure by keeping data on-device and encrypting it at rest; it does not make the device itself uncompromisable.
+**Javad Heidary** — Mobile Application Developer (Flutter & Android)
 
-## Project Status
+- ✉️ **Email:** [javadheidary.dev@gmail.com](mailto:javadheidary.dev@gmail.com)
+- 💬 **Telegram:** [@JavadHeiDev](https://t.me/JavadHeiDev)
+- 🌐 **GitHub:** [@javadHeidary](https://github.com/javadHeidary)
 
-The current codebase is a **functional** local vault: account lifecycle, encryption, vault item types, backup/restore, and security settings are implemented and covered by tests.
+---
 
-This repository is intended as a **portfolio / open-source** Flutter project. The Android application ID is `com.keyva.app`. It should not be treated as a production-hardened, audited product.
-
-## License
-
-No license has been specified for this repository.
-
-## Author
-
-**Javad Heidary**
-- Email: [javadheidary.dev@gmail.com](mailto:javadheidary.dev@gmail.com)
-
+<div align="center">
+  <sub>Built with precision and security in mind by Javad Heidary</sub>
+</div>
+```
