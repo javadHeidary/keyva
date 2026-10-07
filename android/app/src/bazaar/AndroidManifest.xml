@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Cafe Bazaar forbids INTERNET for apps that store bank-card data.
+         Strip the permission for this flavor only (including transitive deps). -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>
+</manifest>

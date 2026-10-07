@@ -32,10 +32,10 @@ class HomeView extends GetView<HomeController> {
 
     return Scaffold(
       key: controller.scaffoldKey,
-      floatingActionButtonLocation: AppFabWidget.scaffoldLocation(
-        bottomInset: fabBottomInset,
-        expandable: true,
-      ),
+      // floatingActionButtonLocation: AppFabWidget.scaffoldLocation(
+      //   bottomInset: fabBottomInset,
+      //   expandable: false,
+      // ),
       floatingActionButton: AppFabWidget(
         expandableKey: controller.createFabKey,
         bottomInset: fabBottomInset,
