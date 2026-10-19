@@ -61,3 +61,5 @@ GoogleService-Info.plist
 **/*.jks
 **/*.keystore
 linux/flutter/ephemeral/
+
+assets/fonts/

@@ -115,6 +115,14 @@ class AppFabWidget extends StatelessWidget {
 
     final colors = context.colors;
     final fabSize = buttonSize.s;
+    // ExpandableFab already adds minViewPadding.bottom and
+    // kFloatingActionButtonMargin; strip those so [bottomInset] is exact.
+    final expandableBottomMargin = math.max(
+      0.0,
+      bottomInset -
+          MediaQuery.paddingOf(context).bottom -
+          kFloatingActionButtonMargin,
+    );
 
     FloatingActionButtonBuilder fabBuilder({
       required Widget child,
@@ -151,7 +159,7 @@ class AppFabWidget extends StatelessWidget {
       childrenAnimation: ExpandableFabAnimation.rotate,
       margin: EdgeInsets.only(
         left: AppSpacing.pagePadding.s - kFloatingActionButtonMargin,
-        bottom: bottomInset,
+        bottom: expandableBottomMargin,
       ),
       overlayStyle: showOverlay
           ? ExpandableFabOverlayStyle(

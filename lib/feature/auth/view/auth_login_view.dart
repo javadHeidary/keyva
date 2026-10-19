@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:keyva/core/constants/layout_constants.dart';
 import 'package:keyva/core/constants/security_constants.dart';
 import 'package:keyva/core/routes/app_routing.dart';
 import 'package:keyva/core/security/pin_policy.dart';
@@ -29,7 +28,7 @@ class AuthLoginView extends GetView<LoginController> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      resizeToAvoidBottomInset: LayoutConstants.resizeToAvoidBottomInset,
+      resizeToAvoidBottomInset: false,
       body: AuthErrorToastBinder(
         message: controller.errorMessage,
         errorTitle: LoginController.errorTitle,
